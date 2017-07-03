@@ -49,7 +49,7 @@ def chargerPatronsHTML():
 						txt += ligne
 		return html
       
-def mep(header,dossier='',liste=''):
+def mise_en_page(header,dossier='',liste=''):
 	# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
 	# avec un header et un contenu (dossier, liste, script) adéquats.
 	data = {'header':header,'dossier':dossier,'liste':liste}
@@ -61,7 +61,7 @@ def mep(header,dossier='',liste=''):
 	data.update({'visibilite':visib})
 	return html["miseEnPage"].format(**data)
 
-def mep_menu(header,contenu):
+def mise_en_page_menu(header,contenu):
 	# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
 	# avec un header et un contenu (dossier, liste, script) adéquats.
 	data = {'header':header,'contenu':contenu}
@@ -79,7 +79,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def index(self):
 		cherrypy.session['droits']=''
 		# Page d'entrée du site web - renvoi d'une page HTML statique :
-		return mep_menu(self.genere_header(),html["pageAccueil"].format(''))
+		return mise_en_page_menu(self.genere_header(),html["pageAccueil"].format(''))
   
 	# Admin ou Commission : fonction appelée par le formulaire de la page d'accueil. 
 	@cherrypy.expose
@@ -89,7 +89,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			cherrypy.session['droits'] = 'administrateur'
 			data = self.genere_menu_admin()
 			txt = "menu_admin_{}".format(data['menu'])
-			return mep_menu(self.genere_header(),html[txt].format(**data))
+			return mise_en_page_menu(self.genere_header(),html[txt].format(**data))
 		else:
 			cherrypy.session['droits'] = 'commission'
 			data = {}
@@ -97,7 +97,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			if txt != '':
 				txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>'+txt
 			data.update({'liste':txt})
-			return mep_menu(self.genere_header(),html["menu_comm"].format(**data))
+			return mise_en_page_menu(self.genere_header(),html["menu_comm"].format(**data))
 	
 	# Retour menu admin
 	@cherrypy.expose
@@ -368,7 +368,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		self.dossier = self.genere_dossier(cherrypy.session['droits'])
 		self.liste = self.genere_liste()
 		# On retourne cette page au navigateur
-		return mep(self.header, self.dossier,self.liste)
+		return mise_en_page(self.header, self.dossier,self.liste)
 		
 	# Fonction appelée par l'appui sur "VALIDER" : valide les choix commission ou Admin
 	@cherrypy.expose
