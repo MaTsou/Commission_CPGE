@@ -1,0 +1,204 @@
+/***********************************
+	 ÉLÉMENTS GÉNÉRAUX
+************************************/
+
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+} /* s'applique à tous les éléments : width est une largeur hors-tout !! */
+
+html {font-size : 1.15vw} /* Taille de base selon la largeur de l'écran (1 = 100 carac/ligne) !*/
+						  /* On aurait pu choisir la hauteur !!!*/
+
+body
+	{
+		page : size = A4;
+		width : 85%;
+		padding-top : 1cm;
+		margin-left: auto;
+		margin-right: auto;
+		position : static;
+	}
+
+#header	/* Le header : 1e ligne ; intervient à toutes les pages */
+	{
+		position : static;
+		top : 0px;
+		left : 0px;
+		width :100%;
+	}
+.titre
+	{
+		display: none;
+	}
+	
+/***********************************
+			IMPRESSION
+************************************/
+
+.espace_impr /* Rajoute des espaces dans l'impression ...*/
+	{
+		display: none;
+	}
+
+.correc_notimpr /* La liste des corrections : on affiche mais n'imprime pas*/
+	{
+		display : none;
+	}
+
+.correc_impr
+	{
+		display: none;
+	}
+
+.impr_seul
+	{
+		display: none;
+	}
+
+div.breakafter
+	{ 
+  		display: none; 
+	}
+
+.encadre /* Pour le texte candidat classé ... ou candidat non classé*/
+	{
+		display: none;
+	}
+
+/***********************************
+		LISTE DES DOSSIERS
+************************************/
+
+.doss /* format type d'un bouton de cette liste */
+	{
+		display: none;
+	}
+
+.doss:hover{border: 2px solid SkyBlue;} /* on passe dessus avec la souris */
+	
+.doss_traite{background-color:LimeGreen;} /* a été traité --> vert */
+
+.doss_courant{border: 2px solid Blue;} /* est sélectionné : bordure bleue */
+
+.doss_incomplet{background-color:LightCoral;} /* admin seulement : incomplet */
+
+/***********************************
+			PAGE DOSSIERS
+************************************/
+
+/************ 1/ Les div ***********/
+
+#dossier /* Style de la colonne dossier*/
+	{
+		padding-left: 1%;
+		padding-right: 24%;
+	}
+
+#gros_bout_div /* La div en haut de la page dossier : contient le bouton retour */
+	{
+		position : fixed;
+		top : 4vh;
+		right : 6%;
+		width : 12%;
+		height : 12vh;
+	}
+
+.gros_bout /* Le bouton qui va dans la div gros_bout_div */
+	{
+		width: 100%;
+		font-size: 2em;
+		padding-top : .7ex;
+		padding-bottom: .7ex;
+		border-radius: .2em .2em .2em .2em;
+		background-color: #cccccc;
+		color : Blue;
+	}
+	
+/********** 2/ Les tableaux *********/
+		
+table
+	{
+		display: none;
+	}
+
+caption
+	{
+		display : none;
+	}
+		
+.bord /* pour les tableaux */
+	{
+		display: none;
+	}
+
+/********** 3/ Mise en forme du texte *********/
+.grossi
+	{
+		display: none;
+	}
+
+.candid
+	{
+		display: none;
+	}
+
+.scores
+	{
+		display: none;
+	}
+
+.score
+	{
+		display: none;
+	}
+
+.notes
+	{
+		display: none;
+	}
+	
+/********** 4/ Action de la commission : correction + motivation *********/
+
+.volet3  /* Volet 3 : Motivations + boutons */ 
+	{
+		display: none;
+	}
+	
+
+.motiv /* Cellule titre = Motivations(s) de la commission */
+	{
+		display: none;
+	}
+
+.motif /* Bouton "motifs" commission */
+	{
+		display : none;
+	}
+
+.txt_motifs /* Texte bilan des motifs */
+	{
+		display: none;
+	}
+	
+.NC
+	{
+		display : none;
+	}
+
+.valid
+	{
+		display: none;
+	}
+	
+.valid_bouton
+	{
+		display : none;
+	}
+
+/* L'objet range */ 
+input[type=range]
+	{
+		display : none;
+	}

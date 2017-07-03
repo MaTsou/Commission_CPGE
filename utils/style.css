@@ -1,0 +1,494 @@
+/***********************************
+	 ÉLÉMENTS GÉNÉRAUX
+************************************/
+
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+} /* s'applique à tous les éléments : width est une largeur hors-tout !! */
+
+html {font-size : 1.15vw} /* Taille de base selon la largeur de l'écran (1 = 100 carac/ligne) !*/
+						  /* On aurait pu choisir la hauteur !!!*/
+
+body
+	{
+		width : 100%;
+		background-color : LightGrey;
+		position : static;
+	}
+
+#header	/* Le header : 1e ligne ; intervient à toutes les pages */
+	{
+		position : static;
+		top : 0px;
+		left : 0px;
+		width :100%;
+	}
+
+/***********************************
+	LOADING ... please wait
+************************************/
+
+#patience {
+	position: fixed;
+	visibility: hidden;
+	z-index:    1000;
+	text-align : center;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    padding-top: 15%;
+    background: rgba( 255, 255, 255, .9 );
+}
+
+.loader {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/***********************************
+	MENUS (général, admin, comm)
+************************************/
+
+.menu  /* Le menu principal (Admin ou Comm ?) */
+	{
+		position : absolute;
+		top : 25vh;
+		left : 19%;
+		margin:0%;
+		padding:0%;
+		text-align: center;
+		width : 60%;
+		
+	}
+
+.bouton_menu /* Les boutons du menu principal */
+	{
+		width: 100%;
+		padding-top : 2ex;
+		padding-bottom:2ex;
+		margin : 1%;
+		border-radius: .4em .4em .4em .4em ;
+		background-color: #cccccc;
+		font-size : 3em;
+		cursor: pointer;
+	}
+	
+#mep_menu	/* Contient les sous-menus */
+	{
+		margin-left:5%;
+		width : 100%;
+		text-align : center;
+	}
+
+.sous_menu /*  Sous-menu (dans le cas admin, contient les étapes) */
+	{
+		position : static;
+		text-align : center;
+		border:1px solid black;
+		width:90%;
+	}
+
+.fichier /* Les boutons contenant un nom de fichier (intervient dans tous les menus)*/
+	{
+		padding-top : .7ex;
+		padding-bottom: .7ex;
+		padding-left : 1em;
+		padding-right: 1em;
+		margin-bottom : .5em;
+	
+		border-radius: .4em .4em .4em .4em ;
+		background-color: #cccccc;
+		font-size : 1.3em;
+	
+		cursor: pointer;
+	}
+
+/* Sous-menu admin */
+
+.etape	/* div : étape */
+	{
+		text-align : left;
+		font-size : 1.6em;
+		font-weight: bold;
+	}
+
+.liste_admin /*  div : liste des fichiers epa_admin */
+	{
+		display : inline-block;
+		margin-right: 5%;
+		vertical-align : top;
+	}
+
+.stat /* div : statistiques */
+	{
+		display : inline-block;
+		text-align : left;
+		margin-left: 5%;
+		vertical-align : top;
+		font-size: 1.2em;
+	}
+
+.liste_csv /* div : liste des csv */
+	{
+		position : relative;
+		display : inline-block;
+		left:1%;
+		text-align : left;
+		font-size : 1.5em;
+	}
+
+.liste_pdf	/* div : liste des pdf */
+	{
+		position : relative;
+		display : inline-block;
+		right : 1%;
+		top : 0%;
+		text-align : right;
+		font-size : 1.5em;
+	}
+
+.bout_csv_div /* Le bouton Vérifier / Traiter */
+	{
+		position : relative;
+		display : inline-block;
+		top: 0%;
+		width : 30%;
+		text-align : center;
+	}
+
+/***********************************
+			IMPRESSION
+************************************/
+
+.espace_impr /* Rajoute des espaces dans l'impression ...*/
+	{
+		display: none;
+	}
+
+.correc_impr /* La correction : on imprime mais n'affiche pas*/
+	{
+		display : none;
+	}
+
+.impr_seul
+	{
+		display: none;
+	}
+
+div.breakafter
+	{ 
+  		page-break-after: always; 
+	}
+
+/***********************************
+		LISTE DES DOSSIERS
+************************************/
+
+.doss /* format type d'un bouton de cette liste */
+	{
+		width : 100%;
+		font-family : Courier, monospace; /* Pour la présentation : police monospace */
+		color : black;
+		text-align : left;
+		box-sizing : border-box;
+		margin-top : 0ex;
+		margin-bottom : 0ex;
+		background-color : rgba( 255, 255, 255, .9 );
+	}
+
+.doss:hover{border: 2px solid SkyBlue;} /* on passe dessus avec la souris */
+	
+.doss_traite{background-color:LimeGreen;} /* a été traité --> vert */
+
+.doss_courant{border: 2px solid Blue;} /* est sélectionné : bordure bleue */
+
+.doss_incomplet{background-color:LightCoral;} /* admin seulement : incomplet */
+
+/***********************************
+			PAGE DOSSIERS
+************************************/
+
+/************ 1/ Les div ***********/
+
+#dossier /* Style de la colonne dossier*/
+	{
+		display : inline-block;
+		padding-left : 1%;
+		width: 75%;
+		vertical-align : top;
+	}
+
+#liste /* Style de la colonne Liste des dossiers */
+	{
+		display : inline-block;
+		width : 23%;
+		margin-top : 5vh;
+		padding-left: 1%;
+		vertical-align : top;
+		overflow-y : scroll; /* sert pour que l'évènement onscroll soit généré... */
+		height : 85vh; /* sinon pas de scroll ! */
+	}
+
+#gros_bout_div /* La div en haut de la page dossier : contient le bouton retour */
+	{
+		position : fixed;
+		top : 4vh;
+		right : 6%;
+		width : 12%;
+		height : 12vh;
+	}
+
+.gros_bout /* Le bouton qui va dans la div gros_bout_div */
+	{
+		width: 100%;
+		font-size: 2em;
+		padding-top : .7ex;
+		padding-bottom: .7ex;
+		border-radius: .2em .2em .2em .2em;
+		background-color: #cccccc;
+		color : Blue;
+	}
+	
+/********** 2/ Les tableaux *********/
+		
+table
+	{
+		text-align : center;
+		vertical-align : center;
+		font-size : 1em;
+	}
+
+caption
+	{
+		font-size : 1em;
+		margin : .25em; /* espace avec le tableau !*/
+	}
+	
+.bord /* pour les tableaux */
+	{
+		border : 1px solid black;
+	}
+
+/********** 3/ Mise en forme du texte *********/
+.grossi
+	{
+		font-size : 1.4em;
+	}
+
+.candid
+	{
+		font-size : 1.6em;
+	}
+
+.scores
+	{
+		white-space : nowrap;
+		padding-left: .75em;
+		padding-right : .75em;
+	}
+
+.score
+	{
+		font-size : 3em;
+		width : 6em;
+	}
+
+.notes
+	{
+		width : 3em;
+		border : 0px;
+		font-size: 1em;
+		text-align : center;
+		background-color : LightGrey;
+	}
+	
+/********** 4/ Action de la commission : correction + motivation *********/
+
+.volet3  /* Volet 3 : Motivations + boutons */ 
+	{
+		align : center;
+		width : 73vw;
+	}
+	
+.motiv /* Cellule titre = Motivations(s) de la commission */
+	{
+		width : 42vw;
+		text-align : left;
+		font-size : 1.2em;
+	}
+
+.motif /* Bouton "motifs" commission */
+	{
+		width : 42vw; /* 60% de 70% de vw */
+		height : 2em;
+		text-align : left;
+		font-size : 1em;
+		background-color : LightGrey;
+	}
+
+.txt_motifs /* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
+	{
+		width : 42vw; /* 60% de 70% de vw */
+		height : 2em;
+		text-align : left;
+		font-size : 1em;
+		background-color : white;
+	}
+	
+.NC	/* Bouton NC */
+	{
+		text-align : center;
+		vertical-align : center;
+		border-radius: .25em .25em .25em .25em;
+		background-color: #cccccc;
+		color : Red;
+		font-size : 2em;
+		padding-top : .7ex;
+		padding-bottom: .7ex;
+		padding-left : .25em;
+		padding-right: .25em;
+		margin-right : .25em;
+	}
+
+.valid /* div du bouton valider */
+	{
+		width : 25vw; /* 40% de 70% de vw */
+		text-align : center;
+		vertical-align : center;
+	}
+	
+.valid_bouton /* bouton valider */
+	{
+		padding-top : .7ex;
+		padding-bottom: .7ex;
+		padding-left : .3em;
+		padding-right: .3em;
+		margin-right : 0em;
+	
+		border-radius: .2em .2em .2em .2em;
+		background-color: #cccccc;
+		color : LimeGreen;
+		font-size : 5em;
+	
+		cursor: pointer;
+	}
+
+/********** 4/ L'objet range de sélection de la correction *********/
+/* Compatibilité avec tous les navigateurs ?? */
+
+input[type=range] {
+    /*removes default webkit styles*/
+    -webkit-appearance: none;
+    
+    /*fix for FF unable to apply focus style bug */
+    border: 1px solid white;
+    
+    /*required for proper track sizing in FF*/
+    width: 99%;
+}
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 5px;
+    background-color: LightGrey;
+		background-image:
+			linear-gradient(90deg, black 4px, transparent 2px),
+			linear-gradient(90deg, black 3px, transparent 2px);
+		background-size: 16.48% 16.48%, 16.48% 16.48%;
+		background-origin : 0 0, 0 0;
+		background-position: 2px 2px, 10.5% 10.5%;
+    border: none;
+    border-radius: 3px;
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 16px;
+    width: 8px;
+    border-radius: 50%;
+    background: Grey;
+    margin-top: -4px;
+}
+input[type=range]:focus {
+    outline: none;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #ccc;
+}
+
+input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 5px;
+    background-color: LightGrey;
+		background-image:
+			linear-gradient(90deg, black 4px, transparent 2px),
+			linear-gradient(90deg, black 3px, transparent 2px);
+		background-size: 16.48% 16.48%, 16.48% 16.48%;
+		background-origin : 0 0, 0 0;
+		background-position: 2px 2px, 10.5% 10.5%;
+    border: none;
+    border-radius: 3px;
+}
+input[type=range]::-moz-range-thumb {
+    border: none;
+    height: 16px;
+    width: 8px;
+    border-radius: 50%;
+    background: Grey;
+}
+
+/*hide the outline behind the border*/
+input[type=range]:-moz-focusring{
+    outline: 1px solid white;
+    outline-offset: -1px;
+}
+
+input[type=range]::-ms-track {
+    width: 100%;
+    height: 5px;
+    
+    /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+    background: transparent;
+    
+    /*leave room for the larger thumb to overflow with a transparent border */
+    border-color: transparent;
+    border-width: 6px 0;
+
+    /*remove default tick marks*/
+    color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+    background: #777;
+    border-radius: 3px;
+}
+input[type=range]::-ms-fill-upper {
+    background-color: LightGrey;
+		background-image:
+			linear-gradient(90deg, black 4px, transparent 2px),
+			linear-gradient(90deg, black 3px, transparent 2px);
+		background-size: 16.48% 16.48%, 16.48% 16.48%;
+		background-origin : 0 0, 0 0;
+		background-position: 2px 2px, 10.5% 10.5%;
+    border: none;
+    border-radius: 3px;
+}
+input[type=range]::-ms-thumb {
+    border: none;
+    height: 16px;
+    width: 8px;
+    border-radius: 50%;
+    background: Grey;
+}
+input[type=range]:focus::-ms-fill-lower {
+    background: #888;
+}
+input[type=range]:focus::-ms-fill-upper {
+    background: #ccc;
+}

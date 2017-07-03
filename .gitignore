@@ -1,0 +1,10 @@
+.DS_Store
+*.pyc
+tableaux/
+data/docs_candidats/
+utils/.DS_Store
+utils/__pycache__/
+*.swp
+*.xml
+*.csv
+*.pdf
