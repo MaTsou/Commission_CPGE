@@ -16,7 +16,7 @@ from lxml import etree
 import utils.interface_xml as xml
 import utils.decoupage_pdf as decoup
 from utils.apb_csv import lire
-from utils.parametres import motifs
+from utils.parametres import motivations
 from utils.parametres import min_correc
 from utils.parametres import max_correc
 from utils.parametres import nb_correc
@@ -32,13 +32,6 @@ def charger_correc():
 	for n in range(0,NB):
 		correc.append((n+min_correc*nb_correc)*pas_correc)
 	return correc
-
-def charger_motifs():
-	motiv = {}
-	for mot in motifs:
-		key = 'mot_{:d}'.format(motifs.index(mot))
-		motiv.update({key:mot})
-	return motiv
 	      
 def chargerPatronsHTML():
 		# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
@@ -568,15 +561,13 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		barre += '</td></tr>'
 		# input hidden nc
 		nc = '<input type="hidden" id = "nc"  name = "nc" value = "{}">'.format(ncval)
-		# Construction de la chaine motifs. Idem, on affecte checked aux bonnes cases...
+		# Construction de la chaine motifs.
 		motifs = ''
-		for i in range(0,len(motiv)):
+		for i in range(0,len(motivations)):
 			key = 'mot_'+str(i)
 			motifs += '<td align = "left"><input type="button" name="'+key
 			motifs += '" id="'+key+'" onclick="javascript:maj_motif(this.id)"'
-			#if doss[key] == 'on':
-			#	motifs += ' checked'
-			motifs += ' class = "motif" value ="'+ motiv[key]+'"></td></tr>'
+			motifs += ' class = "motif" value ="'+ motivations[i]+'"></td></tr>'
 		# le dernier motif : autre ... 
 		motifs += '<tr><td align = "left">'
 		motifs += '<input type="text" class = "txt_motifs" name="motif" id = "motif" value= "'
@@ -887,8 +878,6 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 # === PROGRAMME PRINCIPAL ===
 # Chargement des corrections de la commission
 corrections = charger_correc()
-# Chargement des motivations de la commission
-motiv = charger_motifs()
 # Chargement des "patrons" de pages web dans un dictionnaire global :
 html = chargerPatronsHTML() # html est un dictionnaire contenant les patrons HTML
 # Reconfiguration et démarrage du serveur web :

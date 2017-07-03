@@ -23,12 +23,12 @@ prop_prem_trim = .45
 # Liste des motivations de la commission ...                               #
 # Ne pas dépasser 5 lignes pour que l'affichage sur navigateur soit beau   # 
 ############################################################################
-motifs = []
-motifs.append('Niveau particulièrement élevé/faible en')
-motifs.append('Harmonisation du score brut')
-motifs.append('Aptitude/Attitude face au travail')
-motifs.append('Discipline/Absences')
-motifs.append('Dossier incomplet ou moins bon que le dernier classé')
+motivations = []
+motivations.append('Niveau particulièrement élevé/faible en')
+motivations.append('Harmonisation du score brut')
+motivations.append('Aptitude/Attitude face au travail')
+motivations.append('Discipline/Absences')
+motivations.append('Dossier incomplet ou moins bon que le dernier classé')
 
 
 ###########################################################################
