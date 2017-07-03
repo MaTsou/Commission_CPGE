@@ -46,13 +46,13 @@ def chargerPatronsHTML():
 		html = {}
 		try:	       # pour s'assurer que le fichier sera toujours refermé
 			for ligne in fi:
-				if ligne[:2] =="[*":	    # étiquette trouvée ==>
+				if ligne.startswith("[*"):	    # étiquette trouvée ==>
 					label =ligne[2:]	    # suppression [*
 					label =label[:-1].strip()	 # suppression LF et esp évent.
 					label =label[:-2]	    # suppression *]
 					txt =""
 				else:
-					if ligne[:5] =="#####":
+					if ligne.startswith("#####"):
 						html[label] =txt
 					else:
 						txt += ligne
