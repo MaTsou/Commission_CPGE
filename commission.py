@@ -35,7 +35,7 @@ def charger_correc():
 	      
 def chargerPatronsHTML():
 		# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
-		fi =open("utils/patrons.htm","r")
+		fi =open("utils/patrons.html","r")
 		html = {}
 		try:	       # pour s'assurer que le fichier sera toujours refermé
 			for ligne in fi:
