@@ -83,7 +83,7 @@ def mep_menu(header,contenu):
 ########################################################################
 
 class Commission(object): # Objet lancé par cherrypy dans le __main__
-	"Classe g&eacute;n&eacute;rant les objets gestionnaires de requ&ecirc;tes HTTP"
+	"Classe générant les objets gestionnaires de requêtes HTTP"
  	
  	# Page d'accueil
 	@cherrypy.expose
@@ -630,7 +630,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 					clas += ' doss_incomplet'
 			lis += 'class = "{}"'.format(clas)
 			nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
-			txt = '{:3d}) {: <28}{}'.format(i+1,nom[:27],xml.get_candidatures(liste[i]))
+			txt = '{:3d}) {: <32}{}'.format(i+1,nom[:31],xml.get_candidatures(liste[i]))
 			lis += ' value="'+txt+'"></input><br>'
 		# txt est le txt que contient le bouton. Attention, ses 3 premiers
 		# caractères doivent être le numéro du dossier dans la liste des
@@ -795,8 +795,8 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			os.mkdir(dest) # on le créé...
 		# Création du fichier d'aide
 		with open(dest+'/aide.txt', 'w') as fi:
-			txt = 'En cas de difficultés à ouvrir les .csv avec EXCEL,\n'
-			txt += 'il est conseillé d\'utiliser la fonction fichier-->importer'
+			txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"
+			"il est conseillé d'utiliser la fonction fichier-->importer"
 			fi.write(txt)
 		fi.close()
 		# Récupération des fichiers
@@ -811,8 +811,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			nom += parse('./data/epa_class_{}.xml',fich)[0]
 			nom += '_retenus.csv'
 			c = csv.writer(open(nom,'w'))
-			entetes = ['Rang','Nom','Prénom','Date de naissance','score brut',\
-						'correction','score final','jury','Observations']
+			entetes = ['Rang','Nom','Prénom','Date de naissance','score brut','correction','score final','jury','Observations']
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
