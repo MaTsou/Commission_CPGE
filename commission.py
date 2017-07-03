@@ -176,17 +176,15 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def stat(self):
 		list_fich = glob.glob('./data/epa_admin_*.xml')
 
-		root = []
-		[root.append(etree.parse(fich).getroot()) for fich in list_fich]
-		fil = []
-		[fil.append(parse('./data/epa_admin_{}.xml',fich)[0][0]) for fich in list_fich]
+		root = [etree.parse(fich).getroot() for fich in list_fich]
+		fil = [parse('./data/epa_admin_{}.xml',fich)[0][0] for fich in list_fich]
 
 		# on réordonne comme on a l'habitude... MPC plutôt que CMP
 		root[:] = root[1:]+root[:1]
 		fil[:] = fil[1:]+fil[:1]		
 		
 		# Initialisation des compteurs
-		num = [0 for i in range(len(root))] # nombres de candidats par filière
+		num = [0]*len(root) # nombres de candidats par filière
 		num_mp = 0
 		num_mc = 0
 		num_pc = 0
@@ -771,15 +769,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [xml.get_rang(cand)]
-					data.append(xml.get_nom(cand))
-					data.append(xml.get_prenom(cand))
-					data.append(xml.get_naiss(cand))
-					data.append(xml.get_scoreb(cand))
-					data.append(xml.get_correc(cand))
-					data.append(xml.get_scoref(cand))
-					data.append(xml.get_jury(cand))
-					data.append(xml.get_motifs(cand))
+					data = [fonction(cand) for fonction in [xml.get_rang,xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_scoreb,xml.get_correc,xml.get_scoref,xml.get_jury,xml.get_motifs]]
 					c.writerow(data)
 			# 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
 			# Le même que pour Jeanne, mais sans les notes...
@@ -791,10 +781,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [xml.get_rang(cand)]
-					data.append(xml.get_nom(cand))
-					data.append(xml.get_prenom(cand))
-					data.append(xml.get_naiss(cand))
+					data = [fonction(cand) for fonction in [xml.get_rang,xml.get_nom,xml.get_prenom,xml.get_naiss]]
 					c.writerow(data)
 			# 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
 			# toutes les notes et qq infos administratives
@@ -808,38 +795,16 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
 			date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
 			classe = {'P':'Première','T':'Terminale'}
-			for cl in classe:
-				for da in date:
-					for mat in matiere:
-						key = cl + mat + da
-						entetes.append(key)
-			entetes.append('F_écrit')
-			entetes.append('F_oral')
-			entetes.append('CPES_math')
-			entetes.append('CPES_phys')
+			entetes.extend([cl + mat + da for cl in classe for da in date for mat in matiere])
+			entetes.extend(['F_écrit','F_oral','CPES_math','CPES_phys'])
 			# la suite
-			entetes.append('score brut')
-			entetes.append('correction')
-			entetes.append('score final')
-			entetes.append('jury')
-			entetes.append('Observations')
+			entetes.extend(['score brut','correction','score final','jury','Observations'])
 			c.writerow(entetes)
 			# Classement alphabétique
 			doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
 			# Remplissage du fichier dest
 			for cand in doss:
-				data = [xml.get_rang(cand)]
-				data.append(xml.get_candidatures(cand))
-				data.append(xml.get_nom(cand))
-				data.append(xml.get_prenom(cand))
-				data.append(xml.get_naiss(cand))
-				data.append(xml.get_sexe(cand))
-				data.append(xml.get_nation(cand))
-				data.append(xml.get_id(cand))
-				data.append(xml.get_boursier(cand))
-				data.append(xml.get_clas_actu(cand))
-				data.append(xml.get_etab(cand))
-				data.append(xml.get_commune_etab(cand))
+				data = [fonction(cand) for fonction in [xml.get_rang,xml.get_candidatures,xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_sexe,xml.get_nation,xml.get_id,xml.get_boursier,xml.get_clas_actu,xml.get_etab,xml.get_commune_etab]]
 				# Les notes...
 				for cl in classe:
 					for da in date:
@@ -847,17 +812,11 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 							key = cl + mat + da
 							note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
 							data.append(note)
-				data.append(xml.get_ecrit_EAF(cand))
-				data.append(xml.get_oral_EAF(cand))
+				data.extend([xml.get_ecrit_EAF(cand),xml.get_oral_EAF(cand)])
 				cpes = 'cpes' in xml.get_clas_actu(cand).lower()
-				data.append(xml.get_CM1(cand,cpes))
-				data.append(xml.get_CP1(cand,cpes))
+				data.extend([xml.get_CM1(cand,cpes),xml.get_CP1(cand,cpes)])
 				# La suite
-				data.append(xml.get_scoreb(cand))
-				data.append(xml.get_correc(cand))
-				data.append(xml.get_scoref(cand))
-				data.append(xml.get_jury(cand))
-				data.append(xml.get_motifs(cand))
+				data.extend([fonction(cand) for fonction in [xml.get_scoreb,xml.get_correc,xml.get_scoref,xml.get_jury,xml.get_motifs]])
 				c.writerow(data)
 		# Retour au menu
 		cherrypy.session['tableaux'] = 'ok' # Ça c'est pour un message ok !
