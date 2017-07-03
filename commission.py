@@ -358,79 +358,88 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		self.liste = self.genere_liste()
 		# On retourne cette page au navigateur
 		return mise_en_page(self.header, self.dossier,self.liste)
-		
+
+	# Traitement dossier avec droits administrateur	
+	def traiter_admin(self, **kwargs):
+		cand = self.cand_cour()
+		num_doss = cherrypy.session['num_doss']
+		# Si droits admin, on ne prend pas en compte les corrections et motivations
+		# À-t-il changé qqc ? Si oui, mise à jour
+		if xml.get_clas_actu(cand)!=kwargs['clas_actu']:
+				xml.set_clas_actu(cand,kwargs['clas_actu'])
+		# semestres ?
+		try: # kwargs ne contient 'sem_prem' que si la case est cochée !!
+			if kwargs['sem_prem']=='on':
+				xml.set_sem_prem(cand,'on')
+		except:
+			xml.set_sem_prem(cand,'off')
+		try:
+			if kwargs['sem_term']=='on':
+				xml.set_sem_term(cand,'on')
+		except:
+			xml.set_sem_term(cand,'off')
+		# Cas des notes
+		matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
+		date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
+		classe = {'P':'Première','T':'Terminale'}
+		for cl in classe:
+			for mat in matiere:
+				for da in date:
+					key = cl + mat + da
+					if xml.get_note(cand,classe[cl],matiere[mat],date[da])!=kwargs[key]:
+						xml.set_note(cand,classe[cl],matiere[mat],date[da],kwargs[key])
+		# CPES
+		if 'cpes' in xml.get_clas_actu(cand).lower():
+			if xml.get_CM1(cand,True)!=kwargs['CM1']:
+				xml.set_CM1(cand, kwargs['CM1'])
+			if xml.get_CP1(cand,True)!=kwargs['CP1']:
+				xml.set_CP1(cand, kwargs['CP1'])
+		# EAF écrit et oral...		
+		if xml.get_ecrit_EAF(cand)!=kwargs['EAF_e']:
+			xml.set_ecrit_EAF(cand,kwargs['EAF_e'])
+		if xml.get_oral_EAF(cand)!=kwargs['EAF_o']:
+			xml.set_oral_EAF(cand,kwargs['EAF_o'])	
+		# On (re)calcule le score brut !
+		xml.calcul_scoreb(cand)
+		xml.is_complet(cand) # mise à jour de l'état "dossier complet"
+	
+	def traiter_comm(self, **kwargs):
+		cand = self.cand_cour()
+		num_doss = cherrypy.session['num_doss']
+		# 1/ correc et scoref
+		if kwargs['nc'] == 'NC':
+			cor = 'NC'
+			scoref = 'NC'
+		else:
+			cor = kwargs['correc']
+			try:
+				note = float(xml.get_scoreb(cand).replace(',','.'))
+			except:
+				note = 0
+			note += float(cor)
+			scoref = '{:.2f}'.format(note).replace('.',',')
+		xml.set_correc(cand, cor)
+		xml.set_scoref(cand, scoref)
+		# Qui a traité le dossier
+		xml.set_jury(cand,cherrypy.session['droits'])
+		# 3/ "bouléen" traite : dossier traité
+		xml.set_traite(cand)
+		# 4/ motif
+		xml.set_motifs(cand, kwargs['motif'])
+		# On sélectionne le dossier suivant
+		if num_doss < len(cherrypy.session['dossiers'])-1:
+			cherrypy.session['num_doss'] = num_doss+1
+
 	# Fonction appelée par l'appui sur "VALIDER" : valide les choix commission ou Admin
 	@cherrypy.expose
 	def traiter(self, **kwargs):
 	# Cette méthode est appelée par le bouton valider de la page dossier...
 	# **kwargs empaquette les arguments passés par le navigateur dans le dictionnaire kwargs..
-		cand = self.cand_cour()
-		num_doss = cherrypy.session['num_doss']
 		# mise à jour dans les variables de session du dossier du candidat...
 		if cherrypy.session['droits'] != "administrateur":
-			# 1/ correc et scoref
-			if kwargs['nc'] == 'NC':
-				cor = 'NC'
-				scoref = 'NC'
-			else:
-				cor = kwargs['correc']
-				try:
-					note = float(xml.get_scoreb(cand).replace(',','.'))
-				except:
-					note = 0
-				note += float(cor)
-				scoref = '{:.2f}'.format(note).replace('.',',')
-			xml.set_correc(cand, cor)
-			xml.set_scoref(cand, scoref)
-			# Qui a traité le dossier
-			xml.set_jury(cand,cherrypy.session['droits'])
-			# 3/ "bouléen" traite : dossier traité
-			xml.set_traite(cand)
-			# 4/ motif
-			xml.set_motifs(cand, kwargs['motif'])
-			# On sélectionne le dossier suivant
-			if num_doss < len(cherrypy.session['dossiers'])-1:
-				cherrypy.session['num_doss'] = num_doss+1
+			self.traiter_comm(**kwargs)
 		else: # traitement administrateur
-			# Si droits admin, on ne prend pas en compte les corrections et motivations
-			# À-t-il changé qqc ? Si oui, mise à jour
-			if xml.get_clas_actu(cand)!=kwargs['clas_actu']:
-				xml.set_clas_actu(cand,kwargs['clas_actu'])
-			# semestres ?
-			try: # kwargs ne contient 'sem_prem' que si la case est cochée !!
-				if kwargs['sem_prem']=='on':
-					xml.set_sem_prem(cand,'on')
-			except:
-				xml.set_sem_prem(cand,'off')
-			try:
-				if kwargs['sem_term']=='on':
-					xml.set_sem_term(cand,'on')
-			except:
-				xml.set_sem_term(cand,'off')
-			# Cas des notes
-			matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
-			date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
-			classe = {'P':'Première','T':'Terminale'}
-			for cl in classe:
-				for mat in matiere:
-					for da in date:
-						key = cl + mat + da
-						if xml.get_note(cand,classe[cl],matiere[mat],date[da])!=kwargs[key]:
-							xml.set_note(cand,classe[cl],matiere[mat],date[da],kwargs[key])
-			# CPES
-			if 'cpes' in xml.get_clas_actu(cand).lower():
-				if xml.get_CM1(cand,True)!=kwargs['CM1']:
-					xml.set_CM1(cand, kwargs['CM1'])
-				if xml.get_CP1(cand,True)!=kwargs['CP1']:
-					xml.set_CP1(cand, kwargs['CP1'])
-			# EAF écrit et oral...		
-			if xml.get_ecrit_EAF(cand)!=kwargs['EAF_e']:
-				xml.set_ecrit_EAF(cand,kwargs['EAF_e'])
-			if xml.get_oral_EAF(cand)!=kwargs['EAF_o']:
-				xml.set_oral_EAF(cand,kwargs['EAF_o'])	
-			# On (re)calcule le score brut !
-			xml.calcul_scoreb(cand)
-			xml.is_complet(cand) # mise à jour de l'état "dossier complet"
+			self.traiter_admin(**kwargs)
 		## Et on sauvegarde immédiatement tout cela...
 		self.sauvegarder()
 		# Et on retourne au traitement...
@@ -613,7 +622,6 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		donnees = cherrypy.session["dossiers"]
 		with open(fichier, 'wb') as fich:
 			fich.write(etree.tostring(donnees, pretty_print=True, encoding='utf-8'))
-		return None
  	
  	# Générer les fichier epa_comm_mpsi1.xml jusqu'à epa_comm_cpes3.xml
 	@cherrypy.expose
