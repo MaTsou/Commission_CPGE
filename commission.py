@@ -109,8 +109,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def genere_menu_admin(self):
 		data = {}
 		# Quel menu : avant commission ou après ??
-		chemin = "./data/epa_comm_*.xml"
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob("./data/epa_comm_*.xml")
 		if len(list_fich) > 0: # après commission
 			data.update({'menu':'apres'})
 			# Etape 4 bouton
@@ -119,8 +118,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				txt = '<input type = "button" class ="fichier" value = "Récolter les fichiers" onclick = "recolt_wait();">'
 			data.update({'bout_etap4':txt})
 			# Etape 5 bouton
-			chemin = "./data/epa_class_*.xml"
-			list_fich = glob.glob(chemin)
+			list_fich = glob.glob("./data/epa_class_*.xml")
 			txt = ''
 			if len(list_fich) > 0:
 				txt = self.genere_liste_impression()
@@ -176,8 +174,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			
 	# Effectue des statistiques sur les candidats
 	def stat(self):
-		chemin = './data/epa_admin_*.xml'
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob('./data/epa_admin_*.xml')
 
 		root = []
 		[root.append(etree.parse(fich).getroot()) for fich in list_fich]
@@ -240,7 +237,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		# Traitement des pdf ##
 		dest = './data/docs_candidats'
 		try:
-			self.efface_dest(dest) # on efface toute l'arborescence fille de chemin
+			self.efface_dest(dest) # on efface toute l'arborescence fille de dest 
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		
@@ -276,8 +273,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_admin(self):
-		chemin = "./data/epa_admin_*.xml"
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob("./data/epa_admin_*.xml")
 		txt = ''
 		if len(list_fich) > 0:
 			txt = '<h2>Choisissez le fichier que vous souhaitez compléter</h2>'
@@ -288,8 +284,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_stat(self):
-		chemin = "./data/epa_admin_*.xml"
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob("./data/epa_admin_*.xml")
 		liste_stat = ''
 		if len(list_fich) > 0:
 			# lecture du fichier stat
@@ -312,8 +307,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 
 	# Sous-fonction pour le menu admin
 	def genere_liste_impression(self):
-		chemin = "./data/epa_class_*.xml"
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob("./data/epa_class_*.xml")
 		txt = ''
 		if len(list_fich) > 0:
 			txt = '<h2>Choisissez le fichier que vous souhaitez imprimer</h2>'
@@ -324,8 +318,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	
 	# Compose le menu commission
 	def genere_liste_comm(self):
-		chemin = "./data/epa_comm_*.xml"
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob("./data/epa_comm_*.xml")
 		txt = ''
 		for fich in list_fich:
 			txt += '<input type="submit" class = "fichier" name="fichier" value={}>'.format(fich)
@@ -631,8 +624,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def genere_fichiers_comm(self):
 		# Récupération des fichiers admin
-		chemin = "./data/epa_admin_*.xml"
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob("./data/epa_admin_*.xml")
  		# Pour chaque fichier "epa_admin_*.xml"
 		for fich in list_fich:
 			doss = etree.parse(fich).getroot()
@@ -670,8 +662,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def genere_fichiers_class(self):
 		# Pour chaque commission
 		for comm in filieres:
-			chemin = './data/epa_comm_{}*.xml'.format(comm.upper())
-			list_fich = glob.glob(chemin)
+			list_fich = glob.glob('./data/epa_comm_{}*.xml'.format(comm.upper()))
 			list_doss = [] # contiendra les dossiers de chaque sous-comm
 			# Pour chaque sous-commission
 			for fich in list_fich:
@@ -753,7 +744,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		# Un peu de ménage...
 		dest = './tableaux'
 		try:
-			self.efface_dest(dest) # on efface toute l'arborescence fille de chemin
+			self.efface_dest(dest) # on efface toute l'arborescence fille de dest 
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		# Création du fichier d'aide
@@ -763,8 +754,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			fi.write(txt)
 		fi.close()
 		# Récupération des fichiers
-		chemin = './data/epa_class_*.xml'
-		list_fich = glob.glob(chemin)
+		list_fich = glob.glob('./data/epa_class_*.xml')
 		# Pour chaque filière :
 		for fich in list_fich:
 			# lecture fichier
