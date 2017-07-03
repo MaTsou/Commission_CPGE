@@ -772,7 +772,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		# Création du fichier d'aide
 		with open(dest+'/aide.txt', 'w') as fi:
 			txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"
-			"il est conseillé d'utiliser la fonction fichier-->importer"
+			"il est conseillé d'utiliser la fonction fichier-->importer")
 			fi.write(txt)
 		fi.close()
 		# Récupération des fichiers
