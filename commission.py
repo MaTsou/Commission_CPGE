@@ -35,22 +35,18 @@ def charger_correc():
 	      
 def chargerPatronsHTML():
 		# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
-		fi =open("utils/patrons.html","r")
-		html = {}
-		try:	       # pour s'assurer que le fichier sera toujours refermé
+		with open("utils/patrons.html","r") as fi:
+			html = {}
 			for ligne in fi:
-				if ligne.startswith("[*"):	    # étiquette trouvée ==>
-					label =ligne[2:]	    # suppression [*
-					label =label[:-1].strip()	 # suppression LF et esp évent.
-					label =label[:-2]	    # suppression *]
+				if ligne.startswith("[*"):	 # étiquette trouvée ==>
+					label =ligne.strip()	 # suppression LF et esp évent.
+					label =label[2:-2]	 # suppression [* et *]
 					txt =""
 				else:
 					if ligne.startswith("#####"):
 						html[label] =txt
 					else:
 						txt += ligne
-		finally:
-			fi.close()       # fichier refermé dans tous les cas
 		return html
       
 def mep(header,dossier='',liste=''):
