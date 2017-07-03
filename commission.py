@@ -58,7 +58,7 @@ def mise_en_page(header,dossier='',liste=''):
 		visib = ''
 	else:
 		visib = 'none' # Bouton pas affiché dans la vue commission
-	data.update({'visibilite':visib})
+	data['visibilite'] = visib
 	return html["miseEnPage"].format(**data)
 
 def mise_en_page_menu(header,contenu):
@@ -96,7 +96,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			txt = self.genere_liste_comm()
 			if txt != '':
 				txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>'+txt
-			data.update({'liste':txt})
+			data['liste'] = txt
 			return mise_en_page_menu(self.genere_header(),html["menu_comm"].format(**data))
 	
 	# Retour menu admin
@@ -111,44 +111,44 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		# Quel menu : avant commission ou après ??
 		list_fich = glob.glob("./data/epa_comm_*.xml")
 		if len(list_fich) > 0: # après commission
-			data.update({'menu':'apres'})
+			data['menu'] = 'apres'
 			# Etape 4 bouton
 			txt = ''
 			if len(self.genere_liste_comm()) > 0:
-				txt = '<input type = "button" class ="fichier" value = "Récolter les fichiers" onclick = "recolt_wait();">'
-			data.update({'bout_etap4':txt})
+				txt = '<input type = "button" class ="fichier" value = "Récolter les fichiers" onclick = "recolt_wait();"/>'
+			data['bout_etap4'] = txt
 			# Etape 5 bouton
 			list_fich = glob.glob("./data/epa_class_*.xml")
 			txt = ''
 			if len(list_fich) > 0:
 				txt = self.genere_liste_impression()
-			data.update({'liste_impression':txt})
+			data['liste_impression'] = txt
 			# Etape 6 bouton
 			txt = ''
 			if len(list_fich) > 0:
-				txt = '<form id = "tableaux" action = "/tableaux_bilan"	method = POST align = "center"><input type = "button" class = "fichier" name = "tableaux" value = "Générer les tableaux bilan" onclick = "tableaux_wait();"></form>'
+				txt = '<form id = "tableaux" action = "/tableaux_bilan"	method = POST align = "center"><input type = "button" class = "fichier" name = "tableaux" value = "Générer les tableaux bilan" onclick = "tableaux_wait();"/></form>'
 				try:
 					if cherrypy.session['tableaux'] == 'ok':
 						txt += '<p>Ceux-ci sont disponibles dans le dossier "./tableaux"...'
 				except:
 					pass
-			data.update({'form_tableaux':txt})
+			data['form_tableaux'] = txt
 		
 		else: # avant commission
-			data.update({'menu':'avant'})
+			data['menu'] = 'avant'
 			# liste csv
-			data.update({'liste_csv':self.genere_liste_csv()})
+			data['liste_csv'] = self.genere_liste_csv()
 			# liste pdf
-			data.update({'liste_pdf':self.genere_liste_pdf()})
+			data['liste_pdf'] = self.genere_liste_pdf()
 			# liste admin
-			data.update({'liste_admin':self.genere_liste_admin()})
+			data['liste_admin'] = self.genere_liste_admin()
 			# liste_stat
-			data.update({'liste_stat':self.genere_liste_stat()})
+			data['liste_stat'] = self.genere_liste_stat()
 			# Etape 3 bouton
 			txt = ''
 			if len(self.genere_liste_admin()) > 0:
-				txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission" onclick = "genere_wait();">'
-			data.update({'bout_etap3':txt})
+				txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission" onclick = "genere_wait();"/>'
+			data['bout_etap3'] = txt
 		return data
 
 	# Efface les dossiers qui accueilleront les bulletins
@@ -226,8 +226,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def traiter_apb(self): # traite aussi les pdf...
 	## Traitement des csv ##
 		# Traitement des csv
-		docs = glob.glob("./data/*.csv")
-		for doc in docs:
+		for doc in glob.glob("./data/*.csv"):
 			for fil in filieres:
 				if fil in doc.lower():
 					dest = './data/epa_admin_{}.xml'.format(fil.upper())
@@ -241,13 +240,12 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		
-		sourc = glob.glob("./data/*.pdf")
-		for file in sourc:
+		for fich in glob.glob("./data/*.pdf"):
 			for fil in filieres:
-				if fil in file.lower():
+				if fil in fich.lower():
 					desti = dest+'/'+fil
 					os.mkdir(desti)
-					decoup.decoup(file, desti)
+					decoup.decoup(fich, desti)
 		# Fin du traitement pdf#
 		# Faire des statistiques
 		self.stat()
@@ -257,17 +255,15 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		
 	# Sous-fonction pour le menu admin
 	def genere_liste_csv(self):
-		list_fich = glob.glob("./data/*.csv")
 		txt = ''
-		for fich in list_fich:
+		for fich in glob.glob("./data/*.csv"):
 			txt += '{}<br>'.format(fich)
 		return txt
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_pdf(self):
-		list_fich = glob.glob("./data/*.pdf")
 		txt = ''
-		for fich in list_fich:
+		for fich in glob.glob("./data/*.pdf"):
 			txt += '{}<br>'.format(fich)
 		return txt
 	
@@ -278,7 +274,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		if len(list_fich) > 0:
 			txt = '<h2>Choisissez le fichier que vous souhaitez compléter</h2>'
 		for fich in list_fich:
-			txt += '<input type="submit" class = "fichier" name="fichier" value={}>'.format(fich)
+			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"/>'.format(fich)
 			txt += '<br>'
 		return txt
 	
@@ -312,7 +308,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		if len(list_fich) > 0:
 			txt = '<h2>Choisissez le fichier que vous souhaitez imprimer</h2>'
 		for fich in list_fich:
-			txt+= '<input type = "submit" class ="fichier" name = "fichier" value = {}>'.format(fich)
+			txt+= '<input type = "submit" class ="fichier" name = "fichier" value = "{}"/>'.format(fich)
 			txt+='<br>'
 		return txt
 	
@@ -321,7 +317,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		list_fich = glob.glob("./data/epa_comm_*.xml")
 		txt = ''
 		for fich in list_fich:
-			txt += '<input type="submit" class = "fichier" name="fichier" value={}>'.format(fich)
+			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"/>'.format(fich)
 			txt += '<br>'
 		return txt
 	
@@ -456,28 +452,27 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	
 	# Renvoie le dictionnaire contenant les infos du dossier en cours
 	def genere_dict(self, cand, droits):
-		data = {}
-		data.update({'Nom':xml.get_nom(cand)+', '+xml.get_prenom(cand)})
-		data.update({'naiss':xml.get_naiss(cand)})
-		data.update({'etab':xml.get_etab(cand)})
+		data = {'Nom':xml.get_nom(cand)+', '+xml.get_prenom(cand)}
+		data['naiss'] = xml.get_naiss(cand)
+		data['etab'] = xml.get_etab(cand)
 		txt = '[{}]-{}'.format(xml.get_id(cand),xml.get_INE(cand))
-		data.update({'id':txt})
-		data.update({'ref_fich':'docs_candidats/{}/docs_{}'.format(cherrypy.session["filiere"],xml.get_id(cand))})
+		data['id'] = txt
+		data['ref_fich'] = 'docs_candidats/{}/docs_{}'.format(cherrypy.session["filiere"],xml.get_id(cand))
 		if droits =='administrateur':
-			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10" value={}>'.format(xml.get_clas_actu(cand))
-			data.update({'clas_actu':clas_inp})
+			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10" value="{}"/>'.format(xml.get_clas_actu(cand))
+			data['clas_actu'] = clas_inp
 		else:
-			data.update({'clas_actu':xml.get_clas_actu(cand)})
+			data['clas_actu'] = xml.get_clas_actu(cand)
 		# Cases à cocher semestres
 		visib = 'disabled ' # pour les cases à cocher
 		if droits == "administrateur":
 			visib = ' '
 		txt = visib
-		if xml.get_sem_prem(cand)=='on': txt = 'checked'
-		data.update({'sem_prem':txt})
+		if xml.get_sem_prem(cand)=='on': txt += 'checked'
+		data['sem_prem'] = txt
 		txt = visib
-		if xml.get_sem_term(cand)=='on': txt = 'checked'
-		data.update({'sem_term':txt})
+		if xml.get_sem_term(cand)=='on': txt += 'checked'
+		data['sem_term'] = txt
 		# Notes
 		matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
 		date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
@@ -487,36 +482,36 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				for da in date:
 					key = cl + mat + da
 					note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
-					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = {} value = "{}">'.format(key,key,note)
+					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}"/>'.format(key,key,note)
 					if droits == 'administrateur':
-						data.update({key:note_inp})
+						data[key] = note_inp
 					else:
-						data.update({key:note})
+						data[key] = note
 		# CPES
 		cpes = False
 		if 'cpes' in xml.get_clas_actu(cand).lower():
 			cpes = True
 		if droits == 'administrateur':
-			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}">'.format(xml.get_CM1(cand,cpes))
-			data.update({'CM1':note_CM1})
-			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}">'.format(xml.get_CP1(cand,cpes))
-			data.update({'CP1':note_CP1})
+			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}"/>'.format(xml.get_CM1(cand,cpes))
+			data['CM1'] = note_CM1
+			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}"/>'.format(xml.get_CP1(cand,cpes))
+			data['CP1'] = note_CP1
 		else:
-			data.update({'CM1':'{}'.format(xml.get_CM1(cand,cpes))})
-			data.update({'CP1':'{}'.format(xml.get_CP1(cand,cpes))})
+			data['CM1'] = '{}'.format(xml.get_CM1(cand,cpes))
+			data['CP1'] = '{}'.format(xml.get_CP1(cand,cpes))
 		# EAF
-		if droits == 'administrateur':
-			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}">'.format(xml.get_ecrit_EAF(cand))
-			data.update({'EAF_e':note_eaf_e})
-			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o"value = "{}">'.format(xml.get_oral_EAF(cand))
-			data.update({'EAF_o':note_eaf_o})
-		else:
-			data.update({'EAF_e':xml.get_ecrit_EAF(cand)})
-			data.update({'EAF_o':xml.get_oral_EAF(cand)})		
+		if droits == 'administrateur': 
+			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}"/>'.format(xml.get_ecrit_EAF(cand))
+			data['EAF_e'] = note_eaf_e
+			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o"value = "{}"/>'.format(xml.get_oral_EAF(cand))
+			data['EAF_o'] = note_eaf_o
+		else: 
+			data['EAF_e'] = xml.get_ecrit_EAF(cand)
+			data['EAF_o'] = xml.get_oral_EAF(cand)		
 		# Suite
-		data.update({'scoreb':xml.get_scoreb(cand)})
-		data.update({'scoref':xml.get_scoref(cand)})
-		data.update({'cand':xml.get_candidatures_impr(cand)})
+		data['scoreb'] = xml.get_scoreb(cand)
+		data['scoref'] = xml.get_scoref(cand)
+		data['cand'] = xml.get_candidatures_impr(cand)
 		return data
 	
 	# Génère l'entête de page HTML
@@ -539,7 +534,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			ncval = 'NC'
 		# Construction de la barre de correction :
 		barre = '<tr><td width = "2.5%"></td><td>'
-		barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25"	name = "correc" id = "correc" onchange="javascript:maj_note();"	onmousemove="javascript:maj_note();" onclick="click_range();" value = "{}">'.format(correc)
+		barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25"	name = "correc" id = "correc" onchange="javascript:maj_note();"	onmousemove="javascript:maj_note();" onclick="click_range();" value = "{}"/>'.format(correc)
 		barre += '</td><td width = "2.5%"></td></tr>' # fin de la ligne range
 		txt = '' # on construit maintenant la liste des valeurs...
 		for i in range(0,len(corrections)+1):
@@ -549,28 +544,28 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		barre += '<span class = "correc_impr">'+xml.get_jury(cand)+' : {:+.2f}'.format(float(correc))+'</span>'
 		barre += '</td></tr>'
 		# input hidden nc
-		nc = '<input type="hidden" id = "nc"  name = "nc" value = "{}">'.format(ncval)
+		nc = '<input type="hidden" id = "nc"  name = "nc" value = "{}"/>'.format(ncval)
 		# Construction de la chaine motifs.
 		motifs = ''
 		for i in range(0,len(motivations)):
 			key = 'mot_'+str(i)
 			motifs += '<td align = "left"><input type="button" name="'+key
 			motifs += '" id="'+key+'" onclick="javascript:maj_motif(this.id)"'
-			motifs += ' class = "motif" value ="'+ motivations[i]+'"></td></tr>'
+			motifs += ' class = "motif" value ="'+ motivations[i]+'"/></td></tr>'
 		# le dernier motif : autre ... 
 		motifs += '<tr><td align = "left">'
 		motifs += '<input type="text" class = "txt_motifs" name="motif" id = "motif" value= "'
 		try:
-			motifs += xml.get_motifs(cand)+'">'
+			motifs += xml.get_motifs(cand)+'"/>'
 		except:
-			motifs += '">'
+			motifs += '"/>'
 		motifs += "</td>"
 	
 		# On met tout ça dans un dico data pour passage en argument à page_dossier
 		data = self.genere_dict(cand, droits) 
-		data.update({'barre':barre})
-		data.update({'nc':nc})
-		data.update({'motifs':motifs})
+		data['barre'] = barre
+		data['nc'] = nc
+		data['motifs'] = motifs
 		return html["page_dossier"].format(**data)
 		
 	# Génère la partie liste de la page HTML
@@ -580,7 +575,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		# Construction de la chaine lis : code html de la liste des dossiers.
 		lis = '<form id = "form_liste" action = "click_list" method=POST>'
 		lis += '<input type="hidden" name = "scroll_mem" value = "'
-		lis += cherrypy.session['mem_scroll']+'">' # mémo du scroll
+		lis += cherrypy.session['mem_scroll']+'"/>' # mémo du scroll
 		for i in range(0,len(liste)):
 			lis += '<input type = "submit" name="num" '
 			clas = 'doss'
@@ -721,7 +716,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		doss = cherrypy.session['dossiers']
 		txt = '<head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"><link rel="stylesheet" type="text/css" media="print" href="/utils/style_impr.css"><link rel="stylesheet" type="text/css" media="screen" href="/utils/style_html_impr.css">'
 		txt += '<body width = "50vw" onload = "window.print();">'
-		txt += '<form action="/retour_menu_admin" method = POST><div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}"></div></form>'
+		txt += '<form action="/retour_menu_admin" method = POST><div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}"/></div></form>'
 		for cand in doss:
 			if xml.get_scoref(cand) != 'NC':
 				txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1></head>'.format(r[1].upper())
