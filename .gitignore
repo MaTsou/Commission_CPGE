@@ -2,7 +2,7 @@
 *.pyc
 tableaux/
 data/docs_candidats/
-data/stat.txt
+data/stat
 utils/.DS_Store
 utils/__pycache__/
 *.swp
