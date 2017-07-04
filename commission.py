@@ -23,61 +23,41 @@ from utils.parametres import nb_correc
 from utils.parametres import filieres
 from utils.parametres import nb_jury
 
-
-def charger_correc():
-	NB = (max_correc-min_correc)*nb_correc+1 # nb valeurs correction
-	pas_correc = 1/float(nb_correc)
-	 # faire attention que 0 soit dans la liste !!
-	correc = []
-	for n in range(0,NB):
-		correc.append((n+min_correc*nb_correc)*pas_correc)
-	return correc
-	      
-def chargerPatronsHTML():
-		# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
-		with open("utils/patrons.html","r") as fi:
-			html = {}
-			for ligne in fi:
-				if ligne.startswith("[*"):	 # étiquette trouvée ==>
-					label =ligne.strip()	 # suppression LF et esp évent.
-					label =label[2:-2]	 # suppression [* et *]
-					txt =""
-				else:
-					if ligne.startswith("#####"):
-						html[label] =txt
-					else:
-						txt += ligne
-		return html
-      
-def mise_en_page(header,dossier='',liste=''):
-	# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
-	# avec un header et un contenu (dossier, liste, script) adéquats.
-	data = {'header':header,'dossier':dossier,'liste':liste}
-	info = '' # texte sous le bouton "gros_bout" au-dessus de la liste de dossiers
-	data['visibilite'] = ''
-	if cherrypy.session['droits'] != 'administrateur':
-		data['visibilite'] = 'none' # Bouton pas affiché dans la vue commission
-	return html["miseEnPage"].format(**data)
-
-def mise_en_page_menu(header,contenu):
-	# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
-	# avec un header et un contenu (dossier, liste, script) adéquats.
-	data = {'header':header,'contenu':contenu}
-	return html["MEP_MENU"].format(**data)
 	
 ########################################################################
 #                        Class commission                              #
 ########################################################################
 
-class Commission(object): # Objet lancé par cherrypy dans le __main__
+class Commission(): # Objet lancé par cherrypy dans le __main__
 	"Classe générant les objets gestionnaires de requêtes HTTP"
+
+	# constructeur
+	def __init__(self,html,corrections):
+		self.html = html
+		self.corrections = corrections
  	
+	def mise_en_page(self,header,dossier='',liste=''):
+		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
+		# avec un header et un contenu (dossier, liste, script) adéquats.
+		data = {'header':header,'dossier':dossier,'liste':liste}
+		info = '' # texte sous le bouton "gros_bout" au-dessus de la liste de dossiers
+		data['visibilite'] = ''
+		if cherrypy.session['droits'] != 'administrateur':
+			data['visibilite'] = 'none' # Bouton pas affiché dans la vue commission
+		return self.html["miseEnPage"].format(**data)
+
+	def mise_en_page_menu(self,header,contenu):
+		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
+		# avec un header et un contenu (dossier, liste, script) adéquats.
+		data = {'header':header,'contenu':contenu}
+		return self.html["MEP_MENU"].format(**data)
+
  	# Page d'accueil
 	@cherrypy.expose
 	def index(self):
 		cherrypy.session['droits']=''
 		# Page d'entrée du site web - renvoi d'une page HTML statique :
-		return mise_en_page_menu(self.genere_header(),html["pageAccueil"].format(''))
+		return self.mise_en_page_menu(self.genere_header(),self.html["pageAccueil"].format(''))
   
 	# Admin ou Commission : fonction appelée par le formulaire de la page d'accueil. 
 	@cherrypy.expose
@@ -87,7 +67,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			cherrypy.session['droits'] = 'administrateur'
 			data = self.genere_menu_admin()
 			txt = "menu_admin_{}".format(data['menu'])
-			return mise_en_page_menu(self.genere_header(),html[txt].format(**data))
+			return self.mise_en_page_menu(self.genere_header(),self.html[txt].format(**data))
 		else:
 			cherrypy.session['droits'] = 'commission'
 			data = {}
@@ -95,7 +75,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			if txt != '':
 				txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>'+txt
 			data['liste'] = txt
-			return mise_en_page_menu(self.genere_header(),html["menu_comm"].format(**data))
+			return self.mise_en_page_menu(self.genere_header(),self.html["menu_comm"].format(**data))
 	
 	# Retour menu admin
 	@cherrypy.expose
@@ -346,7 +326,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		self.dossier = self.genere_dossier(cherrypy.session['droits'])
 		self.liste = self.genere_liste()
 		# On retourne cette page au navigateur
-		return mise_en_page(self.header, self.dossier,self.liste)
+		return self.mise_en_page(self.header, self.dossier,self.liste)
 
 	# Traitement dossier avec droits administrateur	
 	def traiter_admin(self, **kwargs):
@@ -564,7 +544,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		data['barre'] = barre
 		data['nc'] = nc
 		data['motifs'] = motifs
-		return html["page_dossier"].format(**data)
+		return self.html["page_dossier"].format(**data)
 		
 	# Génère la partie liste de la page HTML
 	def genere_liste(self):
@@ -813,11 +793,45 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		data = {'acces':'Accès administrateur'}
 		return self.identification(**data)
 
-# === PROGRAMME PRINCIPAL ===
+
+
+########################################################################
+#                    === PROGRAMME PRINCIPAL ===                       #
+########################################################################
+
+# construit la liste des corrections à partir des données importées depuis parametres.py
+def charger_correc():
+	NB = (max_correc-min_correc)*nb_correc+1 # nb valeurs correction
+	pas_correc = 1/float(nb_correc)
+	 # faire attention que 0 soit dans la liste !!
+	correc = []
+	for n in range(0,NB):
+		correc.append((n+min_correc*nb_correc)*pas_correc)
+	return correc
+
+# construit le dictionnaire des patrons HTML depuis le fichier patrons.html situé dans le répertoire utils. 
+def chargerPatronsHTML():
+		# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
+		with open(os.path.join(os.curdir,"utils","patrons.html"),"r") as fi:
+			html = {}
+			for ligne in fi:
+				if ligne.startswith("[*"):	 # étiquette trouvée ==>
+					label =ligne.strip()	 # suppression LF et esp évent.
+					label =label[2:-2]	 # suppression [* et *]
+					txt =""
+				else:
+					if ligne.startswith("#####"):
+						html[label] =txt
+					else:
+						txt += ligne
+		return html
+      
 # Chargement des corrections de la commission
 corrections = charger_correc()
+
 # Chargement des "patrons" de pages web dans un dictionnaire global :
 html = chargerPatronsHTML() # html est un dictionnaire contenant les patrons HTML
+
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
-cherrypy.quickstart(Commission(),'/', config ="utils/config.conf")
+cherrypy.quickstart(Commission(html,corrections),'/', config ="utils/config.conf")
