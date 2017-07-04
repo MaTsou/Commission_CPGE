@@ -29,13 +29,12 @@ def get_candidatures(cand):
 		cc = '???'
 	return cc
 
+def get_candidatures_ordonnees(cand):
+	cc = get_candidatures(cand)
+	return cc[1:]+cc[:1]
+
 def get_candidatures_impr(cand):
-	query = 'diagnostic/candidatures'
-	try:
-		cc = cand.xpath(query)[0].text
-	except:
-		cc = '???'
-	check = parse('{}{}{}',cc)
+	check = parse('{}{}{}',get_candidatures_ordonnees(cand))
 	cc = ''
 	if check[0] == 'M':
 		cc += 'MPSI'

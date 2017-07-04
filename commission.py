@@ -54,11 +54,9 @@ def mise_en_page(header,dossier='',liste=''):
 	# avec un header et un contenu (dossier, liste, script) adéquats.
 	data = {'header':header,'dossier':dossier,'liste':liste}
 	info = '' # texte sous le bouton "gros_bout" au-dessus de la liste de dossiers
-	if cherrypy.session['droits'] == 'administrateur':
-		visib = ''
-	else:
-		visib = 'none' # Bouton pas affiché dans la vue commission
-	data['visibilite'] = visib
+	data['visibilite'] = ''
+	if cherrypy.session['droits'] != 'administrateur':
+		data['visibilite'] = 'none' # Bouton pas affiché dans la vue commission
 	return html["miseEnPage"].format(**data)
 
 def mise_en_page_menu(header,contenu):
@@ -129,7 +127,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				txt = '<form id = "tableaux" action = "/tableaux_bilan"	method = POST align = "center"><input type = "button" class = "fichier" name = "tableaux" value = "Générer les tableaux bilan" onclick = "tableaux_wait();"/></form>'
 				try:
 					if cherrypy.session['tableaux'] == 'ok':
-						txt += '<p>Ceux-ci sont disponibles dans le dossier "./tableaux"...'
+						txt += '<p>Ceux-ci sont disponibles dans le dossier "./tableaux"...</p>'
 				except:
 					pass
 			data['form_tableaux'] = txt
@@ -166,10 +164,10 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			cand = root[num_fil+1].xpath('./candidat/id_apb[text()={}]'.format(id))
 			if cand:
 				cc += fil[num_fil + 1]
-				xml.set_candidatures(cand[0].getparent(), cc)
 			else:
 				cc += '-'
 			cc = self.trouve(id, num_fil + 1, cc, root, fil)
+			if cand: xml.set_candidatures(cand[0].getparent(), cc)
 		return cc
 			
 	# Effectue des statistiques sur les candidats
@@ -179,10 +177,6 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		root = [etree.parse(fich).getroot() for fich in list_fich]
 		fil = [parse('./data/epa_admin_{}.xml',fich)[0][0] for fich in list_fich]
 
-		# on réordonne comme on a l'habitude... MPC plutôt que CMP
-		root[:] = root[1:]+root[:1]
-		fil[:] = fil[1:]+fil[:1]		
-		
 		# Initialisation des compteurs
 		num = [0]*len(root) # nombres de candidats par filière
 		num_mp = 0
@@ -198,14 +192,11 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 					cc = '-'*i + fil[i]
 					cc = self.trouve(id, i, cc, root, fil) 
 					xml.set_candidatures(candi,cc)
-					if cc == 'MPC': num_mpc += 1
-					if cc == 'M-C': num_mc += 1
-					if cc == '-PC': num_pc += 1
-					if cc == 'MP-': num_mp += 1
+					if cc == 'CMP': num_mpc += 1
+					if cc == 'CM-': num_mc += 1
+					if cc == 'C-P': num_pc += 1
+					if cc == '-MP': num_mp += 1
 		# Sauvegarder
-		# Attention, on avait permuté !!!
-		root[:] = root[-1:]+root[:-1]
-		
 		for i in range(len(root)):
 			with open(list_fich[i], 'wb') as fi:
 				fi.write(etree.tostring(root[i], pretty_print=True, encoding='utf-8'))
@@ -286,7 +277,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			fich = open(nom,'r')
 			txt = fich.read()
 			fich.close()
-			stat = parse('M={M};P={P};C={C};MP={MP};MC={MC};PC={PC};MPC={MPC}',txt)
+			stat = parse('C={C};M={M};P={P};MP={MP};MC={MC};PC={PC};MPC={MPC}',txt)
 			# Création de la liste
 			liste_stat = '<h3>Statistiques :</h3>'
 			liste_stat += '<ul><li>{} dossiers MPSI</li>'.format(stat['M'])
@@ -556,7 +547,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		motifs = ''
 		for i in range(0,len(motivations)):
 			key = 'mot_'+str(i)
-			motifs += '<td align = "left"><input type="button" name="'+key
+			motifs += '<tr><td align = "left"><input type="button" name="'+key
 			motifs += '" id="'+key+'" onclick="javascript:maj_motif(this.id)"'
 			motifs += ' class = "motif" value ="'+ motivations[i]+'"/></td></tr>'
 		# le dernier motif : autre ... 
@@ -566,7 +557,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			motifs += xml.get_motifs(cand)+'"/>'
 		except:
 			motifs += '"/>'
-		motifs += "</td>"
+		motifs += "</td></tr>"
 	
 		# On met tout ça dans un dico data pour passage en argument à page_dossier
 		data = self.genere_dict(cand, droits) 
@@ -595,7 +586,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 					clas += ' doss_incomplet'
 			lis += 'class = "{}"'.format(clas)
 			nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
-			txt = '{:3d}) {: <32}{}'.format(i+1,nom[:31],xml.get_candidatures(liste[i]))
+			txt = '{:3d}) {: <30}{}'.format(i+1,nom[:29],xml.get_candidatures_ordonnees(liste[i]))
 			lis += ' value="'+txt+'"></input><br>'
 		# txt est le txt que contient le bouton. Attention, ses 3 premiers
 		# caractères doivent être le numéro du dossier dans la liste des
@@ -720,12 +711,13 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		cherrypy.session["filiere"] = r[1].lower()
 		cherrypy.session['dossiers'] = self.lire_fichier()
 		doss = cherrypy.session['dossiers']
-		txt = '<head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"><link rel="stylesheet" type="text/css" media="print" href="/utils/style_impr.css"><link rel="stylesheet" type="text/css" media="screen" href="/utils/style_html_impr.css">'
+		txt = '<!DOCTYPE html>'
+		txt += '<head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"><link rel="stylesheet" type="text/css" media="print" href="/utils/style_impr.css"><link rel="stylesheet" type="text/css" media="screen" href="/utils/style_html_impr.css"><title>Impression-commission</title></head>'
 		txt += '<body width = "50vw" onload = "window.print();">'
 		txt += '<form action="/retour_menu_admin" method = POST><div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}"/></div></form>'
 		for cand in doss:
 			if xml.get_scoref(cand) != 'NC':
-				txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1></head>'.format(r[1].upper())
+				txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1>'.format(r[1].upper())
 				if xml.get_rang(cand) == 'NC':# Ce test est un résidu d'une époque ou on générait une fiche même si le candidat n'était pas classé !
 					txt += '<div class = encadre>Candidat non classé</div>'
 				else:
@@ -733,10 +725,8 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				cherrypy.session['num_doss'] = doss.index(cand)
 				txt += self.genere_dossier("commission")
 				txt += '<div style = "page-break-after: always;"></div>'
+		txt = txt[:-len('<div style = "page-break-after: always;"></div>')] # On enlève le dernier saut de page...
 		txt += '</body>'
-		txt += '<script type="text/javascript">'
-		txt += 'document.forms["formulaire"]["motifs"].disabled = true;</script>'
-		
 		return txt
 	
 	# Générer les tableaux .csv bilans de la commission
@@ -804,7 +794,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
 			# Remplissage du fichier dest
 			for cand in doss:
-				data = [fonction(cand) for fonction in [xml.get_rang,xml.get_candidatures,xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_sexe,xml.get_nation,xml.get_id,xml.get_boursier,xml.get_clas_actu,xml.get_etab,xml.get_commune_etab]]
+				data = [fonction(cand) for fonction in [xml.get_rang,xml.get_candidatures_ordonnees,xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_sexe,xml.get_nation,xml.get_id,xml.get_boursier,xml.get_clas_actu,xml.get_etab,xml.get_commune_etab]]
 				# Les notes...
 				for cl in classe:
 					for da in date:

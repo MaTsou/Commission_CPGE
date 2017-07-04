@@ -1,8 +1,10 @@
 [*miseEnPage*] 
+<!DOCTYPE html>
 <html> 
 <head> 
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
 <link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
+<title>Titre du document -- Apparaît sur l'impression uniquement</title>
 <div id = "header">{header}</div>
 </head> 
 <body onload="javascript:set_scroll();">
@@ -17,10 +19,12 @@
 </html> 
 ##########
 [*MEP_MENU*]
+<!DOCTYPE html>
 <html> 
 <head> 
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
 <link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
+<title>Titre du document -- n'apparaît pas</title>
 <div id = "header">{header}</div>
 </head> 
 <body onload="hide_loader();">
@@ -31,14 +35,14 @@
 ##########
 [*pageAccueil*] 
 <div class = "menu">
-<form action="/identification" method=POST align="center"> 
+<form action="/identification" method=POST> 
 <input type=submit class="bouton_menu" name="acces" value="Accès administrateur"><br> 
 <input type=submit class="bouton_menu" name="acces" value="Accès commission"> 
 </form> 
 </div>
 ##########
 [*menu_comm*]
-<form action="/choix_comm" method=POST align = center>
+<form action="/choix_comm" method=POST> 
 <div class = "sous_menu">
 	{liste}
 </div>
@@ -57,7 +61,7 @@
 <div id = "admin" class = "sous_menu">
 	<div class = "etape">&nbsp;- 2e étape : compléter les dossiers qui le nécessitent...</div>
 	<div class = "liste_admin">
-		<form action = "/choix_admin" method = POST align = "center">
+		<form action = "/choix_admin" method = POST>
 			{liste_admin}
 		</form>	
 	</div>
@@ -66,7 +70,7 @@
 <br>
 <div id = "comm" class = "sous_menu">
 	<div class = "etape">&nbsp;- 3e étape : générer les fichiers pour la commission...</div>
-	<form id ='genere' action = '/genere_fichiers_comm' method = POST align = "center">
+	<form id ='genere' action = '/genere_fichiers_comm' method = POST>
 	{bout_etap3}
 	</form>	
 </div>
@@ -82,14 +86,14 @@
 [*menu_admin_apres*]
 <div id = "classement" class = "sous_menu">
 	<div class = "etape">&nbsp;- 4e étape : récolter le travail de la commission...</div>
-	<form id = "recolte" action = '/genere_fichiers_class' method = POST align = "center">
+	<form id = "recolte" action = '/genere_fichiers_class' method = POST>
 	{bout_etap4}
 	</form>
 </div>
 <br>
 <div id = "imprim" class = "sous_menu">
 	<div class = "etape">&nbsp;- 5e étape : imprimer les fiches bilan de la commission :</div>
-	<form id = "impress" action = '/page_impression' method = POST align = "center" onsubmit = "impress_wait();">	
+	<form id = "impress" action = '/page_impression' method = POST onsubmit = "impress_wait();">
 	{liste_impression}
 	</form>			
 </div>
@@ -108,13 +112,13 @@
 </div>
 ########## 
 [*page_dossier*]
-<form align="center" id = "formulaire" action = "/traiter" method = POST onsubmit="return test_valid();">
+<form id = "formulaire" action = "/traiter" method = POST onsubmit="return test_valid();">
 <table width = "100%" align = "center">
 	<tr>
 		<td class="grossi" align = "left" colspan ="1">{Nom}</td>
 		<td class="grossi" align = "center"> né(e) le {naiss}</td>
 		<td class="grossi" align = "right">[Id]-INE : {id}</td>
-	<tr>
+	</tr>
 	<tr><td colspan = "3"><span  class = "espace_impr">&nbsp;</span></td></tr>
 	<tr><td colspan = "3"><span  class = "espace_impr">&nbsp;</span></td></tr>
 	<tr>
@@ -129,8 +133,10 @@
 <table align = "center" class = "bord grossi" cols = "4" width = "100%">
 <caption><a href="/data/{ref_fich}.pdf">Fiche de candidature + Bulletins scolaires</a></caption>
 	<tr>
-		<td><font size = "0.8">(case cochée si semestres)</font></td><td>Classe de Première <input type = "checkbox" name = "sem_prem" {sem_prem}></td>
-			<td>Classe de Terminale <input type = "checkbox" name = "sem_term" {sem_term}></td><td>EAF</td>
+		<td><font size = "0.8">(case cochée si semestres)</font></td>
+		<td>Classe de Première <input type = "checkbox" name = "sem_prem" {sem_prem}></td>
+		<td>Classe de Terminale <input type = "checkbox" name = "sem_term" {sem_term}></td>
+		<td>EAF</td>
 	</tr>
 	<tr>
 		<td>&nbsp;</td>
@@ -200,7 +206,7 @@
 		<td class = "score" id = "scoref">{scoref}</td>
 	</tr>
 </table>
-<p class ="espace_impr">&nbsp;<p/>
+<p class ="espace_impr">&nbsp;</p>
 <table class = "volet3">
 	<tr><th class = "motiv">Motivation(s) de la commission</th> 
 		<td class = "valid" rowspan = "7">
@@ -210,11 +216,9 @@
 		 		<td><input type = "submit" id = "valid" class = "valid_bouton" value = "Valider"></td>
 		 	</tr>
 		 	</table>
-		 </td>
+		</td>
 	</tr>                                                   
-	<tr>
-		{motifs}
-	</tr>
+	{motifs}
 </table>
 </form>
 ########## 
