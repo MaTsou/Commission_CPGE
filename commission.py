@@ -107,7 +107,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def genere_menu_admin(self):
 		data = {}
 		# Quel menu : avant commission ou après ??
-		list_fich = glob.glob("./data/epa_comm_*.xml")
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_*.xml"))
 		if len(list_fich) > 0: # après commission
 			data['menu'] = 'apres'
 			# Etape 4 bouton
@@ -116,7 +116,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				txt = '<input type = "button" class ="fichier" value = "Récolter les fichiers" onclick = "recolt_wait();"/>'
 			data['bout_etap4'] = txt
 			# Etape 5 bouton
-			list_fich = glob.glob("./data/epa_class_*.xml")
+			list_fich = glob.glob(os.path.join(os.curdir,"data","epa_class_*.xml"))
 			txt = ''
 			if len(list_fich) > 0:
 				txt = self.genere_liste_impression()
@@ -152,11 +152,12 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	# Efface les dossiers qui accueilleront les bulletins
 	def efface_dest(self,chem): # sert dans traiter_csv et dans tableaux/bilans
 		for filename in os.listdir(chem):
+			fich = os.path.join(chem,filename)
 			try:
-				os.remove(chem+'/'+filename)
+				os.remove(fich)
 			except: # cas d'un sous-dossier
-				self.efface_dest(chem+'/'+filename)
-				os.rmdir(chem+'/'+filename)
+				self.efface_dest(fich)
+				os.rmdir(fich)
 
 	# Sous-fonction de la fonction stat...
 	def trouve(self, id, num_fil, cc, root, fil):
@@ -172,10 +173,10 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			
 	# Effectue des statistiques sur les candidats
 	def stat(self):
-		list_fich = glob.glob('./data/epa_admin_*.xml')
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
 
 		root = [etree.parse(fich).getroot() for fich in list_fich]
-		fil = [parse('./data/epa_admin_{}.xml',fich)[0][0] for fich in list_fich]
+		fil = [parse(os.path.join(os.curdir,"data","epa_admin_{}.xml"),fich)[0][0] for fich in list_fich]
 
 		# Initialisation des compteurs
 		num = [0]*len(root) # nombres de candidats par filière
@@ -202,8 +203,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				fi.write(etree.tostring(root[i], pretty_print=True, encoding='utf-8'))
 		
 		# Écrire le fichier stat
-		nom = "./data/stat.txt"
-		with open(nom ,'w') as stat_fich:
+		with open(os.path.join(os.curdir,"data","stat.txt"),'w') as stat_fich:
 			for i in range(len(fil)):
 				stat_fich.write('{}={};'.format(fil[i],num[i]))
 			stat_fich.write('MP={};MC={};PC={};'.format(num_mp,num_mc,num_pc))
@@ -215,24 +215,24 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def traiter_apb(self): # traite aussi les pdf...
 	## Traitement des csv ##
 		# Traitement des csv
-		for doc in glob.glob("./data/*.csv"):
+		for doc in glob.glob(os.path.join(os.curdir,"data","*.csv")):
 			for fil in filieres:
 				if fil in doc.lower():
-					dest = './data/epa_admin_{}.xml'.format(fil.upper())
+					dest = os.path.join(os.curdir,"data","epa_admin_{}.xml".format(fil.upper()))
 			xml = lire(doc)
 			with open(dest, 'wb') as fich:
 				fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
 		# Traitement des pdf ##
-		dest = './data/docs_candidats'
+		dest = os.path.join(os.curdir,"data","docs_candidats")
 		try:
 			self.efface_dest(dest) # on efface toute l'arborescence fille de dest 
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		
-		for fich in glob.glob("./data/*.pdf"):
+		for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
 			for fil in filieres:
 				if fil in fich.lower():
-					desti = dest+'/'+fil
+					desti = os.path.join(dest,fil)
 					os.mkdir(desti)
 					decoup.decoup(fich, desti)
 		# Fin du traitement pdf#
@@ -245,20 +245,20 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	# Sous-fonction pour le menu admin
 	def genere_liste_csv(self):
 		txt = ''
-		for fich in glob.glob("./data/*.csv"):
+		for fich in glob.glob(os.path.join(os.curdir,"data","*.csv")):
 			txt += '{}<br>'.format(fich)
 		return txt
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_pdf(self):
 		txt = ''
-		for fich in glob.glob("./data/*.pdf"):
+		for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
 			txt += '{}<br>'.format(fich)
 		return txt
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_admin(self):
-		list_fich = glob.glob("./data/epa_admin_*.xml")
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
 		txt = ''
 		if len(list_fich) > 0:
 			txt = '<h2>Choisissez le fichier que vous souhaitez compléter</h2>'
@@ -269,11 +269,11 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_stat(self):
-		list_fich = glob.glob("./data/epa_admin_*.xml")
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
 		liste_stat = ''
 		if len(list_fich) > 0:
 			# lecture du fichier stat
-			nom = './data/stat.txt'
+			nom = os.path.join(os.curdir,"data","stat.txt")
 			fich = open(nom,'r')
 			txt = fich.read()
 			fich.close()
@@ -292,7 +292,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 
 	# Sous-fonction pour le menu admin
 	def genere_liste_impression(self):
-		list_fich = glob.glob("./data/epa_class_*.xml")
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_class_*.xml"))
 		txt = ''
 		if len(list_fich) > 0:
 			txt = '<h2>Choisissez le fichier que vous souhaitez imprimer</h2>'
@@ -303,7 +303,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	
 	# Compose le menu commission
 	def genere_liste_comm(self):
-		list_fich = glob.glob("./data/epa_comm_*.xml")
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_*.xml"))
 		txt = ''
 		for fich in list_fich:
 			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"/>'.format(fich)
@@ -455,7 +455,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 		data['etab'] = xml.get_etab(cand)
 		txt = '[{}]-{}'.format(xml.get_id(cand),xml.get_INE(cand))
 		data['id'] = txt
-		data['ref_fich'] = 'docs_candidats/{}/docs_{}'.format(cherrypy.session["filiere"],xml.get_id(cand))
+		data['ref_fich'] = os.path.join('docs_candidats','{}'.format(cherrypy.session["filiere"]),'docs_{}'.format(xml.get_id(cand)))
 		if droits =='administrateur':
 			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10" value="{}"/>'.format(xml.get_clas_actu(cand))
 			data['clas_actu'] = clas_inp
@@ -590,7 +590,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			lis += ' value="'+txt+'"></input><br>'
 		# txt est le txt que contient le bouton. Attention, ses 3 premiers
 		# caractères doivent être le numéro du dossier dans la liste des
-		# dossiers (cherrypy.session['dossiers'])...
+		# dossiers (cherrypy.session['dossiers'])... Cela sert dans click_list(), pour identifier sur qui on a clické..
 		lis += '-'*7+' fin de liste '+'-'*7
 		lis = lis + '</form>'	
 		return lis
@@ -616,7 +616,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def genere_fichiers_comm(self):
 		# Récupération des fichiers admin
-		list_fich = glob.glob("./data/epa_admin_*.xml")
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
  		# Pour chaque fichier "epa_admin_*.xml"
 		for fich in list_fich:
 			doss = etree.parse(fich).getroot()
@@ -626,7 +626,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			# Classement par scoreb décroissant
 			doss[:] = sorted(doss, key = lambda cand: -float(cand.xpath('diagnostic/score')[0].text.replace(',','.')))
 			# Récupération de la filière 
-			fil = parse('./data/epa_admin_{}.xml',fich)
+			fil = parse(os.path.join(os.curdir,"data","epa_admin_{}.xml"),fich)
 			nbjury = int(nb_jury[fil[0].lower()])
 			# Découpage en n listes de dossiers
 			for j in range(0,nbjury):
@@ -636,7 +636,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 				# Sauvegarde
 				res = etree.Element('candidats')
 				[res.append(cand) for cand in dossier]
-				nom = './data/epa_comm_{}{}.xml'.format(fil[0],j+1)
+				nom = os.path.join(os.curdir,"data","epa_comm_{}{}.xml".format(fil[0],j+1))
 				with open(nom, 'wb') as fichier:
 					fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
 			
@@ -654,7 +654,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	def genere_fichiers_class(self):
 		# Pour chaque commission
 		for comm in filieres:
-			list_fich = glob.glob('./data/epa_comm_{}*.xml'.format(comm.upper()))
+			list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_{}*.xml".format(comm.upper())))
 			list_doss = [] # contiendra les dossiers de chaque sous-comm
 			# Pour chaque sous-commission
 			for fich in list_fich:
@@ -695,7 +695,7 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 						rg += 1
 					xml.set_rang(cand,nu)
 				# Sauvegarde du fichier class...
-				nom = './data/epa_class_{}.xml'.format(comm.upper())
+				nom = os.path.join(os.curdir,"data","epa_class_{}.xml".format(comm.upper()))
 				with open(nom, 'wb') as fichier:
 					fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
 				
@@ -733,26 +733,26 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def tableaux_bilan(self, **kwargs):
 		# Un peu de ménage...
-		dest = './tableaux'
+		dest = os.path.join(os.curdir,"tableaux")
 		try:
 			self.efface_dest(dest) # on efface toute l'arborescence fille de dest 
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		# Création du fichier d'aide
-		with open(dest+'/aide.txt', 'w') as fi:
+		with open(os.path.join(dest,"aide.txt"), 'w') as fi:
 			txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"
 			"il est conseillé d'utiliser la fonction fichier-->importer")
 			fi.write(txt)
 		fi.close()
 		# Récupération des fichiers
-		list_fich = glob.glob('./data/epa_class_*.xml')
+		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_class_*.xml"))
 		# Pour chaque filière :
 		for fich in list_fich:
 			# lecture fichier
 			doss = etree.parse(fich).getroot()
 			# 1er tableau : liste ordonnée des candidats retenus, pour Jeanne
-			nom = './tableaux/'
-			nom += parse('./data/epa_class_{}.xml',fich)[0]
+			nom = os.path.join(os.curdir,"tableaux","") # chaîne vide pour avoir / à la fin du chemin...
+			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
 			nom += '_retenus.csv'
 			c = csv.writer(open(nom,'w'))
 			entetes = ['Rang','Nom','Prénom','Date de naissance','score brut','correction','score final','jury','Observations']
@@ -763,8 +763,8 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 					c.writerow(data)
 			# 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
 			# Le même que pour Jeanne, mais sans les notes...
-			nom = './tableaux/'
-			nom += parse('./data/epa_class_{}.xml',fich)[0]
+			nom = os.path.join(os.curdir,"tableaux","") # chaîne vide pour avoir / à la fin du chemin..
+			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
 			nom += '_retenus(sans_note).csv'
 			c = csv.writer(open(nom,'w'))
 			entetes = ['Rang','Nom','Prénom','Date de naissance']
@@ -776,8 +776,8 @@ class Commission(object): # Objet lancé par cherrypy dans le __main__
 			# 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
 			# toutes les notes et qq infos administratives
 			# Fichier destination
-			nom = './tableaux/'
-			nom += parse('./data/epa_class_{}.xml',fich)[0]
+			nom = os.path.join(os.curdir,"tableaux","") # chaîne vide pour avoir / à la fin du chemin...
+			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
 			nom += '_alphabetique.csv'
 			c = csv.writer(open(nom,'w'))
 			entetes = ['Rang','Candidatures','Nom','Prénom','Date de naissance','Sexe','Nationalité','id_apb','Boursier','Classe actuelle','Etablissement','Commune Etablissement']
