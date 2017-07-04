@@ -10,7 +10,7 @@
 # la forme d'une chaine (immense) de caractères --- d'une page html. 
 # Ce peut-être la même qui a généré l'appel à cette méhode ou toute autre. 
 
-import os, cherrypy, random, copy, glob, csv
+import os, cherrypy, random, copy, glob, csv, pickle
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
@@ -183,12 +183,11 @@ class Commission(): # Objet lancé par cherrypy dans le __main__
 				fi.write(etree.tostring(root[i], pretty_print=True, encoding='utf-8'))
 		
 		# Écrire le fichier stat
-		with open(os.path.join(os.curdir,"data","stat.txt"),'w') as stat_fich:
-			for i in range(len(fil)):
-				stat_fich.write('{}={};'.format(fil[i],num[i]))
-			stat_fich.write('MP={};MC={};PC={};'.format(num_mp,num_mc,num_pc))
-			stat_fich.write('MPC={}'.format(num_mpc))
-		stat_fich.close()
+		donnees = {fil[i]:num[i] for i in range(0,len(fil))}
+		donnees.update({'MP':num_mp,'MC':num_mc,'PC':num_pc,'MPC':num_mpc})
+		print(donnees)
+		with open(os.path.join(os.curdir,"data","stat"),'wb') as stat_fich:
+			pickle.dump(donnees,stat_fich)
 			
 	# Traite les données brutes d'APB : csv ET pdf
 	@cherrypy.expose
@@ -249,15 +248,11 @@ class Commission(): # Objet lancé par cherrypy dans le __main__
 	
 	# Sous-fonction pour le menu admin
 	def genere_liste_stat(self):
-		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
 		liste_stat = ''
-		if len(list_fich) > 0:
+		if len(glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))) > 0: # si les fichiers admin existent
 			# lecture du fichier stat
-			nom = os.path.join(os.curdir,"data","stat.txt")
-			fich = open(nom,'r')
-			txt = fich.read()
-			fich.close()
-			stat = parse('C={C};M={M};P={P};MP={MP};MC={MC};PC={PC};MPC={MPC}',txt)
+			with open(os.path.join(os.curdir,"data","stat"), 'br') as fich:
+				stat = pickle.load(fich)
 			# Création de la liste
 			liste_stat = '<h3>Statistiques :</h3>'
 			liste_stat += '<ul><li>{} dossiers MPSI</li>'.format(stat['M'])
