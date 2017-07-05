@@ -185,7 +185,6 @@ class Commission(): # Objet lancé par cherrypy dans le __main__
 		# Écrire le fichier stat
 		donnees = {fil[i]:num[i] for i in range(0,len(fil))}
 		donnees.update({'MP':num_mp,'MC':num_mc,'PC':num_pc,'MPC':num_mpc})
-		print(donnees)
 		with open(os.path.join(os.curdir,"data","stat"),'wb') as stat_fich:
 			pickle.dump(donnees,stat_fich)
 			
@@ -605,9 +604,8 @@ class Commission(): # Objet lancé par cherrypy dans le __main__
 			nbjury = int(nb_jury[fil[0].lower()])
 			# Découpage en n listes de dossiers
 			for j in range(0,nbjury):
-				copie = copy.deepcopy(doss) # sinon, les candidats sont retirés de doss
-				dossier = []				# à chaque append vers dossier (???!!!)
-				[dossier.append(copie[i]) for i in range(0,len(copie)) if i%nbjury == j]
+				dossier = []	# deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append vers dossier
+				[dossier.append(copy.deepcopy(doss[i])) for i in range(0,len(doss)) if i%nbjury == j]
 				# Sauvegarde
 				res = etree.Element('candidats')
 				[res.append(cand) for cand in dossier]
