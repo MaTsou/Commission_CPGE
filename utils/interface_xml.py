@@ -282,7 +282,7 @@ def set_jury(cand,txt):
 def get_jury(cand):
 	try:
 		txt = cand.xpath('diagnostic/jury')[0].text
-		txt = parse('commission {}',txt)[0]
+		txt = parse('Jury {}',txt)[0]
 	except:
 		txt = 'Auto'
 	return txt
