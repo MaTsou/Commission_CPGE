@@ -351,10 +351,17 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 
 class Serveur(): # Objet lancé par cherrypy dans le __main__
 	"Classe générant les objets gestionnaires de requêtes HTTP"
+	# Attribuats de classe
+	NB = (max_correc-min_correc)*nb_correc+1 # nb valeurs correction
+	pas_correc = 1/float(nb_correc)
+	 # faire attention que 0 soit dans la liste !!
+	corrections = []
+	for n in range(0,NB):
+		corrections.append((n+min_correc*nb_correc)*pas_correc)
+	# Fin déclaration attributs de classe
 
-	def __init__(self,corrections):
+	def __init__(self):
 		# constructeur
-		self.corrections = corrections
 		self.clients = {}
 	
 	def get_client_cour(self):
@@ -650,9 +657,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25"	name = "correc" id = "correc" onchange="javascript:maj_note();"	onmousemove="javascript:maj_note();" onclick="click_range();" value = "{}"/>'.format(correc)
 		barre += '</td><td width = "2.5%"></td></tr>' # fin de la ligne range
 		txt = '' # on construit maintenant la liste des valeurs...
-		for i in range(0,len(corrections)+1):
+		for i in range(0,len(Serveur.corrections)+1):
 			if (i % 2 == 0):
-				txt += '<td width = "7%">{:+3.1f}</td>'.format(corrections[i])
+				txt += '<td width = "7%">{:+3.1f}</td>'.format(Serveur.corrections[i])
 		barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class = "correc_notimpr">{}</tr></table>'.format(txt)
 		barre += '<span class = "correc_impr">'+xml.get_jury(cand)+' : {:+.2f}'.format(float(correc))+'</span>'
 		barre += '</td></tr>'
@@ -906,19 +913,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 #                    === PROGRAMME PRINCIPAL ===                       #
 ########################################################################
 
-# construit la liste des corrections à partir des données importées depuis parametres.py
-def charger_correc():
-	NB = (max_correc-min_correc)*nb_correc+1 # nb valeurs correction
-	pas_correc = 1/float(nb_correc)
-	 # faire attention que 0 soit dans la liste !!
-	correc = []
-	for n in range(0,NB):
-		correc.append((n+min_correc*nb_correc)*pas_correc)
-	return correc
-      
-# Chargement des corrections de la commission
-corrections = charger_correc()
-
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
-cherrypy.quickstart(Serveur(corrections),'/', config ="utils/config.conf")
+cherrypy.quickstart(Serveur(),'/', config ="utils/config.conf")
