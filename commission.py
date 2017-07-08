@@ -351,7 +351,8 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 
 class Serveur(): # Objet lancé par cherrypy dans le __main__
 	"Classe générant les objets gestionnaires de requêtes HTTP"
-	# Attribuats de classe
+	
+	# Attributs de classe
 	NB = (max_correc-min_correc)*nb_correc+1 # nb valeurs correction
 	pas_correc = 1/float(nb_correc)
 	 # faire attention que 0 soit dans la liste !!
@@ -367,6 +368,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def get_client_cour(self):
 		return self.clients[cherrypy.session["JE"]]
 
+	def get_cand_cour(self):
+		return self.get_client_cour().get_cand_cour()
+	
 	@cherrypy.expose
 	def index(self):
 		# Page d'entrée du site web - renvoi d'une page HTML
@@ -531,7 +535,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Quels droits ?
 		droits = self.get_client_cour().get_droits()
 		# Quel candidat ?
-		cand = self.cand_cour()
+		cand = self.get_cand_cour()
 		# On génère les 3 parties de la page html
 		self.header = self.genere_header()
 		self.dossier = self.genere_dossier(cand, droits)
@@ -640,9 +644,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			sous_titre = ' - Accès {}.'.format(self.clients[qui].get_droits())
 		return '<h1 align="center">EPA - Recrutement CPGE/CPES {}</h1>'.format(sous_titre)
 	
-	# Renvoie le candidat courant (lecture des cookies de session)
-	def cand_cour(self):
-		return self.get_client_cour().get_cand_cour()
 	
 	# Génère la partie dossier de la page HTML
 	def genere_dossier(self, cand, droits): # fonction générant le code html du dossier
