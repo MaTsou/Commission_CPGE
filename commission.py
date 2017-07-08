@@ -29,11 +29,26 @@ from utils.parametres import nb_jury
 ########################################################################
 
 class Client(): # Objet client "abstrait" pour la class Serveur
+	# Variables de classe :
+	# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
+	with open(os.path.join(os.curdir,"utils","patrons.html"),"r") as fi:
+		html = {}
+		for ligne in fi:
+			if ligne.startswith("[*"):	 # étiquette trouvée ==>
+				label =ligne.strip()	 # suppression LF et esp évent.
+				label =label[2:-2]	 # suppression [* et *]
+				txt =""
+			else:
+				if ligne.startswith("#####"):
+					html[label] =txt
+				else:
+					txt += ligne
+	
+	# Fin variables de classe
 
 	# constructeur
-	def __init__(self,key,html,droits):
+	def __init__(self,key,droits):
 		self.je_suis = key
-		self.html = html
 		self.dossiers = []
 		self.num_doss = 0
 		self.fichier = ''
@@ -74,13 +89,13 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
 		data = {'header':header,'contenu':contenu}
-		return self.html["MEP_MENU"].format(**data)
+		return Client.html["MEP_MENU"].format(**data)
 	
 	def mise_en_page(self,visib,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
 		data = {'header':header,'dossier':dossier,'liste':liste,'visibilite':visib}
-		return self.html["miseEnPage"].format(**data)
+		return Client.html["miseEnPage"].format(**data)
 	
 	def lire_fichier(self):
 		# Lit le fichier XML choisi et vérifie la complétude des dossiers
@@ -106,8 +121,8 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 class Jury(Client): # Objet client (de type jury de commission)  pour la class Serveur
 
 	# constructeur
-	def __init__(self,key,html):
-		Client.__init__(self,key,html,'Jury')
+	def __init__(self,key):
+		Client.__init__(self,key,'Jury')
 	
 	def mise_en_page(self,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
@@ -120,7 +135,7 @@ class Jury(Client): # Objet client (de type jury de commission)  pour la class S
 		if txt != '':
 			txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>'+txt
 		data['liste'] = txt
-		return self.mise_en_page_menu(self.genere_header(),self.html["menu_comm"].format(**data))
+		return self.mise_en_page_menu(self.genere_header(),Client.html["menu_comm"].format(**data))
 
 	def genere_liste_comm(self):
 		# Compose le menu commission
@@ -163,9 +178,9 @@ class Jury(Client): # Objet client (de type jury de commission)  pour la class S
 
 class Admin(Client): # Objet client (de type Administrateur) pour la class Serveur
 
-	def __init__(self,key,html):
+	def __init__(self,key):
 		# constructeur
-		Client.__init__(self,key,html,'Administrateur')
+		Client.__init__(self,key,'Administrateur')
 	
 	def mise_en_page(self,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
@@ -217,7 +232,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 			data['bout_etap3'] = txt
 		# Envoyez le menu
 		txt = "menu_admin_{}".format(data['menu'])
-		return self.mise_en_page_menu(self.genere_header(),self.html[txt].format(**data))
+		return self.mise_en_page_menu(self.genere_header(),Client.html[txt].format(**data))
 	
 	def genere_liste_csv(self):
 		# Sous-fonction pour le menu admin
@@ -337,9 +352,8 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 class Serveur(): # Objet lancé par cherrypy dans le __main__
 	"Classe générant les objets gestionnaires de requêtes HTTP"
 
-	def __init__(self,html,corrections):
+	def __init__(self,corrections):
 		# constructeur
-		self.html = html
 		self.corrections = corrections
 		self.clients = {}
 	
@@ -349,8 +363,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def index(self):
 		# Page d'entrée du site web - renvoi d'une page HTML
-		data = {'header':self.genere_header(),'contenu':self.html["pageAccueil"].format('')}
-		return self.html["MEP_MENU"].format(**data)
+		data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
+		return Client.html["MEP_MENU"].format(**data)
   
 	@cherrypy.expose
 	def identification(self, **kwargs):
@@ -360,9 +374,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		key = 'client_{}'.format(len(self.clients)+1)
 		cherrypy.session['JE'] = key # Le client stocke qui il est
 		if kwargs['acces']=="Accès administrateur":
-			self.clients[key] = Admin(key,self.html)
+			self.clients[key] = Admin(key)
 		else:
-			self.clients[key] = Jury(key,self.html)
+			self.clients[key] = Jury(key)
 		return self.clients[key].genere_menu()
 
 	@cherrypy.expose
@@ -665,7 +679,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		data['barre'] = barre
 		data['nc'] = nc
 		data['motifs'] = motifs
-		return self.html["page_dossier"].format(**data)
+		return Client.html["page_dossier"].format(**data)
 		
 	# Génère la partie liste de la page HTML
 	def genere_liste(self):
@@ -901,30 +915,10 @@ def charger_correc():
 	for n in range(0,NB):
 		correc.append((n+min_correc*nb_correc)*pas_correc)
 	return correc
-
-# construit le dictionnaire des patrons HTML depuis le fichier patrons.html situé dans le répertoire utils. 
-def chargerPatronsHTML():
-		# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
-		with open(os.path.join(os.curdir,"utils","patrons.html"),"r") as fi:
-			html = {}
-			for ligne in fi:
-				if ligne.startswith("[*"):	 # étiquette trouvée ==>
-					label =ligne.strip()	 # suppression LF et esp évent.
-					label =label[2:-2]	 # suppression [* et *]
-					txt =""
-				else:
-					if ligne.startswith("#####"):
-						html[label] =txt
-					else:
-						txt += ligne
-		return html
       
 # Chargement des corrections de la commission
 corrections = charger_correc()
 
-# Chargement des "patrons" de pages web dans un dictionnaire global :
-html = chargerPatronsHTML() # html est un dictionnaire contenant les patrons HTML
-
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
-cherrypy.quickstart(Serveur(html,corrections),'/', config ="utils/config.conf")
+cherrypy.quickstart(Serveur(corrections),'/', config ="utils/config.conf")
