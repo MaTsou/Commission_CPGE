@@ -299,7 +299,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		# En effet, la fonction stat et ce qui s'y rattache ne fonctionne que si les filières sont
 		# MPSI, PCSI et CPES. Pas encore fait...
 		
-		# Admin a-t-il changé qqc ? Si oui, mise à jour. Attention, on teste sur cand et on affecte à ca...
+		# Admin a-t-il changé qqc ? Si oui, mise à jour. 
 		if xml.get_clas_actu(cand)!=kwargs['clas_actu']:
 				xml.set_clas_actu(cand,kwargs['clas_actu'])
 		# semestres ?
@@ -828,7 +828,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	
 	# Générer les tableaux .csv bilans de la commission
 	@cherrypy.expose
-	def tableaux_bilan(self, **kwargs):
+	def tableaux_bilan(self):
 		# Un peu de ménage...
 		dest = os.path.join(os.curdir,"tableaux")
 		try:
