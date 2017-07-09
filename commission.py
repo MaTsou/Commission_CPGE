@@ -181,6 +181,10 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 	def __init__(self,key):
 		# constructeur
 		Client.__init__(self,key,'Administrateur')
+		self.autres_filieres = []
+		self.fichiers_autres_fil = []
+		self.dossiers_autres_fil = []
+		self.toutes_cand = []
 	
 	def mise_en_page(self,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
@@ -289,30 +293,48 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 			txt+='<br>'
 		return txt
 	
+	def get_toutes_cand(self):
+		# Trouver les autres filières demandées par le candidat courant
+		self.autres_filieres = copy.deepcopy(filieres)
+		self.autres_filieres.remove(self.filiere) # autres_filieres = filieres privée de filiere_courante
+		# Identifiant du candidat courant
+		iden = xml.get_id(self.dossiers[self.num_doss])
+		r = parse('{}admin_{}.xml', self.fichier) # récupère le chemin vers les fichiers
+		## Récupération nom de fichier, dossiers, candidature
+		self.fichiers_autres_fil = ['{}admin_{}.xml'.format(r[0],fil.upper()) for fil in self.autres_filieres]
+		# Dossiers
+		self.dossiers_autres_fil = [etree.parse(fich).getroot() for fich in self.fichiers_autres_fil]
+		# Candidatures
+		self.toutes_cand = [self.dossiers[self.num_doss]] # 1ere candidature = candidature en cours..
+		self.toutes_cand.extend([root.xpath('./candidat/id_apb[text()={}]'.format(iden))[0].getparent() for root in self.dossiers_autres_fil if root.xpath('./candidat/id_apb[text()={}]'.format(iden))])
+
 	def traiter(self, **kwargs):
 		# Traitement dossier avec droits administrateur	
 		cand = self.dossiers[self.num_doss]
 		# Droits admin : on ne prend pas en compte les corrections et motivations
+
 		# Ici, on va répercuter les complétions de l'administrateur dans tous les dossiers que le
 		# candidat a déposé. On n'utilise pas xml.get_candidatures pour que ce code supporte tout
 		# changement de filières qui pourrait être fait dans utils/parametres.py
 		# En effet, la fonction stat et ce qui s'y rattache ne fonctionne que si les filières sont
-		# MPSI, PCSI et CPES. Pas encore fait...
-		
+		# MPSI, PCSI et CPES.
+
+		# Recherche des autres candidatures : renvoie une liste (éventuellement vide) de candidature
+		self.get_toutes_cand()
+
 		# Admin a-t-il changé qqc ? Si oui, mise à jour. 
 		if xml.get_clas_actu(cand)!=kwargs['clas_actu']:
-				xml.set_clas_actu(cand,kwargs['clas_actu'])
+			for ca in self.toutes_cand: xml.set_clas_actu(ca,kwargs['clas_actu'])
 		# semestres ?
-		try: # kwargs ne contient 'sem_prem' que si la case est cochée !!
-			if kwargs['sem_prem']=='on':
-				xml.set_sem_prem(cand,'on')
-		except:
-			xml.set_sem_prem(cand,'off')
-		try:
-			if kwargs['sem_term']=='on':
-				xml.set_sem_term(cand,'on')
-		except:
-			xml.set_sem_term(cand,'off')
+		if kwargs.get('sem_prem','off')=='on': # kwargs ne contient 'sem_prem' que si la case est cochée !
+			for ca in self.toutes_cand: xml.set_sem_prem(ca,'on')
+		else:
+			for ca in self.toutes_cand: xml.set_sem_prem(ca,'off')
+
+		if kwargs.get('sem_term','off')=='on':
+			for ca in self.toutes_cand: xml.set_sem_term(ca,'on')
+		else:
+			for ca in self.toutes_cand: xml.set_sem_term(ca,'off')
 		# Cas des notes
 		matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
 		date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
@@ -322,21 +344,27 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 				for da in date:
 					key = cl + mat + da
 					if xml.get_note(cand,classe[cl],matiere[mat],date[da])!=kwargs[key]:
-						xml.set_note(cand,classe[cl],matiere[mat],date[da],kwargs[key])
+						for ca in self.toutes_cand: xml.set_note(ca,classe[cl],matiere[mat],date[da],kwargs[key])
 		# CPES
 		if 'cpes' in xml.get_clas_actu(cand).lower():
 			if xml.get_CM1(cand,True)!=kwargs['CM1']:
-				xml.set_CM1(cand, kwargs['CM1'])
+				for ca in self.toutes_cand: xml.set_CM1(ca, kwargs['CM1'])
 			if xml.get_CP1(cand,True)!=kwargs['CP1']:
-				xml.set_CP1(cand, kwargs['CP1'])
+				for ca in self.toutes_cand: xml.set_CP1(ca, kwargs['CP1'])
 		# EAF écrit et oral...		
 		if xml.get_ecrit_EAF(cand)!=kwargs['EAF_e']:
-			xml.set_ecrit_EAF(cand,kwargs['EAF_e'])
+			for ca in self.toutes_cand: xml.set_ecrit_EAF(ca,kwargs['EAF_e'])
 		if xml.get_oral_EAF(cand)!=kwargs['EAF_o']:
-			xml.set_oral_EAF(cand,kwargs['EAF_o'])
+			for ca in self.toutes_cand: xml.set_oral_EAF(ca,kwargs['EAF_o'])
 		# On (re)calcule le score brut !
 		xml.calcul_scoreb(cand)
 		xml.is_complet(cand) # mise à jour de l'état "dossier complet"
+
+		# Sauvegarde autres candidatures
+		for i in range(0,len(self.fichiers_autres_fil)):
+			with open(self.fichiers_autres_fil[i], 'wb') as fich:
+				print('fichier écrit : ',fich)
+				fich.write(etree.tostring(self.dossiers_autres_fil[i], pretty_print=True, encoding='utf-8'))
 	
 	def lire_fichier(self): # Comment on dit déjà : écrire par dessus la méthode de la classe mère...
 		# Lit le fichier XML choisi et vérifie la complétude des dossiers
@@ -353,12 +381,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	"Classe générant les objets gestionnaires de requêtes HTTP"
 	
 	# Attributs de classe
-	NB = (max_correc-min_correc)*nb_correc+1 # nb valeurs correction
-	pas_correc = 1/float(nb_correc)
-	 # faire attention que 0 soit dans la liste !!
-	corrections = []
-	for n in range(0,NB):
-		corrections.append((n+min_correc*nb_correc)*pas_correc)
+	# faire attention que 0 soit dans la liste !!
+	corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0,(max_correc-min_correc)*nb_correc+1)]
 	# Fin déclaration attributs de classe
 
 	def __init__(self):
@@ -380,8 +404,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def identification(self, **kwargs):
 		# Admin ou Jury : fonction appelée par le formulaire de la page d'accueil. 
-		# On mémorise les coord. de l'utilisat. dans des variables de session :
-		# On créé une clé client_i et l'objet associé est Admin ou Jury
+		# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
 		key = 'client_{}'.format(len(self.clients)+1)
 		cherrypy.session['JE'] = key # Le client stocke qui il est
 		if kwargs['acces']=="Accès administrateur":
@@ -405,15 +428,15 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				self.efface_dest(fich)
 				os.rmdir(fich)
 
-	def trouve(self, id, num_fil, cc, root, fil):
+	def trouve(self, iden, num_fil, cc, root, fil):
 		# Sous-fonction de la fonction stat...
 		if num_fil < len(root)-1:
-			cand = root[num_fil+1].xpath('./candidat/id_apb[text()={}]'.format(id))
+			cand = root[num_fil+1].xpath('./candidat/id_apb[text()={}]'.format(iden))
 			if cand:
 				cc += fil[num_fil + 1]
 			else:
 				cc += '-'
-			cc = self.trouve(id, num_fil + 1, cc, root, fil)
+			cc = self.trouve(iden, num_fil + 1, cc, root, fil)
 			if cand: xml.set_candidatures(cand[0].getparent(), cc)
 		return cc
 			
@@ -435,9 +458,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			for candi in root[i]:
 				num[i] += 1
 				if xml.get_candidatures(candi) == '???': # candidat pas encore vu
-					id = xml.get_id(candi)
+					iden = xml.get_id(candi)
 					cc = '-'*i + fil[i]
-					cc = self.trouve(id, i, cc, root, fil) 
+					cc = self.trouve(iden, i, cc, root, fil) 
 					xml.set_candidatures(candi,cc)
 					if cc == 'CMP': num_mpc += 1
 					if cc == 'CM-': num_mc += 1
@@ -511,15 +534,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		client.set_fichier(kwargs["fichier"])
 		r = parse('{}admin_{}.xml', kwargs["fichier"]) # récupère nom commission
 		client.set_filiere(r[1].lower())
-		# Trouver les autres filières demandées par le candidat courant
-		#autres_filieres = copy.deepcopy(filieres)
-		#autres_filieres.remove(cherrypy.session['filiere']) # autres_filieres = filieres \ filiere_courante
 		# Ici, on va charger les dossiers présents dans le fichier choisi :
 		client.lire_fichier()
-		#cherrypy.session["nb_autres_filieres"] = len(autres_filieres) # sert dans self.traiter_admin
-		#for i in range(0,len(autres_filieres)):
-		#	cherrypy.session["fichier_autre_fil_{}".format(i)] = '{}admin_{}.xml'.format(r[0],autres_filieres[i].upper())
-		#	cherrypy.session["autre_filiere_{}".format(i)] = self.lire_fichier(cherrypy.session["fichier_autre_fil_{}".format(i)])
 		# Initialisation des paramètres
 		client.set_num_doss(0) # on commence par le premier !
 		cherrypy.session['mem_scroll'] = '0'
@@ -569,8 +585,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def genere_dict(self, cand, droits):
 		# Renvoie le dictionnaire contenant les infos du dossier en cours
 		# On passe droits en argument car la fonction qui imprime les fiches bilan de commission
-		# est lancée par Admn, mais l'impression se fait avec un dossier formaté comme pour le
-		# jury : les notes de sont pas des <input type="text" .../>
+		# est lancée par Admin, mais l'impression se fait avec un dossier formaté comme pour
+		# Jury : les notes de sont pas des <input type="text" .../>
 		data = {'Nom':xml.get_nom(cand)+', '+xml.get_prenom(cand)}
 		data['naiss'] = xml.get_naiss(cand)
 		data['etab'] = xml.get_etab(cand)
