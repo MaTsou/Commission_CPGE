@@ -222,3 +222,20 @@
 </table>
 </form>
 ########## 
+[*page_impress*]
+<!DOCTYPE html>
+<head>
+	<meat content = "text/html; charset = utf-8" http-equiv = "Content-Type">
+	<link rel = "stylesheet" type = "text/css" media = "print" href = "/utils/style_impr.css">
+	<link rel = "stylesheet" type = "text/css" media = "screen" href = "/utils/style_html_impr.css">
+	<title>Impression-commission</title>
+</head>
+<body width = "50vw" onload = "window.print();">
+	<form action = "/retour_menu" method = POST>
+		<div id = "gros_bout_div">
+			<input type = "submit" class ="gros_bout" value = "RETOUR"/>
+		</div>
+	</form>
+	{pages}
+</body>
+###########

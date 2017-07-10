@@ -832,10 +832,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def page_impression(self, **kwargs):
 		# Générer la page html pour impression des fiches bilan de commission
 		r = parse('{}class_{}.xml', kwargs["fichier"]) # récupère nom commission
-		txt = '<!DOCTYPE html>'
-		txt += '<head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"><link rel="stylesheet" type="text/css" media="print" href="/utils/style_impr.css"><link rel="stylesheet" type="text/css" media="screen" href="/utils/style_html_impr.css"><title>Impression-commission</title></head>'
-		txt += '<body width = "50vw" onload = "window.print();">'
-		txt += '<form action="/retour_menu" method = POST><div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}"/></div></form>'
+		txt = ''
 		for cand in etree.parse(kwargs["fichier"]).getroot():
 			if xml.get_scoref(cand) != 'NC':
 				txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1>'.format(r[1].upper())
@@ -846,8 +843,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				txt += self.genere_dossier(cand,"commission")
 				txt += '<div style = "page-break-after: always;"></div>'
 		txt = txt[:-len('<div style = "page-break-after: always;"></div>')] # On enlève le dernier saut de page...
-		txt += '</body>'
-		return txt
+		data = {'pages':txt}
+		return Client.html['page_impress'].format(**data) 
 	
 	# Générer les tableaux .csv bilans de la commission
 	@cherrypy.expose
