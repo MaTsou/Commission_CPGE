@@ -241,7 +241,7 @@ div.breakafter
 #gros_bout_div /* La div en haut de la page dossier : contient le bouton retour */
 	{
 		position : fixed;
-		top : 4vh;
+		top : 7vh;
 		right : 6%;
 		width : 12%;
 		height : 12vh;

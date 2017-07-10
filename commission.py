@@ -74,7 +74,7 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 		self.fichier = fich
 	
 	def set_droits(self,droits):
-		self.droits = 'Jury '+droits
+		self.droits = droits
 	
 	def get_droits(self):
 		return self.droits
@@ -124,6 +124,9 @@ class Jury(Client): # Objet client (de type jury de commission)  pour la class S
 	def __init__(self,key):
 		Client.__init__(self,key,'Jury')
 	
+	def set_droits(self,droits):
+		Client.set_droits(self,'Jury '+droits)
+
 	def mise_en_page(self,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
@@ -185,6 +188,9 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		self.fichiers_autres_fil = []
 		self.dossiers_autres_fil = []
 		self.toutes_cand = []
+	
+	def set_droits(self,droits):
+		Client.set_droits(self,'Administrateur '+droits)
 	
 	def mise_en_page(self,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
@@ -533,6 +539,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Mise à jour des attributs du client
 		client.set_fichier(kwargs["fichier"])
 		r = parse('{}admin_{}.xml', kwargs["fichier"]) # récupère nom commission
+		client.set_droits(r[1])
 		client.set_filiere(r[1].lower())
 		# Ici, on va charger les dossiers présents dans le fichier choisi :
 		client.lire_fichier()
@@ -595,14 +602,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# récup filiere
 		fil = self.get_client_cour().get_filiere()
 		data['ref_fich'] = os.path.join('docs_candidats','{}'.format(fil),'docs_{}'.format(xml.get_id(cand)))
-		if droits =='Administrateur':
+		if 'admin' in droits.lower():
 			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10" value="{}"/>'.format(xml.get_clas_actu(cand))
 			data['clas_actu'] = clas_inp
 		else:
 			data['clas_actu'] = xml.get_clas_actu(cand)
 		# Cases à cocher semestres : actives pour l'Admin, inactives sinon
 		visib = 'disabled '
-		if droits == "Administrateur":
+		if 'admin' in droits.lower():
 			visib = ' '
 		txt = visib
 		if xml.get_sem_prem(cand)=='on': txt += 'checked'
@@ -620,7 +627,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					key = cl + mat + da
 					note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
 					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}"/>'.format(key,key,note)
-					if droits == 'Administrateur':
+					if 'admin' in droits.lower():
 						data[key] = note_inp
 					else:
 						data[key] = note
@@ -628,7 +635,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		cpes = False
 		if 'cpes' in xml.get_clas_actu(cand).lower():
 			cpes = True
-		if droits == 'Administrateur':
+		if 'admin' in droits.lower():
 			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}"/>'.format(xml.get_CM1(cand,cpes))
 			data['CM1'] = note_CM1
 			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}"/>'.format(xml.get_CP1(cand,cpes))
@@ -637,7 +644,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			data['CM1'] = '{}'.format(xml.get_CM1(cand,cpes))
 			data['CP1'] = '{}'.format(xml.get_CP1(cand,cpes))
 		# EAF
-		if droits == 'Administrateur': 
+		if 'admin' in droits.lower():
 			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}"/>'.format(xml.get_ecrit_EAF(cand))
 			data['EAF_e'] = note_eaf_e
 			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o"value = "{}"/>'.format(xml.get_oral_EAF(cand))
