@@ -605,6 +605,8 @@ def execute_lecteurs(lecteurs, csv, test = False):
         for lecteur in lecteurs:
             etat = lecteur(etat, ligne)
 
+    # on procède à l'assainissement de ce qui est encore un peu brut,
+    # par étapes successives
     res = [fusionne_bulletins(candidat, test)
            for candidat in etat['candidats']]
     res = [trouve_terminale(candidat, test)
