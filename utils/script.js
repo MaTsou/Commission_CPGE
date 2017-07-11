@@ -46,7 +46,7 @@ function maj_motif(id)
 
 function click_range()
 {
-    // permet de sortir d'un cas NC par click sur le range
+    // permet de sortir d'un cas NC par clic sur les notes
     nc = document.getElementById('nc');
     nc.value = '';
     maj_note();
@@ -54,18 +54,19 @@ function click_range()
 
 function test_valid()
 {
-    // lancée à la validation du formulaire
-    // cette fonction vérifie qu'il y a un motif si correc < 0 ou NC
-    // renvoie true pour 'submit' le formulaire (tout ok) et false sinon...
+    // lancée à la validation du formulaire, cette fonction
+    // vérifie qu'il y a un motif si correc < 0 ou NC
+    // renvoie true pour soumettre le formulaire si tout va bien
+    // et false sinon...
     // Mémorise le scroll de liste
     get_scroll()
     // Récupération de la correction
     correc = document.getElementById('correc');
     cor = toFloat(correc.value);
     nc = document.getElementById('nc');
-    // Si elle est négative ou NC, on test l'existence d'une motivation
+    // Si elle est négative ou NC, on teste l'existence d'une motivation
     motif = document.getElementById('motif');
-    test = false; // test est vrai si au moins une motivation est saisie.
+    test = false; // test est vrai si au moins une motivation est saisie
     if (cor >= 0 && nc.value!=='NC'){test = true;}
     if (motif.value != ''){test = true;}
     // --> message et formulaire non soumis
@@ -76,10 +77,10 @@ function test_valid()
 
 function get_scroll()
 {
-    // lancée lors de l'usage de l'ascenseur sur la liste.
-    // sert à mémoriser la position de l'ascenceur
+    // lancée lors de l'usage de l'ascenseur sur la liste
+    // sert à mémoriser la position de l'ascenseur
     // pour y revenir à l'actualisation de la page...
-    // récupération valeur du scroll
+    // récupération de la valeur du scroll
     var div = document.getElementById('liste');
     var scro = div.scrollTop;//getElementById('liste').scrollTop;
     // stockage dans le champ caché... (en haut de la liste) id = scroll_mem
@@ -91,7 +92,6 @@ function set_scroll()
 {
     // lancée au chargement de la liste
     // sert à retrouver la position de la scroll-bar et arrête le please wait
-    // récupération de la valeur (passée en argument : 'mem_scroll'
     var stock = document.getElementsByName('scroll_mem')[0];
     // définir le scroll à cette valeur
     var div = document.getElementById('liste');
