@@ -1,4 +1,4 @@
-from .epa_commun import annee_terminale, annee_premiere
+from .parametres import annee_terminale, annee_premiere
 
 # JP: je suis paranoïaque -- déformation professionnelle!
 def verifie_entier(chaine, mini=0, maxi=20):

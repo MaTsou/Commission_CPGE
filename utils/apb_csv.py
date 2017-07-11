@@ -67,7 +67,7 @@ from parse import parse
 
 from lxml import etree
 
-from .epa_commun import annee_terminale
+from .parametres import annee_terminale
 
 #
 # DESCRIPTION DE L'ÉTAT
