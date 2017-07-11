@@ -107,7 +107,8 @@ def clore_bulletin(etat, ligne):
     etat = clore_matiere(etat, ligne)
     etat = clore_etablissement(etat, ligne)
 
-    if len(etat['bulletin']) <= 1 and len(etat['bulletin'].xpath('matières')[0]) == 0:
+    if (len(etat['bulletin']) <= 1
+        and len(etat['bulletin'].xpath('matières')[0]) == 0):
         return etat
 
     if etat['étape'] == Etape.SYNOPTIQUE:
@@ -163,7 +164,8 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, valeur):
     # nature peut par exemple être une 'plus petite', 'plus grande',
     # mais aussi 'rang' ou 'effectif', par exemple
     if etat['test']:
-        print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(n2c(colonne+1), intitule, nature))
+        print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(n2c(colonne+1),
+                                                          intitule, nature))
 
     intitules = etat['matière'].xpath('intitulé')
     if intitules == []:
@@ -179,7 +181,8 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, valeur):
 # ce lecteur lit directement dans une colonne une des informations principales
 def lecteur_direct(etat, ligne, colonne, nom, champ):
     if etat['test']:
-        print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(n2c(colonne+1), nom, champ))
+        print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(n2c(colonne+1),
+                                                            nom, champ))
     # inutile de récupérer plusieurs fois la même information
     if etat[nom].xpath(champ) != []:
         return etat
@@ -203,7 +206,8 @@ def lecteur_fixe(etat, ligne, nom, champ, valeur):
 
 def lecteur_synoptique(etat, ligne, colonne, champ):
     if etat['test']:
-        print('lecteur_synoptique[{0:s}] ({1:s})'.format(n2c(colonne+1), champ))
+        print('lecteur_synoptique[{0:s}] ({1:s})'.format(n2c(colonne+1),
+                                                         champ))
     if ligne[colonne] != '':
         synoptique = etat['candidat'].xpath('synoptique')[0]
         fils = etree.SubElement(synoptique, champ)
@@ -249,7 +253,8 @@ def fusionne_bulletins(candidat, test = False):
     # on trouve la liste des bulletins sans note:
     probs = candidat.xpath('bulletins/bulletin[matières[not(matière)]]')
     for prob in probs:
-        # là, normalement, c'est une fausse boucle : on ne devrait avoir qu'une année
+        # là, normalement, c'est une fausse boucle : on ne devrait avoir
+        # qu'une année!
         for node in prob.xpath('année'):
             annee = node.text
             autres = candidat.xpath('bulletins/bulletin[année = "{0:s}"]'.format(annee))
@@ -313,19 +318,23 @@ def prepare_lecteurs(champs, test = False):
 
         if champs[colonne] in directs:
             if test:
-                print('Colonne {0:s}: généralité ({1:s})'.format(n2c(colonne+1),champs[colonne]))
-            lecteurs.append(lambda e,l, a=colonne, b=directs[champs[colonne]]: lecteur_direct(e, l, a, 'candidat', b))
+                print('Colonne {0:s}: généralité ({1:s})'.format(n2c(colonne+1),
+                                                                 champs[colonne]))
+            lecteurs.append(lambda e,l, a=colonne, b=directs[champs[colonne]]:
+                            lecteur_direct(e, l, a, 'candidat', b))
             colonne = colonne + 1
             continue
 
-        if champs[colonne].endswith('établissement'): # on reconnaît le début de la fiche synoptique
+        # on reconnaît le début de la fiche synoptique
+        if champs[colonne].endswith('établissement'):
             break
 
         # si on arrive ici, c'est qu'on n'a pas reconnu la colonne
         # courante dans cette étape ni comme le début de l'étape
         # suivante: à ignorer!
         if test:
-            print('Colonne {0:s}: à ignorer ({1:s})'.format(n2c(colonne+1),champs[colonne]))
+            print('Colonne {0:s}: à ignorer ({1:s})'.format(n2c(colonne+1),
+                                                            champs[colonne]))
         # pas de lecteurs.append ici, logiquement!
         colonne = colonne + 1
         continue # pas nécessaire mais plus propre et évite les ennuis à terme
@@ -364,7 +373,8 @@ def prepare_lecteurs(champs, test = False):
         if champs[colonne] == 'Numéro INE':
             if test:
                 print("Colonne {0:s}: INE".format(n2c(colonne+1)))
-            lecteurs.append(lambda e, l, a=colonne: lecteur_direct(e, l, a, 'candidat', 'INE'))
+            lecteurs.append(lambda e, l, a=colonne:
+                            lecteur_direct(e, l, a, 'candidat', 'INE'))
             colonne = colonne + 1
             continue
 
@@ -372,7 +382,8 @@ def prepare_lecteurs(champs, test = False):
             champ = directs[champs[colonne]]
             if test:
                 print("Colonne {0:s}: {1:s} de l'établissement ({2:s})".format(n2c(colonne+1), champ, champs[colonne]))
-            lecteurs.append(lambda e, l, a=colonne, b=champ: lecteur_direct (e, l, a, 'établissement', b))
+            lecteurs.append(lambda e, l, a=colonne, b=champ:
+                            lecteur_direct (e, l, a, 'établissement', b))
             matiere = ''
             colonne = colonne + 1
             continue
@@ -381,7 +392,8 @@ def prepare_lecteurs(champs, test = False):
             nom = synoptique[champs[colonne]]
             if test:
                 print('Colonne {0:s}: {1:s} (synoptique) ({2:s})'.format(n2c(colonne+1), nom, champs[colonne]))
-            lecteurs.append(lambda e, l, a=colonne, b=nom: lecteur_synoptique(e, l, a, b))
+            lecteurs.append(lambda e, l, a=colonne, b=nom:
+                            lecteur_synoptique(e, l, a, b))
             matiere = ''
             colonne = colonne + 1
             continue
@@ -394,10 +406,13 @@ def prepare_lecteurs(champs, test = False):
                     print('Colonne {0:s}: nouvelle matière'.format(n2c(colonne+1)))
                 lecteurs.append(clore_matiere)
                 matiere = res[0]
-                lecteurs.append(lambda e, l, a=matiere: lecteur_fixe (e, l, 'matière', 'intitulé', a))
+                lecteurs.append(lambda e, l, a=matiere:
+                                lecteur_fixe (e, l, 'matière', 'intitulé', a))
             if test:
-                print("Colonne {0:s}: note en {1:s}".format(n2c(colonne+1), matiere))
-            lecteurs.append(lambda e, l, a=colonne: lecteur_direct(e, l, a, 'matière', 'note'))
+                print("Colonne {0:s}: note en {1:s}".format(n2c(colonne+1),
+                                                            matiere))
+            lecteurs.append(lambda e, l, a=colonne:
+                            lecteur_direct(e, l, a, 'matière', 'note'))
             colonne = colonne + 1
             continue
 
@@ -408,10 +423,13 @@ def prepare_lecteurs(champs, test = False):
                     print('Colonne {0:s}: nouvelle matière'.format(n2c(colonne+1)))
                 lecteurs.append(clore_matiere)
                 matiere = res[0]
-                lecteurs.append(lambda e, l, a=matiere: lecteur_fixe(e, l, 'matière', 'intitulé', a))
+                lecteurs.append(lambda e, l, a=matiere:
+                                lecteur_fixe(e, l, 'matière', 'intitulé', a))
             if test:
-                print("Colonne {0:s}: rang en {1:s}".format(n2c(colonne+1), matiere))
-            lecteurs.append(lambda e, l, a=colonne: lecteur_direct(e, l, a, 'matière', 'rang'))
+                print("Colonne {0:s}: rang en {1:s}".format(n2c(colonne+1),
+                                                            matiere))
+            lecteurs.append(lambda e, l, a=colonne:
+                            lecteur_direct(e, l, a, 'matière', 'rang'))
             colonne = colonne + 1
             continue
 
@@ -422,32 +440,38 @@ def prepare_lecteurs(champs, test = False):
                     print('Colonne {0:s}: nouvelle matière'.format(n2c(colonne+1)))
                 lecteurs.append(clore_matiere)
                 matiere = res[0]
-                lecteurs.append(lambda e, l, a=matiere: lecteur_fixe(e, l, 'matière', 'intitulé', a))
+                lecteurs.append(lambda e, l, a=matiere:
+                                lecteur_fixe(e, l, 'matière', 'intitulé', a))
             if test:
-                print("Colonne {0:s}: effectif en {1:s}".format(n2c(colonne+1), matiere))
-            lecteurs.append(lambda e, l, a=colonne: lecteur_direct(e, l, a, 'matière', 'effectif'))
+                print("Colonne {0:s}: effectif en {1:s}".format(n2c(colonne+1),
+                                                                matiere))
+            lecteurs.append(lambda e, l, a=colonne:
+                            lecteur_direct(e, l, a, 'matière', 'effectif'))
             colonne = colonne + 1
             continue
 
         if champs[colonne] == "Note à l'épreuve de Ecrit de Français (épreuve anticipée)":
             if test:
                 print("Colonne {0:s}: note d'écrit de français".format(n2c(colonne+1)))
-            lecteurs.append(lambda e, l, a=colonne: lecteur_synoptique(e, l, a, 'français.écrit'))
+            lecteurs.append(lambda e, l, a=colonne:
+                            lecteur_synoptique(e, l, a, 'français.écrit'))
             colonne = colonne + 1
             continue
 
         if champs[colonne] == "Note à l'épreuve de Oral de Français (épreuve anticipée)":
             if test:
                 print("Colonne {0:s}: note d'oral de français".format(n2c(colonne+1)))
-            lecteurs.append(lambda e, l, a=colonne: lecteur_synoptique(e, l, a, 'français.oral'))
+            lecteurs.append(lambda e, l, a=colonne:
+                            lecteur_synoptique(e, l, a, 'français.oral'))
             colonne = colonne + 1
             continue
 
         if champs[colonne] == 'Année': # début d'un bulletin
             break
-        
+
         if test:
-            print('Colonne {0:s}: à ignorer ({1:s})'.format(n2c(colonne+1),champs[colonne]))
+            print('Colonne {0:s}: à ignorer ({1:s})'.format(n2c(colonne+1),
+                                                            champs[colonne]))
         matiere = ''
         colonne = colonne + 1
         continue
@@ -486,7 +510,8 @@ def prepare_lecteurs(champs, test = False):
             if test:
                 print("Début d'un bulletin via sa date en colonne {0:s}".format(n2c(colonne+1)))
             lecteurs.append(clore_bulletin)
-            lecteurs.append(lambda e,l, a=colonne: lecteur_direct (e, l, a, 'bulletin', 'année'))
+            lecteurs.append(lambda e,l, a=colonne:
+                            lecteur_direct (e, l, a, 'bulletin', 'année'))
             colonne = colonne + 1
             matiere = ''
             continue
@@ -495,7 +520,8 @@ def prepare_lecteurs(champs, test = False):
             champ = directs_etablissement[champs[colonne]]
             if test:
                 print("La colonne {0:s} est une information d'établissement: {1:s} ({2:s})".format(n2c(colonne+1), champ, champs[colonne]))
-            lecteurs.append(lambda e,l, a=colonne, b=champ: lecteur_direct(e, l, a, 'établissement', b))
+            lecteurs.append(lambda e,l, a=colonne, b=champ:
+                            lecteur_direct(e, l, a, 'établissement', b))
             colonne = colonne + 1
             matiere = ''
             continue
@@ -504,7 +530,8 @@ def prepare_lecteurs(champs, test = False):
             champ = directs_bulletin[champs[colonne]]
             if test:
                 print('La colonne {0:s} est une information de bulletin: {1:s} ({2:s})'.format(n2c(colonne+1), champ, champs[colonne]))
-            lecteurs.append(lambda e,l, a=colonne, b=champ: lecteur_direct(e, l, a, 'bulletin', b))
+            lecteurs.append(lambda e,l, a=colonne, b=champ:
+                            lecteur_direct(e, l, a, 'bulletin', b))
             colonne = colonne + 1
             matiere = ''
             continue
@@ -525,11 +552,15 @@ def prepare_lecteurs(champs, test = False):
                     print('Colonne {0:s}: nouvelle matière'.format(n2c(colonne+1)))
                 lecteurs.append(clore_matiere)
                 matiere = quoi
-                lecteurs.append(lambda e, l, a=matiere: lecteur_fixe(e, l, 'matière', 'intitulé', a))
+                lecteurs.append(lambda e, l, a=matiere:
+                                lecteur_fixe(e, l, 'matière', 'intitulé', a))
             if test:
-                print("Colonne {0:s}: {1:s} en {2:s}".format(n2c(colonne+1), qui, matiere))
-            lecteurs.append(lambda e, l, a='trimestre {0:s}'.format(quand): lecteur_fixe(e, l, 'matière', 'date', a))
-            lecteurs.append(lambda e, l, a=colonne, b=qui: lecteur_direct(e, l, a, 'matière', b))
+                print("Colonne {0:s}: {1:s} en {2:s}".format(n2c(colonne+1),
+                                                             qui, matiere))
+            lecteurs.append(lambda e, l, a='trimestre {0:s}'.format(quand):
+                            lecteur_fixe(e, l, 'matière', 'date', a))
+            lecteurs.append(lambda e, l, a=colonne, b=qui:
+                            lecteur_direct(e, l, a, 'matière', b))
             colonne = colonne + 1
             continue
 
@@ -556,7 +587,7 @@ def prepare_lecteurs(champs, test = False):
 
     return lecteurs
 
-# cette fonction a le beau rôle : elle n'a preque plus rien à faire!
+# cette fonction a le beau rôle : elle n'a presque plus rien à faire!
 def execute_lecteurs(lecteurs, csv, test = False):
 
     # définition de l'état initial
@@ -574,8 +605,10 @@ def execute_lecteurs(lecteurs, csv, test = False):
         for lecteur in lecteurs:
             etat = lecteur(etat, ligne)
 
-    res = [fusionne_bulletins(candidat, test) for candidat in etat['candidats']]
-    res = [trouve_terminale(candidat, test) for candidat in res]
+    res = [fusionne_bulletins(candidat, test)
+           for candidat in etat['candidats']]
+    res = [trouve_terminale(candidat, test)
+           for candidat in res]
 
     return res
 
