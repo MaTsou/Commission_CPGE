@@ -230,8 +230,7 @@ div.breakafter
 	{
 		display : inline-block;
 		width : 23%;
-		margin-top : 5vh;
-		padding-top : 1em;
+		margin-top : 7vh;
 		padding-left: 1%;
 		vertical-align : top;
 		overflow-y : scroll; /* sert pour que l'évènement onscroll soit généré... */
