@@ -226,29 +226,29 @@ div.breakafter
 		vertical-align : top;
 	}
 
-#liste /* Style de la colonne Liste des dossiers */
+#bandeau_lateral /* Style du bandeau latéral qui contient gros_bout_div et liste */
 	{
 		display : inline-block;
 		width : 23%;
-		margin-top : 7vh;
 		padding-left: 1%;
 		vertical-align : top;
+	}
+
+#liste /* Style de la colonne Liste des dossiers */
+	{
 		overflow-y : scroll; /* sert pour que l'évènement onscroll soit généré... */
-		height : 85vh; /* sinon pas de scroll ! */
+		height : 75vh; /* sinon pas de scroll ! */
 	}
 
 #gros_bout_div /* La div en haut de la page dossier : contient le bouton retour */
 	{
-		position : fixed;
-		top : 7vh;
-		right : 6%;
-		width : 12%;
-		height : 12vh;
+		text-align : center;
+		height : 10vh;
 	}
 
 .gros_bout /* Le bouton qui va dans la div gros_bout_div */
 	{
-		width: 100%;
+		width: 80%;
 		font-size: 2em;
 		padding-top : .7ex;
 		padding-bottom: .7ex;

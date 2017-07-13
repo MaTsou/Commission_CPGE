@@ -8,12 +8,15 @@
 <div id = "header">{header}</div>
 </head> 
 <body onload="javascript:set_scroll();">
-<div id = "dossier">{dossier}</div>
-<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
-<form action="/retour_menu" method = POST>
-	<div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}">
+<div>
+	<div id = "dossier">{dossier}</div>
+	<div id = "bandeau_lateral">
+		<form action="/retour_menu" method = POST>
+			<div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}">
+			</div>
+		</form>
+		<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
 	</div>
-</form>
 <script type="text/javascript" src="/utils/script.js"></script>
 </body>
 </html> 
