@@ -32,7 +32,7 @@ def get_candidatures(cand, form = ''):
 		if form == 'ord': # on rétablit l'ordre des filières donné par la liste filieres (cf parametres.py)
 			cc = ''.join(cc[alfil.index(fil)] for fil in filieres)
 		if form == 'impr': # ordonnées et nom complet.
-			cc = '-'.join(alfil[alfil.index(fil)].upper() for fil in filieres if cc[alfil.index(fil)]!='-')
+			cc = '-'.join(fil.upper() for fil in filieres if cc[alfil.index(fil)]!='-')
 	except:
 		cc = '???'
 	return cc
