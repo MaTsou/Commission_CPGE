@@ -320,10 +320,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		# Droits admin : on ne prend pas en compte les corrections et motivations
 
 		# Ici, on va répercuter les complétions de l'administrateur dans tous les dossiers que le
-		# candidat a déposé. On n'utilise pas xml.get_candidatures pour que ce code supporte tout
-		# changement de filières qui pourrait être fait dans utils/parametres.py
-		# En effet, la fonction stat et ce qui s'y rattache ne fonctionne que si les filières sont
-		# MPSI, PCSI et CPES.
+		# candidat a déposé. 
 
 		# Recherche des autres candidatures : renvoie une liste (éventuellement vide) de candidature
 		self.get_toutes_cand()
@@ -455,7 +452,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 
 		# Initialisation des compteurs
 		num = [0]*len(root) # nombres de candidats par filière
-		num_mp = 0
+		num_mp = 0 # 4 compteurs spécifiques aux filières EPA...
 		num_mc = 0
 		num_pc = 0
 		num_mpc = 0
@@ -468,7 +465,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					cc = '-'*i + fil[i]
 					cc = self.trouve(iden, i, cc, root, fil) 
 					xml.set_candidatures(candi,cc)
-					if cc == 'CMP': num_mpc += 1
+					if cc == 'CMP': num_mpc += 1 # 4 lignes qui sont spécifiques aux filières EPA...
 					if cc == 'CM-': num_mc += 1
 					if cc == 'C-P': num_pc += 1
 					if cc == '-MP': num_mp += 1
@@ -655,7 +652,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Suite
 		data['scoreb'] = xml.get_scoreb(cand)
 		data['scoref'] = xml.get_scoref(cand)
-		data['cand'] = xml.get_candidatures_impr(cand)
+		data['cand'] = xml.get_candidatures(cand,'impr')
 		return data
 	
 	def genere_header(self): 
@@ -733,7 +730,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					clas += ' doss_incomplet'
 			lis += 'class = "{}"'.format(clas)
 			nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
-			txt = '{:3d}) {: <30}{}'.format(i+1,nom[:29],xml.get_candidatures_ordonnees(liste[i]))
+			txt = '{:3d}) {: <30}{}'.format(i+1,nom[:29],xml.get_candidatures(liste[i],'ord'))
 			lis += ' value="'+txt+'"></input><br>'
 		# txt est le txt que contient le bouton. Attention, ses 3 premiers
 		# caractères doivent être le numéro du dossier dans la liste des
@@ -911,7 +908,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
 			# Remplissage du fichier dest
 			for cand in doss:
-				data = [fonction(cand) for fonction in [xml.get_rang,xml.get_candidatures_ordonnees,xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_sexe,xml.get_nation,xml.get_id,xml.get_boursier,xml.get_clas_actu,xml.get_etab,xml.get_commune_etab]]
+				data = [xml.get_rang(cand), xml.get_candidatures(cand,'ord')]
+				data += [fonction(cand) for fonction in [xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_sexe,xml.get_nation,xml.get_id,xml.get_boursier,xml.get_clas_actu,xml.get_etab,xml.get_commune_etab]]
 				# Les notes...
 				for cl in classe:
 					for da in date:

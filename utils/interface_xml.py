@@ -7,6 +7,10 @@ from utils.parametres import coef_cpes
 from utils.parametres import coef_term
 from utils.parametres import prop_ecrit_EAF 
 from utils.parametres import prop_prem_trim
+from utils.parametres import filieres
+
+## Variables globales
+alfil = sorted(filieres) # filières dans l'ordre alphabétique (sert dans get_candidatures)
 
 
 def convert(str):
@@ -21,33 +25,16 @@ def vers_str(num):
 	str = '{:5.2f}'.format(num)
 	return str.replace('.',',')
 
-def get_candidatures(cand):
+def get_candidatures(cand, form = ''):
 	query = 'diagnostic/candidatures'
 	try:
 		cc = cand.xpath(query)[0].text
+		if form == 'ord': # on rétablit l'ordre des filières donné par la liste filieres (cf parametres.py)
+			cc = ''.join(cc[alfil.index(fil)] for fil in filieres)
+		if form == 'impr': # ordonnées et nom complet.
+			cc = '-'.join(alfil[alfil.index(fil)].upper() for fil in filieres if cc[alfil.index(fil)]!='-')
 	except:
 		cc = '???'
-	return cc
-
-def get_candidatures_ordonnees(cand):
-	cc = get_candidatures(cand)
-	return cc[1:]+cc[:1]
-
-def get_candidatures_impr(cand):
-	check = parse('{}{}{}',get_candidatures_ordonnees(cand))
-	cc = ''
-	if check[0] == 'M':
-		cc += 'MPSI'
-	else:
-		cc += ''
-	if check[1] == 'P':
-		cc += '-PCSI-'
-	else:
-		cc += '-'
-	if check[2] == 'C':
-		cc += 'CPES'
-	else:
-		cc += ''
 	return cc
 
 def set_candidatures(cand, cc):

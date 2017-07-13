@@ -7,9 +7,9 @@ from parse import compile
 
 
 def decoup(sourc, dest):
-        "sourc: fichier source"
-        "dest: dossier destination"
-        # précompilation de la requête pour gagner en vitesse
+	"sourc: fichier source"
+	"dest: dossier destination"
+	# précompilation de la requête pour gagner en vitesse
 	regex = compile('{}Dossier n°{id:d}{}Page {page:d}')
 	pdfFileObj = open(sourc, 'rb')
 	pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
