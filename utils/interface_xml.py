@@ -12,6 +12,13 @@ from utils.parametres import filieres
 ## Variables globales
 alfil = sorted(filieres) # filières dans l'ordre alphabétique (sert dans get_candidatures)
 
+def isnum(note):
+	bool = True
+	try:
+		vers_num(note)
+	except:
+		bool = False
+	return bool
 
 def convert(str):
 	num = vers_num(str)
@@ -58,12 +65,13 @@ def get_note(cand, classe, matiere, date):
 def set_note(cand, classe, matiere, date, note):
 	query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
 	query += 'matière[intitulé ="'+matiere+'"][date="'+date+'"]'
-	try:
-		cand.xpath(query+'/note')[0].text = note
-	except: # Chemin vers la note à créer, à moins que Julien ne le prévoie systématiquement...
-		el = cand.xpath(query)[0]
-		subel = etree.SubElement(el, 'note')
-		subel.text = note
+	if isnum(note) and vers_num(note)>=0 and vers_num(note)<=20:
+		try:
+			cand.xpath(query+'/note')[0].text = note
+		except: # Chemin vers la note à créer...
+			el = cand.xpath(query)[0]
+			subel = etree.SubElement(el, 'note')
+			subel.text = note
 		
 def get_ecrit_EAF(cand):
 	try:
@@ -73,12 +81,13 @@ def get_ecrit_EAF(cand):
 	return note
 
 def set_ecrit_EAF(cand, note):
-	try:
-		cand.xpath('synoptique/français.écrit')[0].text = note
-	except:
-		el = cand.xpath('synoptique')[0]
-		subel = etree.SubElement(el, 'français.écrit')
-		subel.text = note
+	if isnum(note) and vers_num(note)>=0 and vers_num(note)<=20:
+		try:
+			cand.xpath('synoptique/français.écrit')[0].text = note
+		except:
+			el = cand.xpath('synoptique')[0]
+			subel = etree.SubElement(el, 'français.écrit')
+			subel.text = note
 
 def get_oral_EAF(cand):
 	try:
@@ -88,12 +97,13 @@ def get_oral_EAF(cand):
 	return note
 
 def set_oral_EAF(cand, note):
-	try:
-		cand.xpath('synoptique/français.oral')[0].text = note
-	except:
-		el = cand.xpath('synoptique')[0]
-		subel = etree.SubElement(el, 'français.oral')
-		subel.text = note
+	if isnum(note) and vers_num(note)>=0 and vers_num(note)<=20:
+		try:
+			cand.xpath('synoptique/français.oral')[0].text = note
+		except:
+			el = cand.xpath('synoptique')[0]
+			subel = etree.SubElement(el, 'français.oral')
+			subel.text = note
 	
 def get_CM1(cand,cpes):
 	if cpes:
@@ -108,13 +118,13 @@ def get_CM1(cand,cpes):
 
 def set_CM1(cand, note):
 	query = 'synoptique/matières/matière[intitulé = "Mathématiques"]/note'
-	try:
-		cand.xpath(query)[0].text = note
-	except:
-		el = cand.xpath('synoptique/matières/matière[intitulé = "Mathématiques"]')[0]
-		print(el)
-		subel = etree.SubElement(el,'note')
-		subel.text = note
+	if isnum(note) and vers_num(note)>=0 and vers_num(note)<=20:
+		try:
+			cand.xpath(query)[0].text = note
+		except:
+			el = cand.xpath('synoptique/matières/matière[intitulé = "Mathématiques"]')[0]
+			subel = etree.SubElement(el,'note')
+			subel.text = note
 
 def get_CP1(cand,cpes):
 	if cpes:
@@ -129,12 +139,13 @@ def get_CP1(cand,cpes):
 
 def set_CP1(cand, note):
 	query = 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note'
-	try:
-		cand.xpath(query)[0].text = note
-	except:
-		el = cand.xpath('synoptique/matières/matière[intitulé = "Physique/Chimie"]')[0]
-		subel = etree.SubElement(el, 'note')
-		subel.text = note
+	if isnum(note) and vers_num(note)>=0 and vers_num(note)<=20:
+		try:
+			cand.xpath(query)[0].text = note
+		except:
+			el = cand.xpath('synoptique/matières/matière[intitulé = "Physique/Chimie"]')[0]
+			subel = etree.SubElement(el, 'note')
+			subel.text = note
 
 def get_sem_prem(cand):
 	query = 'diagnostic/sem_prem'

@@ -98,8 +98,7 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 		return Client.html["miseEnPage"].format(**data)
 	
 	def lire_fichier(self):
-		# Lit le fichier XML choisi et vérifie la complétude des dossiers
-		# Les données candidats sont récupérées depuis un fichier xml.
+		# Lit le fichier XML choisi.
 		self.dossiers = etree.parse(self.fichier).getroot()
 
 	def sauvegarder(self):
@@ -371,7 +370,6 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 	
 	def lire_fichier(self): # Comment on dit déjà : écrire par dessus la méthode de la classe mère...
 		# Lit le fichier XML choisi et vérifie la complétude des dossiers
-		# Les données candidats sont récupérées depuis un fichier xml.
 		Client.lire_fichier(self)
 		for cand in self.dossiers:
 			xml.is_complet(cand) # on renseigne le noeud complet (oui/non)
@@ -725,7 +723,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					clas += ' doss_courant'
 			if xml.get_traite(liste[i]) != '':
 					clas += ' doss_traite' # affecte la classe css "doss_traite" aux ...
-			if client.get_droits() == "Administrateur":
+			if 'admin' in client.get_droits().lower():
 				if xml.get_complet(liste[i])=='non':	# Dossier incomplet (seulement admin ?)
 					clas += ' doss_incomplet'
 			lis += 'class = "{}"'.format(clas)
