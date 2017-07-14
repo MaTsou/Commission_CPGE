@@ -65,10 +65,14 @@ function verif_saisie()
 	// Cette fonction vérifie la saisie des notes par l'Administrateur
 	// Si elles ne sont pas numériques ou hors de [0;20], un message apparaît...
 	val = event.target.value;
-	if (val != parseFloat(val) && val != '-')
-	{ alert("Une valeur numérique est attendue...");}
-	if (val == parseFloat(val) && (parseFloat(val) <0 || parseFloat(val) >20))
-	{ alert("La valeur saisie n'est pas comprise entre 0 et 20");}
+	if (val != parseFloat(val) && val != '-'){
+		alert("Une valeur numérique est attendue...");
+		event.target.focus()
+	}
+	if (val == parseFloat(val) && (parseFloat(val) <0 || parseFloat(val) >20)){
+		alert("La valeur saisie n'est pas comprise entre 0 et 20");
+		event.target.focus()
+	}
 }
 
 function test_valid()
