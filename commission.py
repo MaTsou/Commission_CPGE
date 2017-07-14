@@ -324,10 +324,11 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		# Recherche des autres candidatures : renvoie une liste (éventuellement vide) de candidature
 		self.get_toutes_cand()
 
-		# Admin a-t-il changé qqc ? Si oui, mise à jour. 
+		## Admin a-t-il changé qqc ? Si oui, mise à jour. 
+			# Classe actuelle ?
 		if xml.get_clas_actu(cand)!=kwargs['clas_actu']:
 			for ca in self.toutes_cand: xml.set_clas_actu(ca,kwargs['clas_actu'])
-		# semestres ?
+			# semestres ?
 		if kwargs.get('sem_prem','off')=='on': # kwargs ne contient 'sem_prem' que si la case est cochée !
 			for ca in self.toutes_cand: xml.set_sem_prem(ca,'on')
 		else:
@@ -337,7 +338,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 			for ca in self.toutes_cand: xml.set_sem_term(ca,'on')
 		else:
 			for ca in self.toutes_cand: xml.set_sem_term(ca,'off')
-		# Cas des notes
+			# Cas des notes
 		matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
 		date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
 		classe = {'P':'Première','T':'Terminale'}
@@ -347,13 +348,13 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 					key = cl + mat + da
 					if xml.get_note(cand,classe[cl],matiere[mat],date[da])!=kwargs[key]:
 						for ca in self.toutes_cand: xml.set_note(ca,classe[cl],matiere[mat],date[da],kwargs[key])
-		# CPES
+			# CPES
 		if 'cpes' in xml.get_clas_actu(cand).lower():
 			if xml.get_CM1(cand,True)!=kwargs['CM1']:
 				for ca in self.toutes_cand: xml.set_CM1(ca, kwargs['CM1'])
 			if xml.get_CP1(cand,True)!=kwargs['CP1']:
 				for ca in self.toutes_cand: xml.set_CP1(ca, kwargs['CP1'])
-		# EAF écrit et oral...		
+			# EAF écrit et oral...		
 		if xml.get_ecrit_EAF(cand)!=kwargs['EAF_e']:
 			for ca in self.toutes_cand: xml.set_ecrit_EAF(ca,kwargs['EAF_e'])
 		if xml.get_oral_EAF(cand)!=kwargs['EAF_o']:
@@ -621,7 +622,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				for da in date:
 					key = cl + mat + da
 					note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
-					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}"/>'.format(key,key,note)
+					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}" onfocusout = "verif_saisie()"/>'.format(key,key,note) ## Cet évènement ne fonctionne pas...
 					if 'admin' in droits.lower():
 						data[key] = note_inp
 					else:
@@ -631,18 +632,18 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		if 'cpes' in xml.get_clas_actu(cand).lower():
 			cpes = True
 		if 'admin' in droits.lower():
-			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}"/>'.format(xml.get_CM1(cand,cpes))
+			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_CM1(cand,cpes))
 			data['CM1'] = note_CM1
-			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}"/>'.format(xml.get_CP1(cand,cpes))
+			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_CP1(cand,cpes))
 			data['CP1'] = note_CP1
 		else:
 			data['CM1'] = '{}'.format(xml.get_CM1(cand,cpes))
 			data['CP1'] = '{}'.format(xml.get_CP1(cand,cpes))
 		# EAF
 		if 'admin' in droits.lower():
-			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}"/>'.format(xml.get_ecrit_EAF(cand))
+			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_ecrit_EAF(cand))
 			data['EAF_e'] = note_eaf_e
-			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o"value = "{}"/>'.format(xml.get_oral_EAF(cand))
+			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o"value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_oral_EAF(cand))
 			data['EAF_o'] = note_eaf_o
 		else: 
 			data['EAF_e'] = xml.get_ecrit_EAF(cand)
