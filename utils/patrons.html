@@ -32,7 +32,7 @@
 </head> 
 <body onload="hide_loader();">
 <div id = "mep_menu">{contenu}</div>
-<script type="text/javascript" src="/utils/script.js"></script>
+<script type="text/javascript" src="/utils/script_menu.js"></script>
 </body>
 </html> 
 ##########
@@ -96,7 +96,7 @@
 <br>
 <div id = "imprim" class = "sous_menu">
 	<div class = "etape">&nbsp;- 5e étape : imprimer les fiches bilan de la commission :</div>
-	<form id = "impress" action = '/page_impression' method = POST onsubmit = "impress_wait();">
+	<form id = "impress" action = '/page_impression' method = POST">
 	{liste_impression}
 	</form>			
 </div>

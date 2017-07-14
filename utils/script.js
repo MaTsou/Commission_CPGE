@@ -66,7 +66,7 @@ function verif_saisie()
 	// Si elles ne sont pas numériques ou hors de [0;20], un message apparaît...
 	val = event.target.value;
 	if (val != parseFloat(val) && val != '-'){
-		alert("Une valeur numérique est attendue...");
+		alert("Une valeur numérique (ou '-') est attendue...");
 		event.target.focus()
 	}
 	if (val == parseFloat(val) && (parseFloat(val) <0 || parseFloat(val) >20)){
@@ -128,56 +128,4 @@ function set_scroll()
     // définir le scroll à cette valeur
     var div = document.getElementById('liste');
     div.scrollTop = stock.value;
-}
-
-function hide_loader()
-{
-    document.getElementById("patience").style.visibility = "hidden";
-}
-
-function show_loader()
-{
-    document.getElementById('patience').style.visibility = 'visible';
-}
-
-function verif_wait()
-{
-    list = document.getElementsByClassName('fichier');
-    var rep = true;
-    if (list.length > 3){
-	rep = confirm('Attention, cette action entraînera la réinitialisation de tous les fichiers ADMIN.\n Toutes les modifications apportées seront perdues.\n Cliquez sur OK pour continuer.');
-    };
-    if (rep) {
-	show_loader();
-	var form = document.getElementById('traiter');
-	setTimeout(function() {form.submit();},200);
-    }
-}
-
-function genere_wait()
-{
-    show_loader();
-    var form = document.getElementById('genere');
-    setTimeout(function() {form.submit();},200);
-}
-
-function recolt_wait()
-{
-    show_loader();
-    var form = document.getElementById('recolte');
-    setTimeout(function() {form.submit();},200);
-}
-
-function impress_wait()
-{
-    show_loader();
-    var form = document.getElementById('impress');
-    setTimeout(function() {form.submit();},200);
-}
-
-function tableaux_wait()
-{
-    show_loader();
-    var form = document.getElementById('tableaux');
-    setTimeout(function() {form.submit();},200);
 }
