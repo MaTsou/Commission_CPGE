@@ -7,7 +7,7 @@
 # du formulaire.
 # Une méthode n'est visible par le navigateur que si elle est précédée par @cherrypy.expose
 # cherrypy --> navigateur : en retour (par la fonction return), le code python renvoi le code --- sous
-# la forme d'une chaine (immense) de caractères --- d'une page html. 
+# la forme d'une chaine (immense) de caractères --- d'une page html.
 # Ce peut-être la même qui a généré l'appel à cette méhode ou toute autre. 
 
 import os, cherrypy, random, copy, glob, csv, pickle
@@ -29,8 +29,8 @@ from utils.parametres import nb_jury
 ########################################################################
 
 class Client(): # Objet client "abstrait" pour la class Serveur
-	# Variables de classe :
-	# Chargement de tous les "patrons" de pages HTML dans un dictionnaire :
+	# Variables de classe : 
+	# Chargement de tous les "patrons" de pages HTML dans le dictionnaire "html" :
 	with open(os.path.join(os.curdir,"utils","patrons.html"),"r") as fi:
 		html = {}
 		for ligne in fi:
@@ -47,16 +47,21 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 	# Fin variables de classe
 
 	# constructeur
-	def __init__(self,key,droits):
+	def __init__(self, master, key, droits):
 		self.je_suis = key
+		self.master = master
 		self.dossiers = []
-		self.num_doss = 0
+		self.num_doss = -1 # Cette valeur 'absurde' permet de détecter si le jury est en cours de traitement..
 		self.fichier = ''
 		self.droits = droits
 		self.filiere = ''
 	
 	def get_je_suis(self):
 		return self.je_suis
+
+	def get_liste_fichiers_en_cours(self):
+		# renvoiste liste des fichiers en cours de traitement.
+		return self.master.get_liste_fichiers_en_cours()
 	
 	def get_cand_cour(self): # retourne le candidat courant
 		return self.dossiers[self.num_doss]
@@ -72,6 +77,9 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 	
 	def set_fichier(self,fich):
 		self.fichier = fich
+	
+	def get_fichier(self):
+		return self.fichier
 	
 	def set_droits(self,droits):
 		self.droits = droits
@@ -117,11 +125,11 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 #                        Class Jury                                    #
 ########################################################################
 
-class Jury(Client): # Objet client (de type jury de commission)  pour la class Serveur
+class Jury(Client): # Objet client (de type jury de commission) pour la class Serveur
 
 	# constructeur
-	def __init__(self,key):
-		Client.__init__(self,key,'Jury')
+	def __init__(self, master, key):
+		Client.__init__(self, master, key, 'Jury')
 	
 	def set_droits(self,droits):
 		Client.set_droits(self,'Jury '+droits)
@@ -137,15 +145,20 @@ class Jury(Client): # Objet client (de type jury de commission)  pour la class S
 		if txt != '':
 			txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>'+txt
 		data['liste'] = txt
-		return self.mise_en_page_menu(self.genere_header(),Client.html["menu_comm"].format(**data))
+		return self.mise_en_page_menu(self.genere_header(), Client.html["menu_comm"].format(**data))
 
 	def genere_liste_comm(self):
 		# Compose le menu commission
 		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_*.xml"))
 		txt = ''
-		for fich in list_fich:
-			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"/>'.format(fich)
-			txt += '<br>'
+		list_fich_en_cours = self.get_liste_fichiers_en_cours()
+		for fich in list_fich: # Si un fichier est déjà traité par un jury, son bouton est disabled...
+			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"'.format(fich)
+			fin = ''
+			if fich in list_fich_en_cours and fich != self.get_fichier():
+				fin = ' disabled'
+			txt += fin
+			txt += '/><br>'
 		return txt
 	
 	def traiter(self, **kwargs):
@@ -180,9 +193,9 @@ class Jury(Client): # Objet client (de type jury de commission)  pour la class S
 
 class Admin(Client): # Objet client (de type Administrateur) pour la class Serveur
 
-	def __init__(self,key):
+	def __init__(self, master, key):
 		# constructeur
-		Client.__init__(self,key,'Administrateur')
+		Client.__init__(self, master, key, 'Administrateur')
 		self.autres_filieres = []
 		self.fichiers_autres_fil = []
 		self.dossiers_autres_fil = []
@@ -311,7 +324,8 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		self.dossiers_autres_fil = [etree.parse(fich).getroot() for fich in self.fichiers_autres_fil]
 		# Candidatures
 		self.toutes_cand = [self.dossiers[self.num_doss]] # 1ere candidature = candidature en cours..
-		self.toutes_cand.extend([root.xpath('./candidat/id_apb[text()={}]'.format(iden))[0].getparent() for root in self.dossiers_autres_fil if root.xpath('./candidat/id_apb[text()={}]'.format(iden))])
+		self.toutes_cand.extend([root.xpath('./candidat/id_apb[text()={}]'.format(iden))[0].getparent() for root in
+		self.dossiers_autres_fil if root.xpath('./candidat/id_apb[text()={}]'.format(iden))])
 
 	def traiter(self, **kwargs):
 		# Traitement dossier avec droits administrateur	
@@ -366,7 +380,6 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		# Sauvegarde autres candidatures
 		for i in range(0,len(self.fichiers_autres_fil)):
 			with open(self.fichiers_autres_fil[i], 'wb') as fich:
-				print('fichier écrit : ',fich)
 				fich.write(etree.tostring(self.dossiers_autres_fil[i], pretty_print=True, encoding='utf-8'))
 	
 	def lire_fichier(self): # Comment on dit déjà : écrire par dessus la méthode de la classe mère...
@@ -396,6 +409,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 
 	def get_cand_cour(self):
 		return self.get_client_cour().get_cand_cour()
+
+	def get_liste_fichiers_en_cours(self):
+		lis = []
+		for cli in self.clients:
+			if self.clients[cli].get_num_doss() != -1:
+				lis.append(self.clients[cli].get_fichier())
+		return lis
 	
 	@cherrypy.expose
 	def index(self):
@@ -406,14 +426,20 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def identification(self, **kwargs):
 		# Admin ou Jury : fonction appelée par le formulaire de la page d'accueil. 
-		# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
-		key = 'client_{}'.format(len(self.clients)+1)
-		cherrypy.session['JE'] = key # Le client stocke qui il est
-		if kwargs['acces']=="Accès administrateur":
-			self.clients[key] = Admin(key)
+		# On teste s'il y a déjà un cookie de session sur l'ordinateur client
+		if cherrypy.session.get('JE','none') != 'none':
+			# Si oui, on affiche son menu
+			return self.retour_menu()
 		else:
-			self.clients[key] = Jury(key)
-		return self.clients[key].genere_menu()
+			# Si non, 
+			# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
+			key = 'client_{}'.format(len(self.clients)+1)
+			cherrypy.session['JE'] = key # Le client stocke qui il est
+			if kwargs['acces']=="Accès administrateur":
+				self.clients[key] = Admin(self,key) # création d'une instance admin (self fournit son master au client)
+			else:
+				self.clients[key] = Jury(self,key) # création d'une instance jury
+			return self.clients[key].genere_menu() # Affichage du menu adéquat
 
 	@cherrypy.expose
 	def retour_menu(self):
@@ -508,7 +534,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		self.stat()
 		# Fin
 		return self.get_client_cour().genere_menu()
-	
+
+	def fichier_libre(self):
+		return False
+
 	@cherrypy.expose
 	def choix_comm(self, **kwargs):
 		# Gère le choix fait dans le menu commission
@@ -525,7 +554,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		client.set_num_doss(0) # on commence par le premier !
 		cherrypy.session['mem_scroll'] = '0'
 		# Affichage de la page de gestion des dossiers
-		return self.affi_dossier()		
+		return self.affi_dossier()
 	
 	@cherrypy.expose
 	def choix_admin(self, **kwargs):
@@ -561,7 +590,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		self.liste = self.genere_liste()
 		# On retourne cette page au navigateur
 		return client.mise_en_page(self.header,self.dossier,self.liste)
-
 	
 	@cherrypy.expose
 	def traiter(self, **kwargs):
@@ -599,7 +627,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		fil = self.get_client_cour().get_filiere()
 		data['ref_fich'] = os.path.join('docs_candidats','{}'.format(fil),'docs_{}'.format(xml.get_id(cand)))
 		if 'admin' in droits.lower():
-			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10" value="{}"/>'.format(xml.get_clas_actu(cand))
+			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10"\
+			value="{}"/>'.format(xml.get_clas_actu(cand))
 			data['clas_actu'] = clas_inp
 		else:
 			data['clas_actu'] = xml.get_clas_actu(cand)
@@ -622,7 +651,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				for da in date:
 					key = cl + mat + da
 					note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
-					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}" onfocusout = "verif_saisie()"/>'.format(key,key,note) ## Cet évènement ne fonctionne pas...
+					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}"\
+					onfocusout = "verif_saisie()"/>'.format(key,key,note) 
 					if 'admin' in droits.lower():
 						data[key] = note_inp
 					else:
@@ -632,18 +662,22 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		if 'cpes' in xml.get_clas_actu(cand).lower():
 			cpes = True
 		if 'admin' in droits.lower():
-			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_CM1(cand,cpes))
+			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}" onfocusout =\
+			"verif_saisie()"/>'.format(xml.get_CM1(cand,cpes))
 			data['CM1'] = note_CM1
-			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_CP1(cand,cpes))
+			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}" onfocusout =\
+			"verif_saisie()"/>'.format(xml.get_CP1(cand,cpes))
 			data['CP1'] = note_CP1
 		else:
 			data['CM1'] = '{}'.format(xml.get_CM1(cand,cpes))
 			data['CP1'] = '{}'.format(xml.get_CP1(cand,cpes))
 		# EAF
 		if 'admin' in droits.lower():
-			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_ecrit_EAF(cand))
+			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}"\
+			onfocusout = "verif_saisie()"/>'.format(xml.get_ecrit_EAF(cand))
 			data['EAF_e'] = note_eaf_e
-			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o"value = "{}" onfocusout = "verif_saisie()"/>'.format(xml.get_oral_EAF(cand))
+			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o" value = "{}"\
+			onfocusout = "verif_saisie()"/>'.format(xml.get_oral_EAF(cand))
 			data['EAF_o'] = note_eaf_o
 		else: 
 			data['EAF_e'] = xml.get_ecrit_EAF(cand)
@@ -674,13 +708,16 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			ncval = 'NC'
 		# Construction de la barre de correction :
 		barre = '<tr><td width = "2.5%"></td><td>'
-		barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25"	name = "correc" id = "correc" onchange="javascript:maj_note();"	onmousemove="javascript:maj_note();" onclick="click_range();" value = "{}"/>'.format(correc)
+		barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25"	name = "correc" id = "correc"\
+		onchange="javascript:maj_note();" onmousemove="javascript:maj_note();" onclick="click_range();" value =\
+		"{}"/>'.format(correc)
 		barre += '</td><td width = "2.5%"></td></tr>' # fin de la ligne range
 		txt = '' # on construit maintenant la liste des valeurs...
 		for i in range(0,len(Serveur.corrections)+1):
 			if (i % 2 == 0):
 				txt += '<td width = "7%">{:+3.1f}</td>'.format(Serveur.corrections[i])
-		barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class = "correc_notimpr">{}</tr></table>'.format(txt)
+		barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
+		"correc_notimpr">{}</tr></table>'.format(txt)
 		barre += '<span class = "correc_impr">'+xml.get_jury(cand)+' : {:+.2f}'.format(float(correc))+'</span>'
 		barre += '</td></tr>'
 		# input hidden nc
@@ -757,7 +794,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			nbjury = int(nb_jury[fil[0].lower()])
 			# Découpage en n listes de dossiers
 			for j in range(0,nbjury):
-				dossier = []	# deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append vers dossier
+				dossier = []	# deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append
 				[dossier.append(copy.deepcopy(doss[i])) for i in range(0,len(doss)) if i%nbjury == j]
 				# Sauvegarde
 				res = etree.Element('candidats')
@@ -868,11 +905,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
 			nom += '_retenus.csv'
 			c = csv.writer(open(nom,'w'))
-			entetes = ['Rang','Nom','Prénom','Date de naissance','score brut','correction','score final','jury','Observations']
+			entetes = ['Rang', 'Nom', 'Prénom', 'Date de naissance', 'score brut', 'correction', 'score final', 'jury',
+			'Observations']
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [fonction(cand) for fonction in [xml.get_rang,xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_scoreb,xml.get_correc,xml.get_scoref,xml.get_jury,xml.get_motifs]]
+					data = [fonction(cand) for fonction in [xml.get_rang, xml.get_nom, xml.get_prenom, xml.get_naiss,
+					xml.get_scoreb, xml.get_correc, xml.get_scoref, xml.get_jury, xml.get_motifs]]
 					c.writerow(data)
 			# 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
 			# Le même que pour Jeanne, mais sans les notes...
@@ -893,7 +932,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
 			nom += '_alphabetique.csv'
 			c = csv.writer(open(nom,'w'))
-			entetes = ['Rang','Candidatures','Nom','Prénom','Date de naissance','Sexe','Nationalité','id_apb','Boursier','Classe actuelle','Etablissement','Commune Etablissement']
+			entetes = ['Rang', 'Candidatures', 'Nom', 'Prénom', 'Date de naissance', 'Sexe', 'Nationalité', 'id_apb',
+			'Boursier', 'Classe actuelle', 'Etablissement', 'Commune Etablissement']
 			# entêtes notes...
 			matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
 			date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
@@ -908,7 +948,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			# Remplissage du fichier dest
 			for cand in doss:
 				data = [xml.get_rang(cand), xml.get_candidatures(cand,'ord')]
-				data += [fonction(cand) for fonction in [xml.get_nom,xml.get_prenom,xml.get_naiss,xml.get_sexe,xml.get_nation,xml.get_id,xml.get_boursier,xml.get_clas_actu,xml.get_etab,xml.get_commune_etab]]
+				data += [fonction(cand) for fonction in [xml.get_nom, xml.get_prenom, xml.get_naiss, xml.get_sexe,
+				xml.get_nation, xml.get_id, xml.get_boursier, xml.get_clas_actu, xml.get_etab, xml.get_commune_etab]]
 				# Les notes...
 				for cl in classe:
 					for da in date:
@@ -920,7 +961,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				cpes = 'cpes' in xml.get_clas_actu(cand).lower()
 				data.extend([xml.get_CM1(cand,cpes),xml.get_CP1(cand,cpes)])
 				# La suite
-				data.extend([fonction(cand) for fonction in [xml.get_scoreb,xml.get_correc,xml.get_scoref,xml.get_jury,xml.get_motifs]])
+				data.extend([fonction(cand) for fonction in [xml.get_scoreb, xml.get_correc, xml.get_scoref,
+				xml.get_jury, xml.get_motifs]])
 				c.writerow(data)
 		# Retour au menu
 		cherrypy.session['tableaux'] = 'ok' # Ça c'est pour un message ok !
