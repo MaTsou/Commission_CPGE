@@ -59,10 +59,6 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 	def get_je_suis(self):
 		return self.je_suis
 
-	def get_liste_fichiers_en_cours(self):
-		# renvoiste liste des fichiers en cours de traitement.
-		return self.master.get_liste_fichiers_en_cours()
-	
 	def get_cand_cour(self): # retourne le candidat courant
 		return self.dossiers[self.num_doss]
 	
@@ -134,6 +130,10 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 	def set_droits(self,droits):
 		Client.set_droits(self,'Jury '+droits)
 
+	def get_liste_autres_fichiers_en_cours(self):
+		# renvoiste liste des fichiers en cours de traitement.
+		return self.master.get_autres_fichiers_en_cours(self)
+
 	def mise_en_page(self,header,dossier='',liste=''):
 		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
@@ -151,11 +151,11 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 		# Compose le menu commission
 		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_*.xml"))
 		txt = ''
-		list_fich_en_cours = self.get_liste_fichiers_en_cours()
+		list_fich_en_cours = self.get_liste_autres_fichiers_en_cours()
 		for fich in list_fich: # Si un fichier est déjà traité par un jury, son bouton est disabled...
 			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"'.format(fich)
 			fin = ''
-			if fich in list_fich_en_cours and fich != self.get_fichier():
+			if fich in list_fich_en_cours:
 				fin = ' disabled'
 			txt += fin
 			txt += '/><br>'
@@ -410,9 +410,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def get_cand_cour(self):
 		return self.get_client_cour().get_cand_cour()
 
-	def get_liste_fichiers_en_cours(self):
+	def get_autres_fichiers_en_cours(self, client):
 		lis = []
-		for cli in self.clients:
+		autres_clients = [cli for cli in self.clients if self.clients[cli]!=client]
+		for cli in autres_clients:
 			if self.clients[cli].get_num_doss() != -1:
 				lis.append(self.clients[cli].get_fichier())
 		return lis
@@ -543,18 +544,24 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Gère le choix fait dans le menu commission
 		# récupère le client
 		client = self.get_client_cour()
-		# Mise à jour des attributs du client
-		client.set_fichier(kwargs["fichier"])
-		r = parse('{}comm_{}{:d}.xml', kwargs["fichier"]) # récupère nom commission
-		client.set_droits(r[1] + str(r[2]))
-		client.set_filiere(r[1].lower())
-		# Ici, on va charger les dossiers présents dans le fichier choisi :
-		client.lire_fichier()
-		# Initialisation des paramètres
-		client.set_num_doss(0) # on commence par le premier !
-		cherrypy.session['mem_scroll'] = '0'
-		# Affichage de la page de gestion des dossiers
-		return self.affi_dossier()
+		# Teste si le fichier n'a pas été choisi par un autre jury
+		if kwargs["fichier"] in self.get_autres_fichiers_en_cours(client):
+			# Si oui, retour menu
+			self.retour_menu()
+		else:
+			# sinon
+			# Mise à jour des attributs du client
+			client.set_fichier(kwargs["fichier"])
+			r = parse('{}comm_{}{:d}.xml', kwargs["fichier"]) # récupère nom commission
+			client.set_droits(r[1] + str(r[2]))
+			client.set_filiere(r[1].lower())
+			# Ici, on va charger les dossiers présents dans le fichier choisi :
+			client.lire_fichier()
+			# Initialisation des paramètres
+			client.set_num_doss(0) # on commence par le premier !
+			cherrypy.session['mem_scroll'] = '0'
+			# Affichage de la page de gestion des dossiers
+			return self.affi_dossier()
 	
 	@cherrypy.expose
 	def choix_admin(self, **kwargs):
