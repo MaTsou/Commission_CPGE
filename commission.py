@@ -10,7 +10,7 @@
 # la forme d'une chaine (immense) de caractères --- d'une page html.
 # Ce peut-être la même qui a généré l'appel à cette méhode ou toute autre. 
 
-import os, cherrypy, random, copy, glob, csv, pickle
+import os, sys, cherrypy, random, copy, glob, csv, pickle
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
@@ -422,11 +422,41 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def index(self):
 		# Page d'entrée du site web - renvoi d'une page HTML
 		data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
-		return Client.html["MEP_MENU"].format(**data)
+		if len(sys.argv) > 1 and sys.argv[1] == 'test':
+			print('Application lancée en mode test !')
+			return Client.html["MEP_MENU"].format(**data)
+		else:
+			if cherrypy.request.local.name == cherrypy.request.remote.ip:
+				print("Le client est sur le serveur : il s'agit de l'administrateur...")
+				# On teste s'il y a déjà un cookie de session sur l'ordinateur client
+				if cherrypy.session.get('JE','none') != 'none':
+					# Si oui, on affiche son menu
+					return self.retour_menu()
+				else:
+					# Si non, 
+					# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
+					key = 'client_{}'.format(len(self.clients)+1)
+					cherrypy.session['JE'] = key # Le client stocke qui il est
+					self.clients[key] = Admin(self, key) # On créé un objet admin
+					return self.clients[key].genere_menu() # On affiche son menu
+			else:
+				print("Le client n'est pas sur le serveur : il s'agit d'un jury...")
+				# On teste s'il y a déjà un cookie de session sur l'ordinateur client
+				if cherrypy.session.get('JE','none') != 'none':
+					# Si oui, on affiche son menu
+					return self.retour_menu()
+				else:
+					# Si non, 
+					# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
+					key = 'client_{}'.format(len(self.clients)+1)
+					cherrypy.session['JE'] = key # Le client stocke qui il est
+					self.clients[key] = Jury(self, key) # On créé un objet admin
+					return self.clients[key].genere_menu() # On affiche son menu
+
   
 	@cherrypy.expose
 	def identification(self, **kwargs):
-		# Admin ou Jury : fonction appelée par le formulaire de la page d'accueil. 
+		# Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
 		# On teste s'il y a déjà un cookie de session sur l'ordinateur client
 		if cherrypy.session.get('JE','none') != 'none':
 			# Si oui, on affiche son menu
