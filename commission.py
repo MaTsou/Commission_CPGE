@@ -400,9 +400,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0,(max_correc-min_correc)*nb_correc+1)]
 	# Fin déclaration attributs de classe
 
-	def __init__(self):
+	def __init__(self, test):
 		# constructeur
 		self.clients = {}
+		self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin" or	"Jury" ?)
 	
 	def get_client_cour(self):
 		return self.clients[cherrypy.session["JE"]]
@@ -421,56 +422,38 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def index(self):
 		# Page d'entrée du site web - renvoi d'une page HTML
-		data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
-		if len(sys.argv) > 1 and sys.argv[1] == 'test':
+		# S'il n'y a pas déjà un cookie de session sur l'ordinateur client, on en créé un
+		if cherrypy.session.get('JE','none') == 'none':
+			key = 'client_{}'.format(len(self.clients)+1) # clé d'identification du client
+			cherrypy.session['JE'] = key # Stockée sur la machine client
+		else: # on vire l'objet Admin ou Jury associé
+			self.clients.pop(cherrypy.session['JE'], '')
+		# Mode TEST ou pas ?
+		if self.test: # On affiche le menu qui propose un login Admin ou un login Commission
 			print('Application lancée en mode test !')
+			data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
 			return Client.html["MEP_MENU"].format(**data)
-		else:
+		else: # Si client sur la machine serveur, il est Admin ; sinon, il est Jury
 			if cherrypy.request.local.name == cherrypy.request.remote.ip:
-				print("Le client est sur le serveur : il s'agit de l'administrateur...")
-				# On teste s'il y a déjà un cookie de session sur l'ordinateur client
-				if cherrypy.session.get('JE','none') != 'none':
-					# Si oui, on affiche son menu
-					return self.retour_menu()
-				else:
-					# Si non, 
-					# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
-					key = 'client_{}'.format(len(self.clients)+1)
-					cherrypy.session['JE'] = key # Le client stocke qui il est
-					self.clients[key] = Admin(self, key) # On créé un objet admin
-					return self.clients[key].genere_menu() # On affiche son menu
+				print("Le client est sur la machine serveur : il s'agit de l'administrateur...")
+				# On créé un objet Admin associé à la clé key
+				self.clients[key] = Admin(self, key) 
+				return self.clients[key].genere_menu() # On affiche son menu
 			else:
-				print("Le client n'est pas sur le serveur : il s'agit d'un jury...")
-				# On teste s'il y a déjà un cookie de session sur l'ordinateur client
-				if cherrypy.session.get('JE','none') != 'none':
-					# Si oui, on affiche son menu
-					return self.retour_menu()
-				else:
-					# Si non, 
-					# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
-					key = 'client_{}'.format(len(self.clients)+1)
-					cherrypy.session['JE'] = key # Le client stocke qui il est
-					self.clients[key] = Jury(self, key) # On créé un objet admin
-					return self.clients[key].genere_menu() # On affiche son menu
-
+				print("Le client n'est pas sur la machine serveur : il s'agit d'un jury...")
+				# On créé un objet Jury associé à la clé key
+				self.clients[key] = Jury(self, key)
+				return self.clients[key].genere_menu() # On affiche son menu
   
 	@cherrypy.expose
 	def identification(self, **kwargs):
 		# Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
-		# On teste s'il y a déjà un cookie de session sur l'ordinateur client
-		if cherrypy.session.get('JE','none') != 'none':
-			# Si oui, on affiche son menu
-			return self.retour_menu()
+		key = cherrypy.session['JE']
+		if kwargs['acces']=="Accès administrateur":
+			self.clients[key] = Admin(self,key) # création d'une instance admin (self fournit son master au client)
 		else:
-			# Si non, 
-			# On créé une clé client_i (stockée dans les cookies de session) et l'objet associé est Admin ou Jury
-			key = 'client_{}'.format(len(self.clients)+1)
-			cherrypy.session['JE'] = key # Le client stocke qui il est
-			if kwargs['acces']=="Accès administrateur":
-				self.clients[key] = Admin(self,key) # création d'une instance admin (self fournit son master au client)
-			else:
-				self.clients[key] = Jury(self,key) # création d'une instance jury
-			return self.clients[key].genere_menu() # Affichage du menu adéquat
+			self.clients[key] = Jury(self,key) # création d'une instance jury
+		return self.clients[key].genere_menu() # Affichage du menu adéquat
 
 	@cherrypy.expose
 	def retour_menu(self):
@@ -728,10 +711,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def genere_header(self): 
 		# Génère l'entête de page HTML
 		# comme son nom l'indique, cette fonction génère une chaine de caractères qui est le code html du header...
-		qui = cherrypy.session.get('JE','') 
+		qqn = self.clients.get(cherrypy.session['JE'], False)
 		sous_titre = ''
-		if qui !='': # sur la page d'accueil, pas de sous-titre...
-			sous_titre = ' - Accès {}.'.format(self.clients[qui].get_droits())
+		if qqn: # sur la page d'accueil, pas de sous-titre...
+			sous_titre = ' - Accès {}.'.format(qqn.get_droits())
 		return '<h1 align="center">EPA - Recrutement CPGE/CPES {}</h1>'.format(sous_titre)
 	
 	
@@ -1010,6 +993,16 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 #                    === PROGRAMME PRINCIPAL ===                       #
 ########################################################################
 
+# Récupération des options de lancement ('-test' pour une version test, '-ip 196.168.1.10' pour changer l'ip serveur)
+test = False
+if '-test' in sys.argv:
+	test = True
+
+ip = '127.0.0.1' # ip socket_host par défaut...
+if '-ip' in sys.argv:
+	ip = sys.argv[sys.argv.index('-ip')+1]
+
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
-cherrypy.quickstart(Serveur(),'/', config ="utils/config.conf")
+cherrypy.config.update({"server.socket_host":ip})
+cherrypy.quickstart(Serveur(test),'/', config ="utils/config.conf")
