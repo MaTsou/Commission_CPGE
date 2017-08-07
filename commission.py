@@ -428,22 +428,21 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			cherrypy.session['JE'] = key # Stockée sur la machine client
 		else: # on vire l'objet Admin ou Jury associé
 			self.clients.pop(cherrypy.session['JE'], '')
-		# Mode TEST ou pas ?
-		if self.test: # On affiche le menu qui propose un login Admin ou un login Commission
-			print('Application lancée en mode test !')
-			data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
-			return Client.html["MEP_MENU"].format(**data)
-		else: # Si client sur la machine serveur, il est Admin ; sinon, il est Jury
-			if cherrypy.request.local.name == cherrypy.request.remote.ip:
-				print("Le client est sur la machine serveur : il s'agit de l'administrateur...")
+		# Machine serveur ou pas ?
+		if cherrypy.request.local.name == cherrypy.request.remote.ip:
+			if self.test: # Mode TEST ou pas ?
+				# On affiche le menu qui propose un login Admin ou un login Commission
+				data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
+				return Client.html["MEP_MENU"].format(**data)
+			else:
+				# Machine serveur et Mode normal ==> c'est un Client Admin
 				# On créé un objet Admin associé à la clé key
 				self.clients[key] = Admin(self, key) 
-				return self.clients[key].genere_menu() # On affiche son menu
-			else:
-				print("Le client n'est pas sur la machine serveur : il s'agit d'un jury...")
-				# On créé un objet Jury associé à la clé key
-				self.clients[key] = Jury(self, key)
-				return self.clients[key].genere_menu() # On affiche son menu
+		else: # Machine non serveur ==> c'est un Client Jury
+			# On créé un objet Jury associé à la clé key
+			self.clients[key] = Jury(self, key)
+		# On affiche le menu du client
+		return self.clients[key].genere_menu()
   
 	@cherrypy.expose
 	def identification(self, **kwargs):
