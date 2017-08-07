@@ -427,6 +427,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			key = 'client_{}'.format(len(self.clients)+1) # clé d'identification du client
 			cherrypy.session['JE'] = key # Stockée sur la machine client
 		else: # on vire l'objet Admin ou Jury associé
+			key = cherrypy.session['JE']
 			self.clients.pop(cherrypy.session['JE'], '')
 		# Machine serveur ou pas ?
 		if cherrypy.request.local.name == cherrypy.request.remote.ip:
