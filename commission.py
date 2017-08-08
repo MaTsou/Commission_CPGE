@@ -177,7 +177,7 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 			scoref = '{:.2f}'.format(note).replace('.',',')
 		xml.set_correc(cand, cor)
 		xml.set_scoref(cand, scoref)
-		# Qui a traité le dossier
+		# 2/ Qui a traité le dossier
 		xml.set_jury(cand,self.droits)
 		# 3/ "bouléen" traite : dossier traité
 		xml.set_traite(cand)

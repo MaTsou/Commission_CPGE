@@ -8,16 +8,18 @@
 	<div id = "header">{header}</div>
 </head> 
 <body onload="javascript:set_scroll();">
-<div>
-	<div id = "dossier">{dossier}</div>
-	<div id = "bandeau_lateral">
-		<form action="/retour_menu" method = POST>
-			<div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}">
-			</div>
-		</form>
-		<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
-	</div>
-<script type="text/javascript" src="/utils/script.js"></script>
+	<div>
+		<div id = "dossier">{dossier}</div>
+		<div id = "bandeau_lateral">
+			<form action="/retour_menu" method = POST>
+				<div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}">
+				</div>
+			</form>
+			<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
+		</div>
+	<div>
+	<script type="text/javascript"
+	src="/utils/script.js"></script>
 </body>
 </html> 
 ##########
@@ -25,8 +27,8 @@
 <!DOCTYPE html>
 <html> 
 <head> 
-	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
-	<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/> 
+	<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css"/>
 	<title>Gestion Commission EPA</title>
 	<div id = "header">{header}</div>
 </head> 
@@ -38,10 +40,10 @@
 ##########
 [*pageAccueil*] 
 <div class = "menu">
-<form action="/identification" method=POST> 
-	<input type=submit class="bouton_menu" name="acces" value="Accès administrateur"><br> 
-	<input type=submit class="bouton_menu" name="acces" value="Accès commission"> 
-</form> 
+	<form action="/identification" method=POST> 
+		<input type=submit class="bouton_menu" name="acces" value="Accès administrateur"/><br> 
+		<input type=submit class="bouton_menu" name="acces" value="Accès commission"/> 
+	</form> 
 </div>
 ##########
 [*menu_comm*]
@@ -54,20 +56,18 @@
 [*menu_admin_avant*]
 <div id = "csv" class = "sous_menu">
 	<div class = "etape">&nbsp;- 1e étape : digérer les données APB :</div>
-	<form id  = "traiter" action = "/traiter_apb" method = POST>
+	<form id = "traiter" action = "/traiter_apb" method = POST>
 		<div class = "liste_csv">Fichiers csv présents : <br>{liste_csv}</div><!--
-	 --><div class = "bout_csv_div"><input type = "button" class = "fichier" value = "VÉRIFIER / TRAITER" onclick = "verif_wait();"></div><!--
-	 --><div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
-	 	<input type = "hidden" id = "annee" name = "annee_en_cours" value = "{annee_en_cours}"/>
+		 --><div class = "bout_csv_div"><input type = "button" class = "fichier" value = "VÉRIFIER / TRAITER" onclick = "verif_wait();"></div><!--
+		 --><div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
+		<input type = "hidden" id = "annee" name = "annee_en_cours" value = "{annee_en_cours}"/>
 	</form>	
 </div>
 <br>
 <div id = "admin" class = "sous_menu">
 	<div class = "etape">&nbsp;- 2e étape : compléter les dossiers qui le nécessitent...</div>
 	<div class = "liste_admin">
-		<form action = "/choix_admin" method = POST>
-			{liste_admin}
-		</form>	
+		<form action = "/choix_admin" method = POST> {liste_admin} </form>	
 	</div>
 	<div class = "stat">{liste_stat}</div>
 </div>
@@ -75,155 +75,146 @@
 <div id = "comm" class = "sous_menu">
 	<div class = "etape">&nbsp;- 3e étape : générer les fichiers pour la commission...</div>
 	<form id ='genere' action = '/genere_fichiers_comm' method = POST>
-	{bout_etap3}
+		{bout_etap3}
 	</form>	
 </div>
-
 <div id ="patience">
 	<h1>Traitement en cours...</h1>
-	<div class = "loader">
-		<p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
-	</div>
+	<div class = "loader"><p><img id = "gif" src = "/utils/ajax-loader.gif"></p></div>
 	<h1>...Veuillez Patienter</h1>
 </div>
 ##########
 [*menu_admin_apres*]
 <div id = "classement" class = "sous_menu">
 	<div class = "etape">&nbsp;- 4e étape : récolter le travail de la commission...</div>
-	<form id = "recolte" action = '/genere_fichiers_class' method = POST>
-	{bout_etap4}
-	</form>
+	<form id = "recolte" action = '/genere_fichiers_class' method = POST> {bout_etap4} </form>
 </div>
 <br>
 <div id = "imprim" class = "sous_menu">
 	<div class = "etape">&nbsp;- 5e étape : imprimer les fiches bilan de la commission :</div>
-	<form id = "impress" action = '/page_impression' method = POST">
-	{liste_impression}
-	</form>			
+	<form id = "impress" action = '/page_impression' method = POST"> {liste_impression} </form>			
 </div>
 <br>
 <div id = "imprim" class = "sous_menu">
 	<div class = "etape">&nbsp;- 6e étape : générer les tableaux bilan :</div>
 	{form_tableaux}
 </div>
-
 <div id ="patience">
 	<p><h1>Traitement en cours...</h1></p>
-	<div class = "loader">
-		<p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
-	</div>
+	<div class = "loader"> <p><img id = "gif" src = "/utils/ajax-loader.gif"></p> </div>
 	<p><h1>...Veuillez Patienter</h1></p>
 </div>
 ########## 
 [*page_dossier*]
 <form id = "formulaire" action = "/traiter" method = POST onsubmit="return test_valid();">
-<table width = "100%" align = "center">
-	<tr>
-		<td class="grossi" align = "left" colspan ="1">{Nom}</td>
-		<td class="grossi" align = "center"> né(e) le {naiss}</td>
-		<td class="grossi" align = "right">[Id]-INE : {id}</td>
-	</tr>
-	<tr><td colspan = "3"><span  class = "espace_impr">&nbsp;</span></td></tr>
-	<tr><td colspan = "3"><span  class = "espace_impr">&nbsp;</span></td></tr>
-	<tr>
-		<td class="grossi" align = "left" colspan = "3">Actuellement en {clas_actu}, {etab}</td>
-	</tr>
-	<tr><td colspan = "3"><span  class = "espace_impr">&nbsp;</span></td></tr>
-	<tr><td colspan = "3"><span  class = "espace_impr">&nbsp;</span></td></tr>
-	<tr>
-		<td colspan = "3"><span class = "impr_seul">Candidatures : {cand}</span></td>
-	</tr>
-</table>
-<table align = "center" class = "bord grossi" cols = "4" width = "100%">
-<caption><a href="/data/{ref_fich}.pdf">Fiche de candidature + Bulletins scolaires</a></caption>
-	<tr>
-		<td><font size = "0.8">(case cochée si semestres)</font></td>
-		<td>Classe de Première <input type = "checkbox" name = "sem_prem" {sem_prem}></td>
-		<td>Classe de Terminale <input type = "checkbox" name = "sem_term" {sem_term}></td>
-		<td>EAF</td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td rowspan = "4">
-			<table class = "bord" width = "100%">
-				<tr><th> Math </th><th> Phys </th></tr>
-				<tr><td> {PM1} </td><td> {PP1} </td></tr>
-				<tr><td> {PM2} </td><td> {PP2} </td></tr>
-				<tr><td> {PM3} </td><td> {PP3} </td></tr>
-			</table>
-		</td>
-		<td rowspan = "4" align = "right">
-			<table class = "bord" width = "100%">
-				<tr><th> Math </th><th> Phys </th></tr>
-				<tr><td> {TM1} </td><td> {TP1} </td></tr>
-				<tr><td> {TM2} </td><td> {TP2} </td></tr>
-				<tr><td> {TM3} </td><td> {TP3} </td></tr>
-			</table>
-		</td>
-		<td rowspan = "2">
-			<table class = "bord" width = "100%">
-				<tr><th> &Eacute;crit </th><th> Oral </th></tr>
-				<tr><td> {EAF_e} </td><td> {EAF_o} </td></tr>
-			</table>
-		</td>
-	</tr>
-	<tr>
-		<td rowspan = "3" align = "right">
-			<table>
-				<tr><td>1e trimestre</td></tr>
-				<tr><td>2e trimestre</td></tr>
-				<tr><td>3e trimestre</td></tr>
-			</table>
-		</td>
-	</tr>
-	<tr><td>&nbsp;</td></tr>
-	<tr><td>&nbsp;</td></tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td align = "center">
-			<table>
-				<tr><th>CPES Math :</th><td>{CM1}</td></tr>
-			</table>
-		</td>
-		<td align = "center">
-			<table>
-				<tr><th>CPES Ph/Ch :</th><td>{CP1}</td></tr>
-			</table>
-		</td>
-		<td>&nbsp;</td>
-	</tr>
-</table>
-<br>
-<table cols = "3" align = center class = "bord" width = "100%">
-	<tr>
-		<td class = "scores">SCORE BRUT</td>
-		<td width = "99%">CORRECTION DE LA COMMISSION</td>
-		<td class = "scores"> SCORE FINAL </td>
-	</tr>
-	<tr>
-		<td class = "score" id = "scoreb">{scoreb}</td>
-		<td width = "99%">
-			<table style = "text-align:center;width:100%;" cellspacing="0em"> 
-			{barre}
-			</table>
-		</td>
-		<td class = "score" id = "scoref">{scoref}</td>
-	</tr>
-</table>
-<p class ="espace_impr">&nbsp;</p>
-<table class = "volet3">
-	<tr><th class = "motiv">Motivation(s) de la commission</th> 
-		<td class = "valid" rowspan = "7">
-			<table>
-			<tr>
-				<td><input type = "button" class = "NC" value = "NC" onclick="click_nc();">{nc}</td>
-		 		<td><input type = "submit" id = "valid" class = "valid_bouton" value = "Valider"></td>
-		 	</tr>
-		 	</table>
-		</td>
-	</tr>                                                   
-	{motifs}
-</table>
+	<table width = "100%" align = "center">
+		<tr>
+			<td class="grossi" align = "left" colspan ="1">{Nom}</td>
+			<td class="grossi" align = "center"> né(e) le {naiss}</td>
+			<td class="grossi" align = "right">[Id]-INE : {id}</td>
+		</tr>
+		<tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
+		<tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
+		<tr>
+			<td class="grossi" align = "left" colspan = "3">Actuellement en {clas_actu}, {etab}</td>
+		</tr>
+		<tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
+		<tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
+		<tr>
+			<td colspan = "3"><span class = "impr_seul">Candidatures : {cand}</span></td>
+		</tr>
+	</table>
+	<table align = "center" class = "bord grossi" cols = "4" width = "100%">
+		<caption><a href="/data/{ref_fich}.pdf">Fiche de candidature + Bulletins scolaires</a></caption>
+		<tr>
+			<td><font size = "0.8">(case cochée si semestres)</font></td>
+			<td>Classe de Première <input type = "checkbox" name = "sem_prem" {sem_prem}></td>
+			<td>Classe de Terminale <input type = "checkbox" name = "sem_term" {sem_term}></td>
+			<td>EAF</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td rowspan = "4">
+				<table class = "bord" width = "100%">
+					<tr><th> Math </th><th> Phys </th></tr>
+					<tr><td> {PM1} </td><td> {PP1} </td></tr>
+					<tr><td> {PM2} </td><td> {PP2} </td></tr>
+					<tr><td> {PM3} </td><td> {PP3} </td></tr>
+				</table>
+			</td>
+			<td rowspan = "4" align = "right">
+				<table class = "bord" width = "100%">
+					<tr><th> Math </th><th> Phys </th></tr>
+					<tr><td> {TM1} </td><td> {TP1} </td></tr>
+					<tr><td> {TM2} </td><td> {TP2} </td></tr>
+					<tr><td> {TM3} </td><td> {TP3} </td></tr>
+				</table>
+			</td>
+			<td rowspan = "2">
+				<table class = "bord" width = "100%">
+					<tr><th> &Eacute;crit </th><th> Oral </th></tr>
+					<tr><td> {EAF_e} </td><td> {EAF_o} </td></tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td rowspan = "3" align = "right">
+				<table>
+					<tr><td>1e trimestre</td></tr>
+					<tr><td>2e trimestre</td></tr>
+					<tr><td>3e trimestre</td></tr>
+				</table>
+			</td>
+		</tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td align = "center">
+				<table>
+					<tr><th>CPES Math :</th><td>{CM1}</td></tr>
+				</table>
+			</td>
+			<td align = "center">
+				<table>
+					<tr><th>CPES Ph/Ch :</th><td>{CP1}</td></tr>
+				</table>
+			</td>
+			<td>&nbsp;</td>
+		</tr>
+	</table>
+	<br>
+	<table cols = "3" align = center class = "bord" width = "100%">
+		<tr>
+			<td class = "scores">SCORE BRUT</td>
+			<td width = "99%">CORRECTION DE LA COMMISSION</td>
+			<td class = "scores"> SCORE FINAL </td>
+		</tr>
+		<tr>
+			<td class = "score" id = "scoreb">{scoreb}</td>
+			<td width = "99%">
+				<table style = "text-align:center;width:100%;" cellspacing="0em"> 
+					{barre}
+				</table>
+			</td>
+			<td class = "score" id = "scoref">{scoref}</td>
+		</tr>
+	</table>
+	<p class ="espace_impr">&nbsp;</p>
+	<table class = "volet3">
+		<tr>
+			<th class = "motiv">Motivation(s) de la commission</th> 
+			<td class = "valid" rowspan = "7">
+				<table>
+					<tr>
+						<td><input type = "button" class = "NC" value = "NC" onclick="click_nc();"/>{nc}</td>
+						<td><input type = "submit" id = "valid" class = "valid_bouton" value = "Valider"></td>
+					</tr>
+				</table>
+			</td>
+		</tr>                                                   
+		{motifs}
+	</table>
 </form>
 ########## 
 [*page_impress*]
@@ -243,3 +234,4 @@
 	{pages}
 </body>
 ###########
+

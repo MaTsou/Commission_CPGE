@@ -25,7 +25,7 @@ function click_nc()
     // Admin ou Jury ?
     txt = document.getElementById("header").innerHTML
     if (txt.indexOf('Admin') == -1){
-    	    // Accès Jury
+		// Accès Jury
 	    // mise à jour du input hidden nc et soumission formulaire
 	    nc = document.getElementById('nc');
 	    nc.value = 'NC';
