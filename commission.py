@@ -10,7 +10,7 @@
 # la forme d'une chaine (immense) de caractères --- d'une page html.
 # Ce peut-être la même qui a généré l'appel à cette méhode ou toute autre. 
 
-import os, sys, cherrypy, random, copy, glob, csv, pickle
+import os, sys, time, cherrypy, random, copy, glob, csv, pickle
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
@@ -242,6 +242,9 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 			data['liste_csv'] = self.genere_liste_csv()
 			# liste pdf
 			data['liste_pdf'] = self.genere_liste_pdf()
+			# année_en_cours : dans un "input type hidden" : sert au prompt javascript exécuté après clic sur "Traiter"
+			fich = glob.glob(os.path.join(os.curdir,"data","*.csv"))[0] # 1er fichier csv
+			data['annee_en_cours'] = time.strftime("%Y",time.gmtime(os.stat(fich).st_mtime))
 			# liste admin
 			data['liste_admin'] = self.genere_liste_admin()
 			# liste_stat
@@ -520,8 +523,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			pickle.dump(donnees,stat_fich)
 			
 	@cherrypy.expose
-	def traiter_apb(self): 
+	def traiter_apb(self, **kwargs): 
 		# Traite les données brutes d'APB : csv ET pdf
+		print("Année en cours reçue = ",kwargs['annee_en_cours'])
+		# À passer à la fonction lire...
 		## Traitement des csv ##
 		for doc in glob.glob(os.path.join(os.curdir,"data","*.csv")):
 			for fil in filieres:

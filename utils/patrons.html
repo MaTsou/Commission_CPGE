@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html> 
 <head> 
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
-<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
-<title>Gestion Commission EPA</title>
-<div id = "header">{header}</div>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
+	<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
+	<title>Gestion Commission EPA</title>
+	<div id = "header">{header}</div>
 </head> 
 <body onload="javascript:set_scroll();">
 <div>
@@ -25,30 +25,30 @@
 <!DOCTYPE html>
 <html> 
 <head> 
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
-<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
-<title>Gestion Commission EPA</title>
-<div id = "header">{header}</div>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
+	<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
+	<title>Gestion Commission EPA</title>
+	<div id = "header">{header}</div>
 </head> 
 <body onload="hide_loader();">
-<div id = "mep_menu">{contenu}</div>
-<script type="text/javascript" src="/utils/script_menu.js"></script>
+	<div id = "mep_menu">{contenu}</div>
+	<script type="text/javascript" src="/utils/script_menu.js"></script>
 </body>
 </html> 
 ##########
 [*pageAccueil*] 
 <div class = "menu">
 <form action="/identification" method=POST> 
-<input type=submit class="bouton_menu" name="acces" value="Accès administrateur"><br> 
-<input type=submit class="bouton_menu" name="acces" value="Accès commission"> 
+	<input type=submit class="bouton_menu" name="acces" value="Accès administrateur"><br> 
+	<input type=submit class="bouton_menu" name="acces" value="Accès commission"> 
 </form> 
 </div>
 ##########
 [*menu_comm*]
 <form action="/choix_comm" method=POST> 
-<div class = "sous_menu">
-	{liste}
-</div>
+	<div class = "sous_menu">
+		{liste}
+	</div>
 </form>
 ##########
 [*menu_admin_avant*]
@@ -58,6 +58,7 @@
 		<div class = "liste_csv">Fichiers csv présents : <br>{liste_csv}</div><!--
 	 --><div class = "bout_csv_div"><input type = "button" class = "fichier" value = "VÉRIFIER / TRAITER" onclick = "verif_wait();"></div><!--
 	 --><div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
+	 	<input type = "hidden" id = "annee" name = "annee_en_cours" value = "{annee_en_cours}"/>
 	</form>	
 </div>
 <br>
