@@ -182,6 +182,11 @@ caption
 		display: none;
 	}
 	
+#nc
+	{
+		display : none;
+	}
+
 .NC
 	{
 		display : none;

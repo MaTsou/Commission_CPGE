@@ -342,6 +342,15 @@ caption
 		font-size : 1em;
 		background-color : white;
 	}
+
+#nc /* text caché contenant nc */
+	{
+		background-color : LightGrey;
+		color : LightGrey;
+		border : none;
+		font-size : .1em;
+		width : 20px;
+	}
 	
 .NC	/* Bouton NC */
 	{

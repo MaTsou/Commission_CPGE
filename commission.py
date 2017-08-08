@@ -746,7 +746,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		barre += '<span class = "correc_impr">'+xml.get_jury(cand)+' : {:+.2f}'.format(float(correc))+'</span>'
 		barre += '</td></tr>'
 		# input hidden nc
-		nc = '<input type="hidden" id = "nc"  name = "nc" value = "{}"/>'.format(ncval)
+		nc = '<input type="text" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
 		# Construction de la chaine motifs.
 		motifs = ''
 		for i in range(0,len(motivations)):
