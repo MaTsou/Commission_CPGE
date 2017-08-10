@@ -343,15 +343,6 @@ caption
 		background-color : white;
 	}
 
-#nc /* text caché contenant nc */
-	{
-		background-color : LightGrey;
-		color : LightGrey;
-		border : none;
-		font-size : .1em;
-		width : 20px;
-	}
-	
 .NC	/* Bouton NC */
 	{
 		text-align : center;

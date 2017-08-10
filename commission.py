@@ -428,10 +428,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# S'il n'y a pas déjà un cookie de session sur l'ordinateur client, on en créé un
 		if cherrypy.session.get('JE','none') == 'none':
 			key = 'client_{}'.format(len(self.clients)+1) # clé d'identification du client
-			cherrypy.session['JE'] = key # Stockée sur la machine client
 		else: # On récupère la clé et on vire l'objet Admin ou Jury associé
 			key = cherrypy.session['JE']
 			self.clients.pop(key, '')
+		cherrypy.session['JE'] = key # Stockée sur la machine client
 		# Machine serveur ou pas ?
 		if cherrypy.request.local.name == cherrypy.request.remote.ip:
 			if self.test: # Mode TEST ou pas ?
@@ -525,8 +525,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def traiter_apb(self, **kwargs): 
 		# Traite les données brutes d'APB : csv ET pdf
-		print("Année en cours reçue = ",kwargs['annee_en_cours'])
-		# À passer à la fonction lire...
+		print("Année en cours reçue = ",kwargs['annee_en_cours']) # À passer à la fonction lire...
 		## Traitement des csv ##
 		for doc in glob.glob(os.path.join(os.curdir,"data","*.csv")):
 			for fil in filieres:
@@ -746,7 +745,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		barre += '<span class = "correc_impr">'+xml.get_jury(cand)+' : {:+.2f}'.format(float(correc))+'</span>'
 		barre += '</td></tr>'
 		# input hidden nc
-		nc = '<input type="text" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
+		nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
 		# Construction de la chaine motifs.
 		motifs = ''
 		for i in range(0,len(motivations)):
