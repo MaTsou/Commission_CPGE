@@ -31,7 +31,7 @@ from utils.parametres import nb_jury
 class Client(): # Objet client "abstrait" pour la class Serveur
 	# Variables de classe : 
 	# Chargement de tous les "patrons" de pages HTML dans le dictionnaire "html" :
-	with open(os.path.join(os.curdir,"utils","patrons.html"),"r") as fi:
+	with open(os.path.join(os.curdir,"utils","patrons.html"), "r", encoding="utf8") as fi:
 		html = {}
 		for ligne in fi:
 			if ligne.startswith("[*"):	 # étiquette trouvée ==>
@@ -406,7 +406,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def __init__(self, test):
 		# constructeur
 		self.clients = {}
-		self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin" or	"Jury" ?)
+		self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin" or "Jury" ?)
 	
 	def get_client_cour(self):
 		return self.clients[cherrypy.session["JE"]]
