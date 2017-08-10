@@ -9,7 +9,7 @@ Procédure d'utilisation du programme d'aide au recrutement :
 ** À chaque fois que vous avez besoin de l'application :
 --> Lancer le programme commission.py (double clic)
 
---> Ouvrir un navigateur internet. Indiquer l'URL http://localhost:8080 ou localhost:8080
+--> Ouvrir un navigateur internet. Indiquer l'URL localhost:8080
 
 --> Le menu d'accueil s'ouvre. "Au travail !"
 
@@ -19,4 +19,4 @@ Procédure d'utilisation du programme d'aide au recrutement :
 Opération à effectuer par une personne compétente !
 
 En ligne de commande taper "python commission.py -ip x.x.x.x"
-Chaque client accèdera au serveur à l'URL : http://x.x.x.x:8080 ou x.x.x.x:8080
+Chaque client accèdera au serveur à l'URL : x.x.x.x:8080
