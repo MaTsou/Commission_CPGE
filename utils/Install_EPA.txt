@@ -1,0 +1,9 @@
+Pour que l'application de gestion du recrutement en CPES/CPGE tourne, il faut :
+1/ Installer Python 3.6 (ou supérieur), avec option PIP et ajout dans PATH.
+2/ Lancer les commandes suivantes pour installer les bibliothèques :
+	a/ python -m pip install --upgrade cherrypy
+	b/ python -m pip install --upgrade parse
+	c/ python -m pip install --upgrade lxml
+	d/ python -m pip install --upgrade PyPDF2
+
+Si tout s'est bien passé, le reste fonctionnera à merveille...
