@@ -2,13 +2,29 @@
 #-*- coding: utf-8 -*-
 
 # Comment cherrypy et le navigateur discutent :
+
 # navigateur --> cherrypy : par l'intermédiaire des formulaires html. Dans la déclaration d'un formulaire,
 # un choix method = POST (ou GET) action = nom_d_une_méthode_python qui sera exécutée dès la validation
 # du formulaire.
+# Les éléments du formulaire sont accessibles dans le dictionnaire kwargs...
 # Une méthode n'est visible par le navigateur que si elle est précédée par @cherrypy.expose
+#
 # cherrypy --> navigateur : en retour (par la fonction return), le code python renvoi le code --- sous
 # la forme d'une chaine (immense) de caractères --- d'une page html.
 # Ce peut-être la même qui a généré l'appel à cette méhode ou toute autre. 
+#
+##### Principe de l'application ####
+# Le programme principal lance un gestionnaire de serveur. Il se présente sous la forme d'une instance d'un objet 
+# "Serveur". Cet objet dispose d'un attribut qui est un dictionnaire d'instances d'objets "Client". Ceci afin 
+# d'identifier qui dépose telle ou telle requête.
+#
+# Les clients sont ici de 2 types : soit de type administrateur, soit de type jury. Chacun est héritier d'une classe 
+# plus générale : "Client". En effet, admin et jury partagent certaines caractéristiques, parce que ce sont tous deux 
+# des clients du serveur. Cependant, les actions qu'ils peuvent exécutés étant différentes, il a fallu distinguer ces 
+# objets. Notamment dans le traitement d'un dossier de candidature, l'administrateur peut compléter certaines infos 
+# (notes notamment) manquantes mais ne juge pas le dossier alors qu'un jury corrige le score brut, commente son choix, 
+# mais ne touche pas au contenu du dossier.
+
 
 import os, sys, time, cherrypy, random, copy, glob, csv, pickle
 from parse import parse
@@ -29,18 +45,18 @@ from utils.parametres import nb_jury
 ########################################################################
 
 class Client(): # Objet client "abstrait" pour la class Serveur
-	# Variables de classe : 
+	# Variables de classe :
 	# Chargement de tous les "patrons" de pages HTML dans le dictionnaire "html" :
-	with open(os.path.join(os.curdir,"utils","patrons.html"), "r", encoding="utf8") as fi:
+	with open(os.path.join(os.curdir, "utils", "patrons.html"), "r", encoding="utf8") as fi:
 		html = {}
 		for ligne in fi:
-			if ligne.startswith("[*"):	 # étiquette trouvée ==>
-				label =ligne.strip()	 # suppression LF et esp évent.
-				label =label[2:-2]	 # suppression [* et *]
-				txt =""
+			if ligne.startswith("[*"):	# étiquette trouvée ==>
+				label =ligne.strip()	# suppression LF et esp évent.
+				label =label[2:-2]		# suppression [* et *]
+				txt =""					# début d'une page html
 			else:
-				if ligne.startswith("#####"):
-					html[label] =txt
+				if ligne.startswith("#####"):	# fin d'une page html
+					html[label] =txt			# on remplit le dictionnaire
 				else:
 					txt += ligne
 	
@@ -48,24 +64,26 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 
 	# constructeur
 	def __init__(self, master, key, droits):
-		self.je_suis = key
-		self.master = master
-		self.dossiers = []
-		self.num_doss = -1 # Cette valeur 'absurde' permet de détecter si le jury est en cours de traitement..
-		self.fichier = ''
-		self.droits = droits
-		self.filiere = ''
+		self.je_suis = key	# identifiant du client : contenu du cookie déposé par le serveur sur la machine client
+		self.master = master# l'instance serveur détenant ce client
+		self.dossiers = []	# contenu du fichier xml traité par ce client
+		self.num_doss = -1	# Cette valeur 'absurde' permet de détecter si le jury est en cours de traitement..
+		self.fichier = ''	# nom du fichier traité par ce client
+		self.droits = droits# admin ou jury...
+		self.filiere = ''	# filière traitée (MPSI, PCSI, CPES, ..)
 	
+	# Accesseurs et mutateurs
 	def get_je_suis(self):
 		return self.je_suis
 
-	def get_cand_cour(self): # retourne le candidat courant
+	def get_cand_cour(self):
+		# retourne le candidat courant
 		return self.dossiers[self.num_doss]
 	
 	def get_dossiers(self):
 		return self.dossiers
 
-	def set_num_doss(self,num):
+	def set_num_doss(self, num):
 		self.num_doss = num
 	
 	def get_num_doss(self):
@@ -77,7 +95,7 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 	def get_fichier(self):
 		return self.fichier
 	
-	def set_droits(self,droits):
+	def set_droits(self, droits):
 		self.droits = droits
 	
 	def get_droits(self):
@@ -88,32 +106,36 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 	
 	def get_filiere(self):
 		return self.filiere
+	# Fin accesseurs et mutateurs
 
-	def mise_en_page_menu(self,header,contenu):
-		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
-		# avec un header et un contenu (dossier, liste, script) adéquats.
-		data = {'header':header,'contenu':contenu}
+	def mise_en_page_menu(self, header, contenu):
+		# Fonction de "mise en page" des menus : renvoie une page HTML
+		# avec un header et un contenu (liste d'actions) adéquats.
+		data = {'header':header, 'contenu':contenu}
 		return Client.html["MEP_MENU"].format(**data)
 	
-	def mise_en_page(self,visib,header,dossier='',liste=''):
-		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
+	def mise_en_page(self, visib, header, dossier='', liste=''):
+		# Fonction de "mise en page" des dossiers : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
+		# visib sert à afficher (admin) ou non (jury) le bouton RETOUR.
 		data = {'header':header,'dossier':dossier,'liste':liste,'visibilite':visib}
 		return Client.html["miseEnPage"].format(**data)
 	
 	def lire_fichier(self):
-		# Lit le fichier XML choisi.
+		# Lit le fichier XML choisi et stocke son contenu dans l'attribut adéquat.
 		self.dossiers = etree.parse(self.fichier).getroot()
 
 	def sauvegarder(self):
-		# Sauvegarde le fichier traité (appelé par la fonction traiter)
-		# fonction qui met à jour (par écrasement) le fichier xml contenant les dossiers
+		# Méthode appelée par la méthode "traiter" du Serveur
+		# Sauvegarde le fichier traité : mise à jour (par écrasement)
+		# du fichier xml contenant les dossiers
 		with open(self.fichier, 'wb') as fich:
 			fich.write(etree.tostring(self.dossiers, pretty_print=True, encoding='utf-8'))
 	
 	def genere_header(self): 
 		# Génère l'entête de page HTML
-		# comme son nom l'indique, cette fonction génère une chaine de caractères qui est le code html du header...
+		# comme son nom l'indique, cette fonction génère une chaine
+		# de caractères qui est le code html du header...
 		sous_titre = ' - Accès {}.'.format(self.droits)
 		return '<h1 align="center">EPA - Recrutement CPGE/CPES {}</h1>'.format(sous_titre)
 
@@ -123,25 +145,29 @@ class Client(): # Objet client "abstrait" pour la class Serveur
 
 class Jury(Client): # Objet client (de type jury de commission) pour la class Serveur
 
-	# constructeur
+	# constructeur : on créé une instance Client avec droits "jury" 
 	def __init__(self, master, key):
 		Client.__init__(self, master, key, 'Jury')
-	
-	def set_droits(self,droits):
+
+	# Accesseurs et mutateurs
+	def set_droits(self, droits):
 		Client.set_droits(self,'Jury '+droits)
 
 	def get_liste_autres_fichiers_en_cours(self):
-		# renvoiste liste des fichiers en cours de traitement.
+		# renvoie la liste des fichiers en cours de traitement.
 		return self.master.get_autres_fichiers_en_cours(self)
+	# Fin accesseurs et mutateurs
 
-	def mise_en_page(self,header,dossier='',liste=''):
-		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
+	def mise_en_page(self, header, dossier='', liste=''):
+		# Fonction de "mise en page" des dossiers : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
-		return Client.mise_en_page(self,'none',header,dossier,liste)
+		return Client.mise_en_page(self, 'none', header, dossier, liste)
 	
 	def genere_menu(self):
+		# Comme son nom l'indique..
 		data = {}
 		txt = self.genere_liste_comm()
+		# On affiche le texte ci-dessous que s'il y a des fichiers à traiter.
 		if txt != '':
 			txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>'+txt
 		data['liste'] = txt
@@ -149,12 +175,16 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 
 	def genere_liste_comm(self):
 		# Compose le menu commission
-		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_*.xml"))
+		# On commence par chercher les fichiers destinés à la commission
+		list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_comm_*.xml"))
 		txt = ''
+		# on récupère la liste des fichiers traités par d'autres jurys
 		list_fich_en_cours = self.get_liste_autres_fichiers_en_cours()
-		for fich in list_fich: # Si un fichier est déjà traité par un jury, son bouton est disabled...
+		# Chaque fichier apparaîtra sous la forme d'un bouton
+		for fich in list_fich:
 			txt += '<input type="submit" class = "fichier" name="fichier" value="{}"'.format(fich)
 			fin = ''
+			# Si un fichier est déjà traité par un autre jury, son bouton est disabled...
 			if fich in list_fich_en_cours:
 				fin = ' disabled'
 			txt += fin
@@ -162,8 +192,11 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 		return txt
 	
 	def traiter(self, **kwargs):
+		# Fonction lancée par la fonction "traiter" du Serveur. Elle même est lancée par validation d'un dossier
+		# On récupère "l'objet" xml qui est une candidature
 		cand = self.dossiers[self.num_doss]
-		# 1/ correc et scoref
+		## On met à jour le contenu de ce dossier :
+		# 1/ correction apportée par le jury et score final
 		if kwargs['nc'] == 'NC':
 			cor = 'NC'
 			scoref = 'NC'
@@ -179,10 +212,11 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 		xml.set_scoref(cand, scoref)
 		# 2/ Qui a traité le dossier
 		xml.set_jury(cand,self.droits)
-		# 3/ "bouléen" traite : dossier traité
+		# 3/ "bouléen" traite : le dossier a été traité
 		xml.set_traite(cand)
-		# 4/ motif
+		# 4/ motivation du jury
 		xml.set_motifs(cand, kwargs['motif'])
+		## Fin mise à jour dossier
 		# On sélectionne le dossier suivant
 		if self.num_doss < len(self.dossiers)-1:
 			self.num_doss = self.num_doss+1
@@ -194,18 +228,18 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 class Admin(Client): # Objet client (de type Administrateur) pour la class Serveur
 
 	def __init__(self, master, key):
-		# constructeur
+		# constructeur : on créé une instance Client avec droits "admin"
 		Client.__init__(self, master, key, 'Administrateur')
-		self.autres_filieres = []
-		self.fichiers_autres_fil = []
-		self.dossiers_autres_fil = []
-		self.toutes_cand = []
+		self.autres_filieres = []		# contient la liste des autres (que celle traitée) filières
+		self.fichiers_autres_fil = []	# contient les noms de fichiers des autres filières
+		self.dossiers_autres_fil = []	# contenus des autres fichiers
+		self.toutes_cand = []			# toutes les candidatures d'un candidat
 	
-	def set_droits(self,droits):
-		Client.set_droits(self,'Administrateur '+droits)
+	def set_droits(self, droits):
+		Client.set_droits(self,'Administrateur ' + droits)
 	
-	def mise_en_page(self,header,dossier='',liste=''):
-		# Fonction de "mise en page" du code HTML généré : renvoie une page HTML
+	def mise_en_page(self, header, dossier='', liste=''):
+		# Fonction de "mise en page" des dossiers : renvoie une page HTML
 		# avec un header et un contenu (dossier, liste, script) adéquats.
 		return Client.mise_en_page(self,'',header,dossier,liste)
 	
@@ -331,13 +365,11 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 		self.dossiers_autres_fil if root.xpath('./candidat/id_apb[text()={}]'.format(iden))])
 
 	def traiter(self, **kwargs):
-		# Traitement dossier avec droits administrateur	
+		# Traitement dossier avec droits administrateur
+		# On récupère le dossier courant
 		cand = self.dossiers[self.num_doss]
-		# Droits admin : on ne prend pas en compte les corrections et motivations
-
 		# Ici, on va répercuter les complétions de l'administrateur dans tous les dossiers que le
-		# candidat a déposé. 
-
+		# candidat a déposé.
 		# Recherche des autres candidatures : renvoie une liste (éventuellement vide) de candidature
 		self.get_toutes_cand()
 
@@ -399,15 +431,16 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	"Classe générant les objets gestionnaires de requêtes HTTP"
 	
 	# Attributs de classe
-	# faire attention que 0 soit dans la liste !!
+	# corrections proposées aux jurys (faire attention que 0 soit dans la liste !!)
 	corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0,(max_correc-min_correc)*nb_correc+1)]
 	# Fin déclaration attributs de classe
 
 	def __init__(self, test):
 		# constructeur
-		self.clients = {}
-		self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin" or "Jury" ?)
-	
+		self.clients = {}# dictionnaire contenant les clients connectés
+		self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin or Jury ?")
+
+	# Accesseurs et mutateurs
 	def get_client_cour(self):
 		return self.clients[cherrypy.session["JE"]]
 
@@ -421,28 +454,35 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			if self.clients[cli].get_num_doss() != -1:
 				lis.append(self.clients[cli].get_fichier())
 		return lis
-	
+	# Fin accesseurs et mutateurs
+
 	@cherrypy.expose
 	def index(self):
-		# Page d'entrée du site web - renvoi d'une page HTML
+		# Page d'entrée du site web - renvoie une page HTML
 		# S'il n'y a pas déjà un cookie de session sur l'ordinateur client, on en créé un
-		if cherrypy.session.get('JE','none') == 'none':
-			key = 'client_{}'.format(len(self.clients)+1) # clé d'identification du client
-		else: # On récupère la clé et on vire l'objet Admin ou Jury associé
+		if cherrypy.session.get('JE', 'none') == 'none':
+			key = 'client_{}'.format(len(self.clients) + 1) # clé d'identification du client
+		else: # On récupère la clé et on vire l'objet client associé
+			# Supprimer cet objet permet de libérer le fichier traité précédemment : il redevient
+			# accessible aux autres jurys... Pour qu'il reste verrouillé, il suffit de ne pas retourner
+			# sur la page d'accueil !
 			key = cherrypy.session['JE']
 			self.clients.pop(key, '')
 		cherrypy.session['JE'] = key # Stockée sur la machine client
-		# Machine serveur ou pas ?
+		# Le client est-il sur la machine serveur ?
 		if cherrypy.request.local.name == cherrypy.request.remote.ip:
+			# Si oui, en mode TEST on affiche un menu de choix : "login Admin ou login Commission ?"
+			# Si oui, en mode "normal", ce client est Admin
 			if self.test: # Mode TEST ou pas ?
 				# On affiche le menu qui propose un login Admin ou un login Commission
-				data = {'header':self.genere_header(),'contenu':Client.html["pageAccueil"].format('')}
+				data = {'header':self.genere_header(), 'contenu':Client.html["pageAccueil"].format('')}
 				return Client.html["MEP_MENU"].format(**data)
 			else:
 				# Machine serveur et Mode normal ==> c'est un Client Admin
 				# On créé un objet Admin associé à la clé key
-				self.clients[key] = Admin(self, key) 
-		else: # Machine non serveur ==> c'est un Client Jury
+				self.clients[key] = Admin(self, key)
+		else:
+			# Si non, c'est un Client Jury (peu importe qu'on soit en mode TEST)
 			# On créé un objet Jury associé à la clé key
 			self.clients[key] = Jury(self, key)
 		# On affiche le menu du client
@@ -452,29 +492,31 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def identification(self, **kwargs):
 		# Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
 		key = cherrypy.session['JE']
-		if kwargs['acces']=="Accès administrateur":
-			self.clients[key] = Admin(self,key) # création d'une instance admin (self fournit son master au client)
+		if kwargs['acces'] == "Accès administrateur":
+			self.clients[key] = Admin(self,key) # création d'une instance admin
 		else:
 			self.clients[key] = Jury(self,key) # création d'une instance jury
 		return self.clients[key].genere_menu() # Affichage du menu adéquat
 
 	@cherrypy.expose
 	def retour_menu(self):
-		# Retour menu 
+		# Retour menu : sert essentiellement à l'Admin ; bouton RETOUR de la page dossier
 		return self.get_client_cour().genere_menu()
 	
-	def efface_dest(self,chem): # sert dans traiter_csv et dans tableaux/bilans
-		# Efface les dossiers qui accueilleront les bulletins
+	def efface_dest(self, chem):
+		# Sert dans traiter_csv et dans tableaux/bilans
+		# Supprime les dossiers pointés par le chemin chem
 		for filename in os.listdir(chem):
-			fich = os.path.join(chem,filename)
+			fich = os.path.join(chem, filename)
 			try:
 				os.remove(fich)
 			except: # cas d'un sous-dossier
-				self.efface_dest(fich)
-				os.rmdir(fich)
+				self.efface_dest(fich) # appel récursif pour vider le contenu du sous-dossier
+				os.rmdir(fich) # suppression du sous-dossier
 
 	def trouve(self, iden, num_fil, cc, root, fil):
 		# Sous-fonction de la fonction stat...
+		# Sert à construire la chaîne "MPC", "M-C", "-P-" indiquant les candidatures multiples..
 		if num_fil < len(root)-1:
 			cand = root[num_fil+1].xpath('./candidat/id_apb[text()={}]'.format(iden))
 			if cand:
@@ -487,10 +529,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			
 	def stat(self):
 		# Effectue des statistiques sur les candidats
-		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
+		list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_admin_*.xml"))
 
 		root = [etree.parse(fich).getroot() for fich in list_fich]
-		fil = [parse(os.path.join(os.curdir,"data","epa_admin_{}.xml"),fich)[0][0] for fich in list_fich]
+		fil = [parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)[0][0] for fich in list_fich]
 
 		# Initialisation des compteurs
 		num = [0]*len(root) # nombres de candidats par filière
@@ -499,13 +541,16 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		num_pc = 0
 		num_mpc = 0
 	
-		for i in range(len(root)): # num filière
-			for candi in root[i]:
-				num[i] += 1
+		for i in range(len(root)):	# i, indice de filière
+			for candi in root[i]:	# pour toutes les candidatures de la filière i
+				num[i] += 1			# incrémentation d'un compteur
+				# puis recherche du même candidat dans les autres filières,
+				# création de la chaîne "MPC"
+				# et incrémentation du compteur adéquat
 				if xml.get_candidatures(candi) == '???': # candidat pas encore vu
 					iden = xml.get_id(candi)
 					cc = '-'*i + fil[i]
-					cc = self.trouve(iden, i, cc, root, fil) 
+					cc = self.trouve(iden, i, cc, root, fil)
 					xml.set_candidatures(candi,cc)
 					if cc == 'CMP': num_mpc += 1 # 4 lignes qui sont spécifiques aux filières EPA...
 					if cc == 'CM-': num_mc += 1
@@ -517,44 +562,44 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				fi.write(etree.tostring(root[i], pretty_print=True, encoding='utf-8'))
 		
 		# Écrire le fichier stat
-		donnees = {fil[i]:num[i] for i in range(0,len(fil))}
-		donnees.update({'MP':num_mp,'MC':num_mc,'PC':num_pc,'MPC':num_mpc})
-		with open(os.path.join(os.curdir,"data","stat"),'wb') as stat_fich:
-			pickle.dump(donnees,stat_fich)
+		donnees = {fil[i]:num[i] for i in range(0, len(fil))}
+		donnees.update({'MP':num_mp, 'MC':num_mc, 'PC':num_pc, 'MPC':num_mpc})
+		with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
+			pickle.dump(donnees, stat_fich)
 			
 	@cherrypy.expose
-	def traiter_apb(self, **kwargs): 
+	def traiter_apb(self, **kwargs):
+		# Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
 		# Traite les données brutes d'APB : csv ET pdf
-		print("Année en cours reçue = ",kwargs['annee_en_cours']) # À passer à la fonction lire...
+		# La ligne suivante sera à supprimer lorsque le traitement de l'année sera opérationnel
+		print("Année en cours reçue = ", kwargs['annee_en_cours']) # À passer à la fonction lire...
 		## Traitement des csv ##
-		for doc in glob.glob(os.path.join(os.curdir,"data","*.csv")):
+		for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")):
 			for fil in filieres:
-				if fil in doc.lower():
-					dest = os.path.join(os.curdir,"data","epa_admin_{}.xml".format(fil.upper()))
-			xml = lire(doc)
+				if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
+					dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
+			xml = lire(source)	# fonction contenue dans apb_csv.py
 			with open(dest, 'wb') as fich:
 				fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
+		## Fin du traitement des csv ##
 		## Traitement des pdf ##
-		dest = os.path.join(os.curdir,"data","docs_candidats")
+		dest = os.path.join(os.curdir, "data", "docs_candidats")
 		try:
-			self.efface_dest(dest) # on efface toute l'arborescence fille de dest 
+			self.efface_dest(dest) # on efface toute l'arborescence fille de dest
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		
-		for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
+		for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
 			for fil in filieres:
 				if fil in fich.lower():
 					desti = os.path.join(dest,fil)
 					os.mkdir(desti)
-					decoup.decoup(fich, desti)
+					decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
 		# Fin du traitement pdf#
 		# Faire des statistiques
 		self.stat()
-		# Fin
+		# Fin : retour au menu
 		return self.get_client_cour().genere_menu()
-
-	def fichier_libre(self):
-		return False
 
 	@cherrypy.expose
 	def choix_comm(self, **kwargs):
@@ -562,6 +607,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# récupère le client
 		client = self.get_client_cour()
 		# Teste si le fichier n'a pas été choisi par un autre jury
+		# Ce test est nécessaire parce que le "disabled" des boutons correspondants n'est
+		# pas effectif si les jurys se connectent "en même temps"... Pour que le "disabled"
+		# prenne effet, il faudrait recharger la page.
 		if kwargs["fichier"] in self.get_autres_fichiers_en_cours(client):
 			# Si oui, retour menu
 			self.retour_menu()
@@ -569,8 +617,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			# sinon
 			# Mise à jour des attributs du client
 			client.set_fichier(kwargs["fichier"])
-			r = parse('{}comm_{}{:d}.xml', kwargs["fichier"]) # récupère nom commission
-			client.set_droits(r[1] + str(r[2]))
+			r = parse('{}comm_{}{:d}.xml', kwargs["fichier"]) # récupère nom du jury
+			client.set_droits(r[1] + str(r[2])) # les droits (qui servent dans le titre) sont complétés
 			client.set_filiere(r[1].lower())
 			# Ici, on va charger les dossiers présents dans le fichier choisi :
 			client.lire_fichier()
@@ -587,7 +635,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		client = self.get_client_cour()
 		# Mise à jour des attributs du client
 		client.set_fichier(kwargs["fichier"])
-		r = parse('{}admin_{}.xml', kwargs["fichier"]) # récupère nom commission
+		r = parse('{}admin_{}.xml', kwargs["fichier"]) # récupère nom de la filière traitée
 		client.set_droits(r[1])
 		client.set_filiere(r[1].lower())
 		# Ici, on va charger les dossiers présents dans le fichier choisi :
@@ -598,10 +646,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Affichage de la page de gestion des dossiers
 		return self.affi_dossier()		
 	
-	# Fonction qui génère la page html contenant les dossiers
 	@cherrypy.expose
 	def affi_dossier(self):
-		# Renvoi d'une page HTML, formatée avec le nom de la commission :
+		# Fonction qui génère la page html contenant les dossiers
+		# Renvoie une page HTML, formatée avec le nom de la commission :
 		# Quel client ?
 		client = self.get_client_cour()
 		# Quels droits ?
@@ -613,23 +661,23 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		self.dossier = self.genere_dossier(cand, droits)
 		self.liste = self.genere_liste()
 		# On retourne cette page au navigateur
-		return client.mise_en_page(self.header,self.dossier,self.liste)
+		return client.mise_en_page(self.header, self.dossier, self.liste)
 	
 	@cherrypy.expose
 	def traiter(self, **kwargs):
-		# Fonction appelée par l'appui sur "VALIDER" : valide les choix commission ou Admin
+		# Fonction appelée par l'appui sur "VALIDER" : valide les choix Jury ou Admin
 		# Cette méthode est appelée par le bouton valider de la page dossier...
 		# **kwargs empaquette les arguments passés par le navigateur dans le dictionnaire kwargs..
 		# mise à jour dans les variables de session du dossier du candidat...
 		client = self.get_client_cour()
-		client.traiter(**kwargs)
+		client.traiter(**kwargs)	# chaque client traite à sa manière !!
 		## Et on sauvegarde immédiatement tout cela...
 		client.sauvegarder()
 		# Et on retourne au traitement...
 		return self.affi_dossier()
 		
 	@cherrypy.expose
-	def click_list(self,**kwargs):
+	def click_list(self, **kwargs):
 		## fonction appelée lors d'un click dans la liste de dossiers
 		cherrypy.session["mem_scroll"] = kwargs['scroll_mem']
 		txt = kwargs['num'] # on récupère l'argument num
@@ -642,14 +690,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# On passe droits en argument car la fonction qui imprime les fiches bilan de commission
 		# est lancée par Admin, mais l'impression se fait avec un dossier formaté comme pour
 		# Jury : les notes de sont pas des <input type="text" .../>
-		data = {'Nom':xml.get_nom(cand)+', '+xml.get_prenom(cand)}
+		data = {'Nom':xml.get_nom(cand) + ', ' + xml.get_prenom(cand)}
 		data['naiss'] = xml.get_naiss(cand)
 		data['etab'] = xml.get_etab(cand)
-		txt = '[{}]-{}'.format(xml.get_id(cand),xml.get_INE(cand))
+		txt = '[{}]-{}'.format(xml.get_id(cand), xml.get_INE(cand))
 		data['id'] = txt
 		# récup filiere
 		fil = self.get_client_cour().get_filiere()
-		data['ref_fich'] = os.path.join('docs_candidats','{}'.format(fil),'docs_{}'.format(xml.get_id(cand)))
+		data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil), 'docs_{}'.format(xml.get_id(cand)))
 		if 'admin' in droits.lower():
 			clas_inp = '<input type="text" id="clas_actu" name = "clas_actu" size = "10"\
 			value="{}"/>'.format(xml.get_clas_actu(cand))
@@ -661,22 +709,22 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		if 'admin' in droits.lower():
 			visib = ' '
 		txt = visib
-		if xml.get_sem_prem(cand)=='on': txt += 'checked'
+		if xml.get_sem_prem(cand) == 'on': txt += 'checked'
 		data['sem_prem'] = txt
 		txt = visib
-		if xml.get_sem_term(cand)=='on': txt += 'checked'
+		if xml.get_sem_term(cand) == 'on': txt += 'checked'
 		data['sem_term'] = txt
 		# Notes
-		matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
-		date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
-		classe = {'P':'Première','T':'Terminale'}
+		matiere = {'M':'Mathématiques', 'P':'Physique/Chimie'}
+		date = {'1':'trimestre 1', '2':'trimestre 2', '3':'trimestre 3'}
+		classe = {'P':'Première', 'T':'Terminale'}
 		for cl in classe:
 			for mat in matiere:
 				for da in date:
 					key = cl + mat + da
-					note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
+					note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat], date[da]))
 					note_inp = '<input type = "text" class = "notes grossi" id = "{}" name = "{}" value = "{}"\
-					onfocusout = "verif_saisie()"/>'.format(key,key,note) 
+					onfocusout = "verif_saisie()"/>'.format(key, key, note)
 					if 'admin' in droits.lower():
 						data[key] = note_inp
 					else:
@@ -687,14 +735,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			cpes = True
 		if 'admin' in droits.lower():
 			note_CM1 = '<input type = "text" class = "notes grossi" id = "CM1" name = "CM1" value = "{}" onfocusout =\
-			"verif_saisie()"/>'.format(xml.get_CM1(cand,cpes))
+			"verif_saisie()"/>'.format(xml.get_CM1(cand, cpes))
 			data['CM1'] = note_CM1
 			note_CP1 = '<input type = "text" class = "notes grossi" id = "CP1" name = "CP1" value = "{}" onfocusout =\
-			"verif_saisie()"/>'.format(xml.get_CP1(cand,cpes))
+			"verif_saisie()"/>'.format(xml.get_CP1(cand, cpes))
 			data['CP1'] = note_CP1
 		else:
-			data['CM1'] = '{}'.format(xml.get_CM1(cand,cpes))
-			data['CP1'] = '{}'.format(xml.get_CP1(cand,cpes))
+			data['CM1'] = '{}'.format(xml.get_CM1(cand, cpes))
+			data['CP1'] = '{}'.format(xml.get_CP1(cand, cpes))
 		# EAF
 		if 'admin' in droits.lower():
 			note_eaf_e = '<input type = "text" class = "notes grossi" id = "EAF_e" name = "EAF_e" value = "{}"\
@@ -703,13 +751,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			note_eaf_o = '<input type = "text" class = "notes grossi" id = "EAF_o" name = "EAF_o" value = "{}"\
 			onfocusout = "verif_saisie()"/>'.format(xml.get_oral_EAF(cand))
 			data['EAF_o'] = note_eaf_o
-		else: 
+		else:
 			data['EAF_e'] = xml.get_ecrit_EAF(cand)
 			data['EAF_o'] = xml.get_oral_EAF(cand)		
 		# Suite
 		data['scoreb'] = xml.get_scoreb(cand)
 		data['scoref'] = xml.get_scoref(cand)
-		data['cand'] = xml.get_candidatures(cand,'impr')
+		data['cand'] = xml.get_candidatures(cand, 'impr')
 		return data
 	
 	def genere_header(self): 
@@ -721,13 +769,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			sous_titre = ' - Accès {}.'.format(qqn.get_droits())
 		return '<h1 align="center">EPA - Recrutement CPGE/CPES {}</h1>'.format(sous_titre)
 	
-	
-	# Génère la partie dossier de la page HTML
-	def genere_dossier(self, cand, droits): # fonction générant le code html du dossier
+	def genere_dossier(self, cand, droits):
+		# Génère la partie dossier de la page HTML
 		# récupération correction
 		correc = str(xml.get_correc(cand))
 		ncval = ''
-		if correc == 'NC': 
+		if correc == 'NC':
 			correc = 0
 			ncval = 'NC'
 		# Construction de la barre de correction :
@@ -737,7 +784,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		"{}"/>'.format(correc)
 		barre += '</td><td width = "2.5%"></td></tr>' # fin de la ligne range
 		txt = '' # on construit maintenant la liste des valeurs...
-		for i in range(0,len(Serveur.corrections)+1):
+		for i in range(0, len(Serveur.corrections) + 1):
 			if (i % 2 == 0):
 				txt += '<td width = "7%">{:+3.1f}</td>'.format(Serveur.corrections[i])
 		barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
@@ -748,8 +795,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
 		# Construction de la chaine motifs.
 		motifs = ''
-		for i in range(0,len(motivations)):
-			key = 'mot_'+str(i)
+		for i in range(0, len(motivations)):
+			key = 'mot_' + str(i)
 			motifs += '<tr><td align = "left"><input type="button" name="'+key
 			motifs += '" id="'+key+'" onclick="javascript:maj_motif(this.id)"'
 			motifs += ' class = "motif" value ="'+ motivations[i]+'"/></td></tr>'
@@ -763,14 +810,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		motifs += "</td></tr>"
 	
 		# On met tout ça dans un dico data pour passage en argument à page_dossier
-		data = self.genere_dict(cand, droits) 
+		data = self.genere_dict(cand, droits)
 		data['barre'] = barre
 		data['nc'] = nc
 		data['motifs'] = motifs
 		return Client.html["page_dossier"].format(**data)
 		
-	# Génère la partie liste de la page HTML
 	def genere_liste(self):
+		# Génère la partie liste de la page HTML
 		client = self.get_client_cour()
 		liste = client.get_dossiers()
 		num_doss = client.get_num_doss()
@@ -778,34 +825,33 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		lis = '<form id = "form_liste" action = "click_list" method=POST>'
 		lis += '<input type="hidden" name = "scroll_mem" value = "'
 		lis += cherrypy.session['mem_scroll']+'"/>' # mémo du scroll
-		for i in range(0,len(liste)):
+		for i in range(0, len(liste)):
 			lis += '<input type = "submit" name="num" '
 			clas = 'doss'
-			if i == num_doss: # affecte la class css "doss_courant" au dossier  courant
+			if i == num_doss: # affecte la class css "doss_courant" au dossier courant
 					clas += ' doss_courant'
 			if xml.get_traite(liste[i]) != '':
 					clas += ' doss_traite' # affecte la classe css "doss_traite" aux ...
 			if 'admin' in client.get_droits().lower():
-				if xml.get_complet(liste[i])=='non':	# Dossier incomplet (seulement admin ?)
+				if xml.get_complet(liste[i]) == 'non':	# Dossier incomplet (seulement admin ?)
 					clas += ' doss_incomplet'
 			lis += 'class = "{}"'.format(clas)
 			nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
-			txt = '{:3d}) {: <30}{}'.format(i+1,nom[:29],xml.get_candidatures(liste[i],'ord'))
+			txt = '{:3d}) {: <30}{}'.format(i+1, nom[:29], xml.get_candidatures(liste[i], 'ord'))
 			lis += ' value="'+txt+'"></input><br>'
 		# txt est le txt que contient le bouton. Attention, ses 3 premiers
 		# caractères doivent être le numéro du dossier dans la liste des
 		# dossiers (client_get_dossiers())... Cela sert dans click_list(), pour identifier sur qui on a clické..
-		lis += '-'*7+' fin de liste '+'-'*7
-		lis = lis + '</form>'	
+		lis += '-'*7 + ' fin de liste ' + '-'*7
+		lis = lis + '</form>'
 		return lis
-
  	
 	@cherrypy.expose
 	def genere_fichiers_comm(self):
 		# Générer les fichier epa_comm_mpsi1.xml jusqu'à epa_comm_cpesN.xml
 		# Récupération des fichiers admin
-		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))
- 		# Pour chaque fichier "epa_admin_*.xml"
+		list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_admin_*.xml"))
+		# Pour chaque fichier "epa_admin_*.xml"
 		for fich in list_fich:
 			doss = etree.parse(fich).getroot()
 			# Tout d'abord, calculer le score brut de chaque candidat 
@@ -814,33 +860,32 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			# Classement par scoreb décroissant
 			doss[:] = sorted(doss, key = lambda cand: -float(cand.xpath('diagnostic/score')[0].text.replace(',','.')))
 			# Récupération de la filière 
-			fil = parse(os.path.join(os.curdir,"data","epa_admin_{}.xml"),fich)
+			fil = parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)
 			nbjury = int(nb_jury[fil[0].lower()])
 			# Découpage en n listes de dossiers
-			for j in range(0,nbjury):
+			for j in range(0, nbjury):
 				dossier = []	# deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append
-				[dossier.append(copy.deepcopy(doss[i])) for i in range(0,len(doss)) if i%nbjury == j]
+				[dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if i%nbjury == j]
 				# Sauvegarde
 				res = etree.Element('candidats')
 				[res.append(cand) for cand in dossier]
-				nom = os.path.join(os.curdir,"data","epa_comm_{}{}.xml".format(fil[0],j+1))
+				nom = os.path.join(os.curdir, "data", "epa_comm_{}{}.xml".format(fil[0], j+1))
 				with open(nom, 'wb') as fichier:
 					fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
-			
 		# Enfin, on retourne au menu
 		return self.retour_menu()
 
-	# Convertit une date de naissance en un nombre pour le classement
 	def convert(self, naiss):
-		dic = parse('{j:d}/{m:d}/{a:d}',naiss)
-		return dic['a']*10**4+dic['m']*10**2+dic['j']
+		# Convertit une date de naissance en un nombre pour le classement
+		dic = parse('{j:d}/{m:d}/{a:d}', naiss)
+		return dic['a']*10**4 + dic['m']*10**2 + dic['j']
 	
-	# Récolter les fichiers après la commission
 	@cherrypy.expose
 	def genere_fichiers_class(self):
+		# Récolter les fichiers après la commission
 		# Pour chaque filière
 		for comm in filieres:
-			list_fich = glob.glob(os.path.join(os.curdir,"data","epa_comm_{}*.xml".format(comm.upper())))
+			list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_comm_{}*.xml".format(comm.upper())))
 			list_doss = [] # contiendra les dossiers de chaque sous-comm
 			# Pour chaque sous-commission
 			for fich in list_fich:
@@ -852,7 +897,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					if xml.get_jury(c) == 'Auto':
 						xml.set_correc(c, 'NC')
 						xml.set_scoref(c, 'NC')
-						xml.set_motifs(c,'Dossier moins bon que le dernier classé.')
+						xml.set_motifs(c, 'Dossier moins bon que le dernier classé.')
 				# Classement selon score_final + age
 				doss[:] = sorted(doss, key = lambda cand: self.convert(cand.xpath('naissance')[0].text))
 				doss[:] = sorted(doss, key = lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')))
@@ -865,7 +910,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				num = 0
 				for i in range(0, nb): # list_doss[0] est le plus grand !!
 					doss_fin.append(list_doss[0][i])
-					for k in range(1,len(list_doss)): # reste-t-il des candidats classés dans les listes suivantes ?
+					for k in range(1, len(list_doss)): # reste-t-il des candidats classés dans les listes suivantes ?
 						if i < len(list_doss[k]): doss_fin.append(list_doss[k][i])
 				res = etree.Element('candidats')
 				[res.append(c) for c in doss_fin]
@@ -876,9 +921,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					if xml.get_scoref(cand) != 'NC':
 						nu = str(rg)
 						rg += 1
-					xml.set_rang(cand,nu)
+					xml.set_rang(cand, nu)
 				# Sauvegarde du fichier class...
-				nom = os.path.join(os.curdir,"data","epa_class_{}.xml".format(comm.upper()))
+				nom = os.path.join(os.curdir, "data", "epa_class_{}.xml".format(comm.upper()))
 				with open(nom, 'wb') as fichier:
 					fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
 				
@@ -890,16 +935,19 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Générer la page html pour impression des fiches bilan de commission
 		r = parse('{}class_{}.xml', kwargs["fichier"]) # récupère nom commission
 		txt = ''
+		saut = '<div style = "page-break-after: always;"></div>'
 		for cand in etree.parse(kwargs["fichier"]).getroot():
 			if xml.get_scoref(cand) != 'NC':
 				txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1>'.format(r[1].upper())
-				if xml.get_rang(cand) == 'NC':# Ce test est un résidu d'une époque ou on générait une fiche même si le candidat n'était pas classé !
+				# Le test suivant est un résidu d'une époque où on générait une fiche même si le candidat n'était pas 
+				# classé !
+				if xml.get_rang(cand) == 'NC':
 					txt += '<div class = encadre>Candidat non classé</div>'
 				else:
 					 txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang(cand))
-				txt += self.genere_dossier(cand,"commission")
-				txt += '<div style = "page-break-after: always;"></div>'
-		txt = txt[:-len('<div style = "page-break-after: always;"></div>')] # On enlève le dernier saut de page...
+				txt += self.genere_dossier(cand, "commission")
+				txt += saut
+		txt = txt[:-len(saut)] # On enlève le dernier saut de page...
 		data = {'pages':txt}
 		return Client.html['page_impress'].format(**data) 
 	
@@ -907,28 +955,28 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	@cherrypy.expose
 	def tableaux_bilan(self):
 		# Un peu de ménage...
-		dest = os.path.join(os.curdir,"tableaux")
+		dest = os.path.join(os.curdir, "tableaux")
 		try:
-			self.efface_dest(dest) # on efface toute l'arborescence fille de dest 
+			self.efface_dest(dest) # on efface toute l'arborescence fille de dest
 		except: # dest n'existe pas !
 			os.mkdir(dest) # on le créé...
 		# Création du fichier d'aide
-		with open(os.path.join(dest,"aide.txt"), 'w') as fi:
+		with open(os.path.join(dest, "aide.txt"), 'w') as fi:
 			txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"
 			"il est conseillé d'utiliser la fonction fichier-->importer")
 			fi.write(txt)
 		fi.close()
 		# Récupération des fichiers
-		list_fich = glob.glob(os.path.join(os.curdir,"data","epa_class_*.xml"))
+		list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_class_*.xml"))
 		# Pour chaque filière :
 		for fich in list_fich:
 			# lecture fichier
 			doss = etree.parse(fich).getroot()
-			# 1er tableau : liste ordonnée des candidats retenus, pour Jeanne
-			nom = os.path.join(os.curdir,"tableaux","") # chaîne vide pour avoir / à la fin du chemin...
-			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
+			# 1er tableau : liste ordonnée des candidats retenus, pour l'admin
+			nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
+			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_retenus.csv'
-			c = csv.writer(open(nom,'w'))
+			c = csv.writer(open(nom, 'w'))
 			entetes = ['Rang', 'Nom', 'Prénom', 'Date de naissance', 'score brut', 'correction', 'score final', 'jury',
 			'Observations']
 			c.writerow(entetes)
@@ -938,40 +986,40 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					xml.get_scoreb, xml.get_correc, xml.get_scoref, xml.get_jury, xml.get_motifs]]
 					c.writerow(data)
 			# 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
-			# Le même que pour Jeanne, mais sans les notes...
-			nom = os.path.join(os.curdir,"tableaux","") # chaîne vide pour avoir / à la fin du chemin..
-			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
+			# Le même que pour l'admin, mais sans les notes...
+			nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin..
+			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_retenus(sans_note).csv'
-			c = csv.writer(open(nom,'w'))
-			entetes = ['Rang','Nom','Prénom','Date de naissance']
+			c = csv.writer(open(nom, 'w'))
+			entetes = ['Rang', 'Nom', 'Prénom', 'Date de naissance']
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [fonction(cand) for fonction in [xml.get_rang,xml.get_nom,xml.get_prenom,xml.get_naiss]]
+					data = [fonction(cand) for fonction in [xml.get_rang, xml.get_nom, xml.get_prenom, xml.get_naiss]]
 					c.writerow(data)
 			# 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
 			# toutes les notes et qq infos administratives
 			# Fichier destination
-			nom = os.path.join(os.curdir,"tableaux","") # chaîne vide pour avoir / à la fin du chemin...
-			nom += parse(os.path.join(os.curdir,"data","epa_class_{}.xml"),fich)[0]
+			nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
+			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_alphabetique.csv'
-			c = csv.writer(open(nom,'w'))
+			c = csv.writer(open(nom, 'w'))
 			entetes = ['Rang', 'Candidatures', 'Nom', 'Prénom', 'Date de naissance', 'Sexe', 'Nationalité', 'id_apb',
 			'Boursier', 'Classe actuelle', 'Etablissement', 'Commune Etablissement']
 			# entêtes notes...
-			matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
-			date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
-			classe = {'P':'Première','T':'Terminale'}
+			matiere = {'M':'Mathématiques', 'P':'Physique/Chimie'}
+			date = {'1':'trimestre 1', '2':'trimestre 2', '3':'trimestre 3'}
+			classe = {'P':'Première', 'T':'Terminale'}
 			entetes.extend([cl + mat + da for cl in classe for da in date for mat in matiere])
-			entetes.extend(['F_écrit','F_oral','CPES_math','CPES_phys'])
+			entetes.extend(['F_écrit', 'F_oral', 'CPES_math', 'CPES_phys'])
 			# la suite
-			entetes.extend(['score brut','correction','score final','jury','Observations'])
+			entetes.extend(['score brut', 'correction', 'score final', 'jury', 'Observations'])
 			c.writerow(entetes)
 			# Classement alphabétique
 			doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
 			# Remplissage du fichier dest
 			for cand in doss:
-				data = [xml.get_rang(cand), xml.get_candidatures(cand,'ord')]
+				data = [xml.get_rang(cand), xml.get_candidatures(cand, 'ord')]
 				data += [fonction(cand) for fonction in [xml.get_nom, xml.get_prenom, xml.get_naiss, xml.get_sexe,
 				xml.get_nation, xml.get_id, xml.get_boursier, xml.get_clas_actu, xml.get_etab, xml.get_commune_etab]]
 				# Les notes...
@@ -981,9 +1029,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 							key = cl + mat + da
 							note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
 							data.append(note)
-				data.extend([xml.get_ecrit_EAF(cand),xml.get_oral_EAF(cand)])
+				data.extend([xml.get_ecrit_EAF(cand), xml.get_oral_EAF(cand)])
 				cpes = 'cpes' in xml.get_clas_actu(cand).lower()
-				data.extend([xml.get_CM1(cand,cpes),xml.get_CP1(cand,cpes)])
+				data.extend([xml.get_CM1(cand, cpes), xml.get_CP1(cand, cpes)])
 				# La suite
 				data.extend([fonction(cand) for fonction in [xml.get_scoreb, xml.get_correc, xml.get_scoref,
 				xml.get_jury, xml.get_motifs]])
