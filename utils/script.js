@@ -13,9 +13,9 @@ function maj_note()
     	document.getElementById('scoref').innerHTML = 'NC';
     } else {
     	var correc = document.getElementById('correc');
-    	cor = toFloat(correc.value);
+		var cor = toFloat(correc.value);
     	var scorb = toFloat(document.getElementById('scoreb').innerHTML);
-	var scorf = (scorb + cor).toFixed(2).replace('.',',');
+		var scorf = (scorb + cor).toFixed(2).replace('.',',');
     	document.getElementById('scoref').innerHTML = scorf;
     }
 }
@@ -23,14 +23,14 @@ function maj_note()
 function click_nc()
 {
     // Admin ou Jury ?
-    txt = document.getElementById("header").innerHTML
+	var txt = document.getElementById("header").innerHTML
     if (txt.indexOf('Admin') == -1){
 		// Accès Jury
 	    // mise à jour du input hidden nc et soumission formulaire
-	    nc = document.getElementById('nc');
+		var nc = document.getElementById('nc');
 	    nc.value = 'NC';
 	    maj_note();
-	    valid = test_valid();
+		var valid = test_valid();
 	    if (valid) {document.forms['formulaire'].submit();}
     }
 }
@@ -41,11 +41,11 @@ function maj_motif(id)
     // le paramètre name est le nom du bouton et du label associé !
     // On va mettre à jour la zone de texte motif...
     // Admin ou Jury ?
-    txt = document.getElementById("header").innerHTML
+	var txt = document.getElementById("header").innerHTML
     if (txt.indexOf('Admin') == -1){
     	    // Accès Jury
-            src = document.getElementById(id);
-            dest = document.getElementById('motif');
+			var src = document.getElementById(id);
+			var dest = document.getElementById('motif');
             if (dest.value != '')
             {dest.value += ' | '}
             dest.value += src.value;
@@ -55,7 +55,7 @@ function maj_motif(id)
 function click_range()
 {
     // permet de sortir d'un cas NC par clic sur les notes
-    nc = document.getElementById('nc');
+	var nc = document.getElementById('nc');
     nc.value = '';
     maj_note();
 }
@@ -64,15 +64,19 @@ function verif_saisie()
 {
 	// Cette fonction vérifie la saisie des notes par l'Administrateur
 	// Si elles ne sont pas numériques ou hors de [0;20], un message apparaît...
-	val = event.target.value;
-	if (val != parseFloat(val) && val != '-'){
+	var val = event.target.value;
+	var ok = true;
+	if (isNaN(toFloat(val)) && val != '-'){
 		alert("Une valeur numérique (ou '-') est attendue...");
-		event.target.focus()
+		event.target.focus();
+		ok = false;
 	}
-	if (val == parseFloat(val) && (parseFloat(val) <0 || parseFloat(val) >20)){
+	if (!isNaN(toFloat(val)) && (toFloat(val) <0 || toFloat(val) >20)){
 		alert("La valeur saisie n'est pas comprise entre 0 et 20");
-		event.target.focus()
+		event.target.focus();
+		ok = false;
 	}
+	return ok
 }
 
 function test_valid()
@@ -83,17 +87,17 @@ function test_valid()
     // Mémorise le scroll de liste
     get_scroll();
     // Admin ou Jury ?
-    txt = document.getElementById("header").innerHTML;
+	var txt = document.getElementById("header").innerHTML;
     if (txt.indexOf('Admin') == -1){
     	// Accès Jury
     	// vérifie qu'il y a un motif si correc < 0 ou NC
         // Récupération de la correction
-        correc = document.getElementById('correc');
-        cor = toFloat(correc.value);
-        nc = document.getElementById('nc');
+		var correc = document.getElementById('correc');
+		var cor = toFloat(correc.value);
+		var nc = document.getElementById('nc');
         // Si elle est négative ou NC, on teste l'existence d'une motivation
-        motif = document.getElementById('motif');
-        test = false; // test est vrai si au moins une motivation est saisie
+		var motif = document.getElementById('motif');
+		var test = false; // test est vrai si au moins une motivation est saisie
         if (cor >= 0 && nc.value!=='NC'){test = true;}
         if (motif.value != ''){test = true;}
         // --> message et formulaire non soumis
@@ -102,7 +106,7 @@ function test_valid()
     }
     else {
     	// Accès Admin
-	test = True;
+		test = true;
     }
     return test
 }

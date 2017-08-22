@@ -13,6 +13,9 @@ Procédure d'utilisation du programme d'aide au recrutement :
 
 --> Le menu d'accueil s'ouvre. "Au travail !"
 
+** Différents paramètres de l'application sont modifiables. Ils se trouvent dans le fichier parametres.py situé dans le 
+dossier utils.
+
 
 
 ################# Pour la commission en réseau ###################
