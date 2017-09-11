@@ -857,8 +857,17 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			# Tout d'abord, calculer le score brut de chaque candidat 
 			for cand in doss:
 				xml.calcul_scoreb(cand)
-			# Classement par scoreb décroissant
+			# Classement par scoreb décroissant et renseignement du noeud "rang brut"
 			doss[:] = sorted(doss, key = lambda cand: -float(cand.xpath('diagnostic/score')[0].text.replace(',','.')))
+			rg = 1
+			num = 1
+			score_actu = xml.get_scoreb(doss[0])
+			for cand in doss:
+				if xml.get_scoreb(cand) < score_actu:
+					score_actu = xml.get_scoreb(cand)
+					rg = num
+				xml.set_rang_brut(cand, str(rg))
+				num += 1
 			# Récupération de la filière 
 			fil = parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)
 			nbjury = int(nb_jury[fil[0].lower()])
@@ -921,7 +930,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					if xml.get_scoref(cand) != 'NC':
 						nu = str(rg)
 						rg += 1
-					xml.set_rang(cand, nu)
+					xml.set_rang_final(cand, nu)
 				# Sauvegarde du fichier class...
 				nom = os.path.join(os.curdir, "data", "epa_class_{}.xml".format(comm.upper()))
 				with open(nom, 'wb') as fichier:
@@ -941,10 +950,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1>'.format(r[1].upper())
 				# Le test suivant est un résidu d'une époque où on générait une fiche même si le candidat n'était pas 
 				# classé !
-				if xml.get_rang(cand) == 'NC':
+				if xml.get_rang_final(cand) == 'NC':
 					txt += '<div class = encadre>Candidat non classé</div>'
 				else:
-					 txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang(cand))
+					 txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang_final(cand))
 				txt += self.genere_dossier(cand, "commission")
 				txt += saut
 		txt = txt[:-len(saut)] # On enlève le dernier saut de page...
@@ -977,13 +986,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_retenus.csv'
 			c = csv.writer(open(nom, 'w'))
-			entetes = ['Rang', 'Nom', 'Prénom', 'Date de naissance', 'score brut', 'correction', 'score final', 'jury',
-			'Observations']
+			entetes = ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance', 'score brut', 'correction', 
+			'score final', 'jury', 'Observations']
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [fonction(cand) for fonction in [xml.get_rang, xml.get_nom, xml.get_prenom, xml.get_naiss,
-					xml.get_scoreb, xml.get_correc, xml.get_scoref, xml.get_jury, xml.get_motifs]]
+					data = [fonction(cand) for fonction in [xml.get_rang_brut, xml.get_rang_final, xml.get_nom, 
+					xml.get_prenom, xml.get_naiss, xml.get_scoreb, xml.get_correc, xml.get_scoref, xml.get_jury, 
+					xml.get_motifs]]
 					c.writerow(data)
 			# 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
 			# Le même que pour l'admin, mais sans les notes...
@@ -991,11 +1001,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_retenus(sans_note).csv'
 			c = csv.writer(open(nom, 'w'))
-			entetes = ['Rang', 'Nom', 'Prénom', 'Date de naissance']
+			entetes = ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance']
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [fonction(cand) for fonction in [xml.get_rang, xml.get_nom, xml.get_prenom, xml.get_naiss]]
+					data = [fonction(cand) for fonction in [xml.get_rang_brut, xml.get_rang_final , xml.get_nom, 
+					xml.get_prenom, xml.get_naiss]]
 					c.writerow(data)
 			# 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
 			# toutes les notes et qq infos administratives
@@ -1004,8 +1015,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_alphabetique.csv'
 			c = csv.writer(open(nom, 'w'))
-			entetes = ['Rang', 'Candidatures', 'Nom', 'Prénom', 'Date de naissance', 'Sexe', 'Nationalité', 'id_apb',
-			'Boursier', 'Classe actuelle', 'Etablissement', 'Commune Etablissement']
+			entetes = ['Rang brut', 'Rang final', 'Candidatures', 'Nom', 'Prénom', 'Date de naissance', 'Sexe', 
+			'Nationalité', 'id_apb', 'Boursier', 'Classe actuelle', 'Etablissement', 'Commune Etablissement']
 			# entêtes notes...
 			matiere = {'M':'Mathématiques', 'P':'Physique/Chimie'}
 			date = {'1':'trimestre 1', '2':'trimestre 2', '3':'trimestre 3'}
@@ -1019,7 +1030,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 			doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
 			# Remplissage du fichier dest
 			for cand in doss:
-				data = [xml.get_rang(cand), xml.get_candidatures(cand, 'ord')]
+				data = [xml.get_rang_brut(cand), xml.get_rang_final(cand), xml.get_candidatures(cand, 'ord')]
 				data += [fonction(cand) for fonction in [xml.get_nom, xml.get_prenom, xml.get_naiss, xml.get_sexe,
 				xml.get_nation, xml.get_id, xml.get_boursier, xml.get_clas_actu, xml.get_etab, xml.get_commune_etab]]
 				# Les notes...

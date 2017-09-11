@@ -529,17 +529,32 @@ def calcul_scoreb(cand):
 		subel = etree.SubElement(el, 'score')
 		subel.text = scoreb
 		
-def set_rang(cand,rg):
+def set_rang_final(cand,rg):
 	try:
-		cand.xpath('diagnostic/rang')[0].text = rg
+		cand.xpath('diagnostic/rangf')[0].text = rg
 	except:
 		el = cand.xpath('diagnostic')[0]
-		subel = etree.SubElement(el, 'rang')
+		subel = etree.SubElement(el, 'rangf')
 		subel.text = rg
 
-def get_rang(cand):
+def get_rang_final(cand):
 	try:
-		txt = cand.xpath('diagnostic/rang')[0].text
+		txt = cand.xpath('diagnostic/rangf')[0].text
+	except:
+		txt = '?'
+	return txt
+
+def set_rang_brut(cand,rg):
+	try:
+		cand.xpath('diagnostic/rangb')[0].text = rg
+	except:
+		el = cand.xpath('diagnostic')[0]
+		subel = etree.SubElement(el, 'rangb')
+		subel.text = rg
+
+def get_rang_brut(cand):
+	try:
+		txt = cand.xpath('diagnostic/rangb')[0].text
 	except:
 		txt = '?'
 	return txt
