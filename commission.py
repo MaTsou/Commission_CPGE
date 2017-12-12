@@ -26,7 +26,7 @@
 # mais ne touche pas au contenu du dossier.
 
 
-import os, sys, time, cherrypy, random, copy, glob, csv, pickle
+import os, sys, time, cherrypy, random, copy, glob, csv, pickle, webbrowser
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
@@ -435,10 +435,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0,(max_correc-min_correc)*nb_correc+1)]
 	# Fin déclaration attributs de classe
 
-	def __init__(self, test):
+	def __init__(self, test, ip):
 		# constructeur
 		self.clients = {}# dictionnaire contenant les clients connectés
 		self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin or Jury ?")
+		navi=webbrowser.get() # Quel est le navigateur par défaut ?
+		navi.open_new('http://'+ip+':8080') # on ouvre le navigateur internet, avec la bonne url..
 
 	# Accesseurs et mutateurs
 	def get_client_cour(self):
@@ -1068,4 +1070,4 @@ if '-ip' in sys.argv:
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
 cherrypy.config.update({"server.socket_host":ip})
-cherrypy.quickstart(Serveur(test),'/', config ="utils/config.conf")
+cherrypy.quickstart(Serveur(test, ip),'/', config ="utils/config.conf")
