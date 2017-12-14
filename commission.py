@@ -974,7 +974,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 		# Création du fichier d'aide
 		with open(os.path.join(dest, "aide.txt"), 'w') as fi:
 			txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"
-			"il est conseillé d'utiliser la fonction fichier-->importer")
+			"il est conseillé d'utiliser le menu fichier-->importer")
 			fi.write(txt)
 		fi.close()
 		# Récupération des fichiers
@@ -998,16 +998,16 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 					xml.get_motifs]]
 					c.writerow(data)
 			# 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
-			# Le même que pour l'admin, mais sans les notes...
+			# Le même que pour l'admin, mais sans les notes, ni les rangs bruts...
 			nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin..
 			nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
 			nom += '_retenus(sans_note).csv'
 			c = csv.writer(open(nom, 'w'))
-			entetes = ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance']
+			entetes = ['Rang final', 'Nom', 'Prénom', 'Date de naissance']
 			c.writerow(entetes)
 			for cand in doss:
 				if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-					data = [fonction(cand) for fonction in [xml.get_rang_brut, xml.get_rang_final , xml.get_nom, 
+					data = [fonction(cand) for fonction in [xml.get_rang_final , xml.get_nom, 
 					xml.get_prenom, xml.get_naiss]]
 					c.writerow(data)
 			# 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
