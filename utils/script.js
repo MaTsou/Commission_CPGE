@@ -90,19 +90,19 @@ function test_valid()
 	var txt = document.getElementById("header").innerHTML;
     if (txt.indexOf('Admin') == -1){
     	// Accès Jury
-    	// vérifie qu'il y a un motif si correc < 0 ou NC
+    	// vérifie qu'il y a un motif si correc <> 0 ou NC
         // Récupération de la correction
 		var correc = document.getElementById('correc');
 		var cor = toFloat(correc.value);
 		var nc = document.getElementById('nc');
-        // Si elle est négative ou NC, on teste l'existence d'une motivation
+        // Si elle est non nulle ou NC, on teste l'existence d'une motivation
 		var motif = document.getElementById('motif');
-		var test = false; // test est vrai si au moins une motivation est saisie
-        if (cor >= 0 && nc.value!=='NC'){test = true;}
+		var test = false; // test sera vrai si au moins une motivation est saisie ou si correction = 0
+        if (cor == 0 && nc.value!=='NC'){test = true;}
         if (motif.value != ''){test = true;}
         // --> message et formulaire non soumis
         if (!test)
-        {alert('Les corrections négatives (et aussi NC !) doivent obligatoirement être motivées...');}
+        {alert('Toute correction apportée au score (et aussi NC !) doit être motivée...');}
     }
     else {
     	// Accès Admin
