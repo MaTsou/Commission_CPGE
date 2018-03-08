@@ -253,6 +253,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 			# Etape 4 bouton
 			data['bout_etap4'] = '<input type = "button" class ="fichier"'
 			data['bout_etap4'] += ' value = "Récolter les fichiers" onclick = "recolt_wait();"/>'
+			data['decompt'] = self.genere_liste_decompte()
 			# Etape 5 bouton et Etape 6
 			list_fich_class = glob.glob(os.path.join(os.curdir,"data","epa_class_*.xml"))
 			txt5 = ''
@@ -336,6 +337,18 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
 			liste_stat += '<li>{} dossiers PCSI + CPES</li>'.format(stat['PC'])
 			liste_stat += '<li>{} dossiers MPSI + PCSI + CPES</li></ul></ul>'.format(stat['MPC'])
 		return liste_stat
+
+	def genere_liste_decompte(self):
+		# Sous-fonction pour le menu admin (pendant commission)
+			try:
+				with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
+					decompt = pickle.load(fich)
+					txt = ''
+				for a in decompt.keys():
+					txt += '{} : {} dossiers classés<br>'.format(a, decompt[a])
+			except:# aucun dossier n'a encore été traité...
+				txt = ''
+			return txt
 
 	def genere_liste_impression(self):
 		# Sous-fonction pour le menu admin
@@ -895,6 +908,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 	def genere_fichiers_class(self):
 		# Récolter les fichiers après la commission
 		# Pour chaque filière
+		tot_class = {} # dictionnaire contenant les nombres de candidats classés par filière
 		for comm in filieres:
 			list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_comm_{}*.xml".format(comm.upper())))
 			list_doss = [] # contiendra les dossiers de chaque sous-comm
@@ -937,7 +951,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 				nom = os.path.join(os.curdir, "data", "epa_class_{}.xml".format(comm.upper()))
 				with open(nom, 'wb') as fichier:
 					fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
-				
+			tot_class.update({"{}".format(comm.upper()):rg})
+		# On écrit le fichier des décomptes de commission
+		with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
+			pickle.dump(tot_class, stat_fich)
 		# Enfin, on retourne au menu
 		return self.retour_menu()
 	
