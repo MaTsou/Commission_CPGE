@@ -951,7 +951,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 nom = os.path.join(os.curdir, "data", "epa_class_{}.xml".format(comm.upper()))
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
-            tot_class.update({"{}".format(comm.upper()):rg})
+            tot_class.update({"{}".format(comm.upper()):rg-1})
         # On écrit le fichier des décomptes de commission
         with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
             pickle.dump(tot_class, stat_fich)
