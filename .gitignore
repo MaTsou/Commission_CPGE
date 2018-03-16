@@ -3,6 +3,7 @@
 tableaux/
 data/docs_candidats/
 data/stat
+data/decomptes
 utils/.DS_Store
 utils/__pycache__/
 *.swp
