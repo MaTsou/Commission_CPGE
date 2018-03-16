@@ -9,12 +9,9 @@ Procédure d'utilisation du programme d'aide au recrutement :
 ** À chaque fois que vous avez besoin de l'application :
 --> Lancer le programme commission.py (double clic)
 
---> Ouvrir un navigateur internet. Indiquer l'URL localhost:8080
+--> Le navigateur doit s'ouvrir automatiquement et afficher la page d'accueil
 
---> Le menu d'accueil s'ouvre. "Au travail !"
-
-** Différents paramètres de l'application sont modifiables. Ils se trouvent dans le fichier parametres.py situé dans le 
-dossier utils.
+** Différents paramètres de l'application sont modifiables. Ils se trouvent dans le fichier parametres.py situé dans le dossier utils.
 
 
 
