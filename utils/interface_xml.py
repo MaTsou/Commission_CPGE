@@ -12,6 +12,9 @@ from utils.parametres import filieres
 ## Variables globales
 alfil = sorted(filieres) # filières dans l'ordre alphabétique (sert dans get_candidatures)
 
+###################################
+# Quelques fonctions de conversion
+###################################
 def isnote(note):
     # Teste si 'note' est bien un réel compris entre 0 et 20
     bool = True
@@ -35,6 +38,31 @@ def vers_str(num):
     str = '{:5.2f}'.format(num)
     return str.replace('.',',')
 
+###################################
+# Accesseur et mutateur standardisés
+# Tous fonctionnant selon le même modèle, c'est plus léger ainsi
+###################################
+def get(cand, query, default, num='False'):
+    # lit le champ désigné par 'query' relatif au candidat 'cand'
+    # num vaut 'True' si la valeur à retourner est numérique
+    try:
+        result = cand.xpath(query)[0].text
+        if num: result = convert(result)
+    except:
+        result = default
+    return result
+
+def set(cand, query, value):
+    # écrit le champ désigné par 'query' relatif au candidat 'cand'
+    # si besoin, construit l'arborescence manquante dans le fichier xml
+    # Cette reconstruction se fait de manière récursive en commançant
+    # par l'extrémité (les feuilles !)...
+    return none
+
+
+###################################
+# Les accesseurs et mutateurs appelés
+###################################
 def get_candidatures(cand, form = ''):
     # Lit le champ candidatures (MP- ou M-- ou etc.) du candidat cand
     query = 'diagnostic/candidatures'
@@ -60,11 +88,7 @@ def set_candidatures(cand, cc):
 def get_note(cand, classe, matiere, date):
     query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
     query += 'matière[intitulé ="'+matiere+'"][date="'+date+'"]/note'
-    try:
-        note = convert(cand.xpath(query)[0].text)
-    except:
-        note = '-'
-    return note
+    return get(cand, query, '-', 1)
 
 def set_note(cand, classe, matiere, date, note):
     query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
@@ -79,11 +103,7 @@ def set_note(cand, classe, matiere, date, note):
         subel.text = note
         
 def get_ecrit_EAF(cand):
-    try:
-        note = convert(cand.xpath('synoptique/français.écrit')[0].text)
-    except:
-        note = '-'
-    return note
+    return get(cand, 'synoptique/français.écrit', '-', 1)
 
 def set_ecrit_EAF(cand, note):
     if not isnote(note):
@@ -96,11 +116,7 @@ def set_ecrit_EAF(cand, note):
         subel.text = note
 
 def get_oral_EAF(cand):
-    try:
-        note = convert(cand.xpath('synoptique/français.oral')[0].text)
-    except:
-        note = '-'
-    return note
+    return get(cand, 'synoptique/français.oral', '-', 1)
 
 def set_oral_EAF(cand, note):
     if not isnote(note):
@@ -114,14 +130,9 @@ def set_oral_EAF(cand, note):
     
 def get_CM1(cand,cpes):
     if cpes:
-        query = 'synoptique/matières/matière[intitulé = "Mathématiques"]/note'
-        try:
-            note = convert(cand.xpath(query)[0].text)
-        except:
-            note = '-'
+        return get(cand, 'synoptique/matières/matière[intitulé = "Mathématiques"]/note', '-', 1)
     else:
-        note = '-'
-    return note
+        return '-'
 
 def set_CM1(cand, note):
     query = 'synoptique/matières/matière[intitulé = "Mathématiques"]/note'
@@ -136,14 +147,9 @@ def set_CM1(cand, note):
 
 def get_CP1(cand,cpes):
     if cpes:
-        query = 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note'
-        try:
-            note = convert(cand.xpath(query)[0].text)
-        except:
-            note = '-'
+        return get(cand, 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note', '-', 1)
     else:
-        note = '-'
-    return note
+        return '-'
 
 def set_CP1(cand, note):
     query = 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note'
@@ -158,12 +164,7 @@ def set_CP1(cand, note):
 
 def get_sem_prem(cand):
     # Lit le booléen "bulletins en semestres en classe de première" ?
-    query = 'diagnostic/sem_prem'
-    try:
-        sem = cand.xpath(query)[0].text
-    except:
-        sem = 'off'
-    return sem
+    return get(cand, 'diagnostic/sem_prem', 'off', 0)
 
 def set_sem_prem(cand,bool):
     query = 'diagnostic/sem_prem'
@@ -176,12 +177,7 @@ def set_sem_prem(cand,bool):
 
 def get_sem_term(cand):
     # Lit le booléen "bulletins en semestres en classe de terminale" ?
-    query = 'diagnostic/sem_term'
-    try:
-        sem = cand.xpath(query)[0].text
-    except:
-        sem = 'off'
-    return sem
+    return get(cand, 'diagnostic/sem_term', 'off', 0)
 
 def set_sem_term(cand,bool):
     query = 'diagnostic/sem_term'
@@ -199,26 +195,14 @@ def get_prenom(cand):
     return cand.xpath('prénom')[0].text
     
 def get_sexe(cand):
-    try:
-        sex = cand.xpath('sexe')[0].text
-    except:
-        sex = '?'
-    return sex
+    return get(cand, 'sexe', '?', 0)
 
 def get_scoreb(cand):
     # score brut
-    try:
-        score = convert(cand.xpath('diagnostic/score')[0].text)
-    except:
-        score = ''
-    return score
+    return get(cand, 'diagnostic/score', '', 1)
     
 def get_traite(cand):
-    try:
-        traite = cand.xpath('diagnostic/traite')[0].text
-    except:
-        traite = ''
-    return traite
+    return get(cand, 'diagnostic/traite', '', 0)
 
 def set_traite(cand):
     try:
@@ -230,11 +214,7 @@ def set_traite(cand):
 
 def get_correc(cand):
     # correction du jury
-    try:
-        correc = cand.xpath('diagnostic/correc')[0].text
-    except:
-        correc = 0
-    return correc
+    return get(cand, 'diagnostic/correc', '0', 0)
 
 def set_correc(cand, correc):
     try:
@@ -246,17 +226,10 @@ def set_correc(cand, correc):
 
 def get_scoref(cand):
     # score final
-    try:
-        scoref = cand.xpath('diagnostic/score_final')[0].text
-    except:
-        scoref = get_scoreb(cand)
-    return scoref
+    return get(cand, 'diagnostic/score_final', get_scoreb(cand), 0)
 
 def get_scoref_num(cand): # version numérique, pour le classement NC --> 0
-    try:
-        scoref = cand.xpath('diagnostic/score_final')[0].text
-    except:
-        scoref = get_scoreb(cand)
+    scoref = get_scoref(cand)
     if scoref == 'NC': scoref = '0'
     return scoref
     
@@ -270,11 +243,7 @@ def set_scoref(cand, scoref):
     
 def get_motifs(cand):
     # Motivation du jury
-    try:
-        motifs = cand.xpath('diagnostic/motifs')[0].text
-    except:
-        motifs = ''
-    return motifs
+    return get(cand, 'diagnostic/motifs', '', 0)
 
 def set_motifs(cand, txt):
     try:
@@ -306,21 +275,13 @@ def get_id(cand):
     return cand.xpath('id_apb')[0].text
 
 def get_INE(cand):
-    try:
-        ine = cand.xpath('INE')[0].text
-    except:
-        ine = '?'
-    return ine
+    return get(cand, 'INE', '?', 0)
 
 def get_naiss(cand):
     return cand.xpath('naissance')[0].text
 
 def get_clas_actu(cand):
-    try:
-        clas = cand.xpath('synoptique/classe')[0].text
-    except:
-        clas = '?' 
-    return clas
+    return get(cand, 'synoptique/classe', '?', 0)
 
 def set_clas_actu(cand, classe):
     try:
@@ -331,41 +292,20 @@ def set_clas_actu(cand, classe):
         subel.text = classe
 
 def get_etab(cand):
-    try:
-        etab = cand.xpath('synoptique/établissement/nom')[0].text
-    except:
-        etab = '?'
-    try:
-        dep = cand.xpath('synoptique/établissement/département')[0].text
-    except:
-        dep = '?'
-    try:
-        pays = cand.xpath('synoptique/établissement/pays')[0].text
-    except:
-        pays = '?'
+    etab = get(cand, 'synoptique/établissement/nom', '?', 0)
+    dep = get(cand, 'synoptique/établissement/département', '?', 0)
+    pays = get(cand, 'synoptique/établissement/pays', '?', 0)
     return '{} ({}, {})'.format(etab, dep, pays)
     
 def get_commune_etab(cand):
-    try:
-        comm = cand.xpath('synoptique/établissement/ville')[0].text
-    except:
-        comm = '?'
-    return comm
+     return get(cand, 'synoptique/établissement/ville', '?', 0)
 
 def get_nation(cand):
-    try:
-        nat = cand.xpath('nationalité')[0].text
-    except:
-        nat = '?' 
-    return nat
+    return get(cand, 'nationalité', '?', 0)
 
 def get_boursier(cand):
-    try:
-        bours = cand.xpath('boursier')[0].text
-        certif = cand.xpath('boursier_certifie')[0].text
-    except:
-        bours = '?'
-        certif = '?'
+    bours = get(cand, 'boursier', '?', 0)
+    certif = get(cand, 'boursier_certifie', '?', 0)
     txt = 'oui'
     if 'non boursier' in bours.lower():
         txt = 'non'
@@ -433,11 +373,7 @@ def set_complet(cand,complet):
     return None
 
 def get_complet(cand):
-    try:
-        complet = cand.xpath('diagnostic/complet')[0].text
-    except:
-        complet = ''
-    return complet
+    return get(cand, 'diagnostic/complet', '', 0)
 
 def calcul_scoreb(cand):
     # Calcul du score brut
@@ -554,11 +490,7 @@ def set_rang_final(cand,rg):
         subel.text = rg
 
 def get_rang_final(cand):
-    try:
-        txt = cand.xpath('diagnostic/rangf')[0].text
-    except:
-        txt = '?'
-    return txt
+    return get(cand, 'diagnostic/rangf', '?', 0)
 
 def set_rang_brut(cand,rg):
     # Stockage rang brut
@@ -570,8 +502,4 @@ def set_rang_brut(cand,rg):
         subel.text = rg
 
 def get_rang_brut(cand):
-    try:
-        txt = cand.xpath('diagnostic/rangb')[0].text
-    except:
-        txt = '?'
-    return txt
+    return get(cand, 'diagnostic/rangb', '?', 0)
