@@ -25,13 +25,12 @@ def isnote(note):
     return bool and vers_num(note)>=0 and vers_num(note)<=20
 
 def convert(str):
-    # Convertit la chaîne 'str' en le nombre quelle contient (en lien avec isnote)
-    num = vers_num(str)
-    return vers_str(num)
+    # formate la chaine 'str' contenant un nombre.
+    # Intérêt seulement esthétique dans la page web
+    return vers_str(vers_num(str))
 
 def vers_num(str):
-    str = str.replace(',','.')
-    return float(str)
+    return float(str.replace(',','.'))
 
 def vers_str(num):
     # Convertit un nombre en une chaîne formatée à 2 décimales
@@ -55,13 +54,41 @@ def get(cand, query, default, num='False'):
 def set(cand, query, value):
     # écrit le champ désigné par 'query' relatif au candidat 'cand'
     # si besoin, construit l'arborescence manquante dans le fichier xml
-    # Cette reconstruction se fait de manière récursive en commançant
+    # Cette reconstruction se fait de manière récursive en commençant
     # par l'extrémité (les feuilles !)...
-    return none
+    try:
+        cand.xpath(query)[0].text = value
+    except:
+        node = query.split('/')[-1]
+        fils = etree.Element(node)
+        fils.text = value
+        pere = parse('{}/' + node, query)[0]
+        accro_branche(cand, pere, fils)
+
+def accro_branche(cand, pere, fils):
+    if cand.xpath(pere) != []: # test si pere est une branche existante
+        cand.xpath(pere)[0].append(fils) # si oui, on accroche le fils
+    else: # sinon on créé le père et on va voir le grand-père
+        node = pere.split('/')[-1]
+        grand_pere = parse('{}/' + node, pere)[0]
+        # analyse et création du père avec tous ses champs...
+        noeuds = parse('{}[{}]', node)
+        if noeuds is None:
+            noeuds = [node]
+        pere = etree.Element(noeuds[0])
+        if noeuds != [node]: # le père a d'autres enfants
+            list = noeuds[1].split('][')
+            for li in list:
+                dico = parse('{nom}={val}', li)
+                el = etree.Element(dico['nom'])
+                el.text = dico['val']
+                pere.append(el)
+        pere.append(fils)
+        acc(cand, grand_pere, pere)
 
 
 ###################################
-# Les accesseurs et mutateurs appelés
+# Les accesseurs et mutateurs appelés par commission.py
 ###################################
 def get_candidatures(cand, form = ''):
     # Lit le champ candidatures (MP- ou M-- ou etc.) du candidat cand
@@ -78,12 +105,7 @@ def get_candidatures(cand, form = ''):
 
 def set_candidatures(cand, cc):
     query = 'diagnostic/candidatures'
-    try:
-        cand.xpath(query)[0].text = cc
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'candidatures')
-        subel.text = cc
+    set(cand, query, cc)
     
 def get_note(cand, classe, matiere, date):
     query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
@@ -92,41 +114,28 @@ def get_note(cand, classe, matiere, date):
 
 def set_note(cand, classe, matiere, date, note):
     query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
-    query += 'matière[intitulé ="'+matiere+'"][date="'+date+'"]'
+    query += 'matière[intitulé ="'+matiere+'"][date="'+date+'"]/note'
     if not isnote(note):
         note = '-'
-    try:
-        cand.xpath(query+'/note')[0].text = note
-    except: # Chemin vers la note à créer...
-        el = cand.xpath(query)[0]
-        subel = etree.SubElement(el, 'note')
-        subel.text = note
+    set(cand, query, note)
         
 def get_ecrit_EAF(cand):
     return get(cand, 'synoptique/français.écrit', '-', 1)
 
 def set_ecrit_EAF(cand, note):
+    query = 'synoptique/français.écrit'
     if not isnote(note):
         note = '-'
-    try:
-        cand.xpath('synoptique/français.écrit')[0].text = note
-    except:
-        el = cand.xpath('synoptique')[0]
-        subel = etree.SubElement(el, 'français.écrit')
-        subel.text = note
+    set(cand, query, note)
 
 def get_oral_EAF(cand):
     return get(cand, 'synoptique/français.oral', '-', 1)
 
 def set_oral_EAF(cand, note):
+    query = 'synoptique/français.oral'
     if not isnote(note):
         note = '-'
-    try:
-        cand.xpath('synoptique/français.oral')[0].text = note
-    except:
-        el = cand.xpath('synoptique')[0]
-        subel = etree.SubElement(el, 'français.oral')
-        subel.text = note
+    set(cand, query, note)
     
 def get_CM1(cand,cpes):
     if cpes:
@@ -138,12 +147,7 @@ def set_CM1(cand, note):
     query = 'synoptique/matières/matière[intitulé = "Mathématiques"]/note'
     if not isnote(note):
         note = '-'
-    try:
-        cand.xpath(query)[0].text = note
-    except:
-        el = cand.xpath('synoptique/matières/matière[intitulé = "Mathématiques"]')[0]
-        subel = etree.SubElement(el,'note')
-        subel.text = note
+    set(cand, query, note)
 
 def get_CP1(cand,cpes):
     if cpes:
@@ -155,12 +159,7 @@ def set_CP1(cand, note):
     query = 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note'
     if not isnote(note):
         note = '-'
-    try:
-        cand.xpath(query)[0].text = note
-    except:
-        el = cand.xpath('synoptique/matières/matière[intitulé = "Physique/Chimie"]')[0]
-        subel = etree.SubElement(el, 'note')
-        subel.text = note
+    set(cand, query, note)
 
 def get_sem_prem(cand):
     # Lit le booléen "bulletins en semestres en classe de première" ?
@@ -168,12 +167,7 @@ def get_sem_prem(cand):
 
 def set_sem_prem(cand,bool):
     query = 'diagnostic/sem_prem'
-    try:
-        cand.xpath(query)[0].text = bool
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'sem_prem')
-        subel.text = bool
+    set(cand, query, bool)
 
 def get_sem_term(cand):
     # Lit le booléen "bulletins en semestres en classe de terminale" ?
@@ -181,12 +175,7 @@ def get_sem_term(cand):
 
 def set_sem_term(cand,bool):
     query = 'diagnostic/sem_term'
-    try:
-        cand.xpath(query)[0].text = bool
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'sem_term')
-        subel.text = bool
+    set(cand, query, bool)
     
 def get_nom(cand):
     return cand.xpath('nom')[0].text
@@ -205,24 +194,16 @@ def get_traite(cand):
     return get(cand, 'diagnostic/traite', '', 0)
 
 def set_traite(cand):
-    try:
-        cand.xpath('diagnostic/traite')[0].text = 'DOSSIER TRAITÉ'
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'traite')
-        subel.text = 'DOSSIER TRAITÉ'       
+    query = 'diagnostic/traite'
+    set(cand, query, 'DOSSIER TRAITÉ')
 
 def get_correc(cand):
     # correction du jury
     return get(cand, 'diagnostic/correc', '0', 0)
 
 def set_correc(cand, correc):
-    try:
-        cand.xpath('diagnostic/correc')[0].text = correc
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'correc')
-        subel.text = correc
+    query = 'diagnostic/correc'
+    set(cand, query, correc)
 
 def get_scoref(cand):
     # score final
@@ -234,33 +215,21 @@ def get_scoref_num(cand): # version numérique, pour le classement NC --> 0
     return scoref
     
 def set_scoref(cand, scoref):
-    try:
-        cand.xpath('diagnostic/score_final')[0].text = scoref
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'score_final')
-        subel.text = scoref
+    query = 'diagnostic/score_final'
+    set(cand, query, scoref)
     
 def get_motifs(cand):
     # Motivation du jury
     return get(cand, 'diagnostic/motifs', '', 0)
 
 def set_motifs(cand, txt):
-    try:
-        cand.xpath('diagnostic/motifs')[0].text = txt
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'motifs')
-        subel.text = txt
+    query = 'diagnostic/motifs'
+    set(cand, query, txt)
     
 def set_jury(cand,txt):
     # Quel jury a traité ce candidat ?
-    try:
-        cand.xpath('diagnostic/jury')[0].text = txt
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'jury')
-        subel.text = txt
+    query = 'diagnostic/jury'
+    set(cand, query, txt)
 
 def get_jury(cand):
     try:
@@ -284,12 +253,8 @@ def get_clas_actu(cand):
     return get(cand, 'synoptique/classe', '?', 0)
 
 def set_clas_actu(cand, classe):
-    try:
-        cand.xpath('synoptique/classe')[0].text = classe
-    except:
-        el = cand.xpath('synoptique')[0]
-        subel = etree.SubElement(el, 'classe')
-        subel.text = classe
+    query = 'synoptique/classe'
+    set(cand, query, classe)
 
 def get_etab(cand):
     etab = get(cand, 'synoptique/établissement/nom', '?', 0)
@@ -364,13 +329,8 @@ def set_complet(cand,complet):
         complet = 'oui'
     else: 
         complet = 'non'
-    try:
-        cand.xpath('diagnostic/complet')[0].text = complet
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'complet')
-        subel.text = complet
-    return None
+    query = 'diagnostic/complet'
+    set(cand, query, complet)
 
 def get_complet(cand):
     return get(cand, 'diagnostic/complet', '', 0)
@@ -482,24 +442,16 @@ def calcul_scoreb(cand):
         
 def set_rang_final(cand,rg):
     # Stockage rang final
-    try:
-        cand.xpath('diagnostic/rangf')[0].text = rg
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'rangf')
-        subel.text = rg
+    query = 'diagnostic/rangf'
+    set(cand, query, rg)
 
 def get_rang_final(cand):
     return get(cand, 'diagnostic/rangf', '?', 0)
 
 def set_rang_brut(cand,rg):
     # Stockage rang brut
-    try:
-        cand.xpath('diagnostic/rangb')[0].text = rg
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'rangb')
-        subel.text = rg
+    query = 'diagnostic/rangb'
+    set(cand, query, rg)
 
 def get_rang_brut(cand):
     return get(cand, 'diagnostic/rangb', '?', 0)
