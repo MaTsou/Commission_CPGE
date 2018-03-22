@@ -53,9 +53,8 @@ def get(cand, query, default, num='False'):
 
 def set(cand, query, value):
     # écrit le champ désigné par 'query' relatif au candidat 'cand'
-    # si besoin, construit l'arborescence manquante dans le fichier xml
-    # Cette reconstruction se fait de manière récursive en commençant
-    # par l'extrémité (les feuilles !)...
+    # si besoin, appelle la fonction accro_branche qui construit
+    #l'arborescence manquante dans le fichier xml
     try:
         cand.xpath(query)[0].text = value
     except:
@@ -66,11 +65,17 @@ def set(cand, query, value):
         accro_branche(cand, pere, fils)
 
 def accro_branche(cand, pere, fils):
+    # Reconstruction d'une arborescence incomplète. On procède
+    # de manière récursive en commençant par l'extrémité (les feuilles !)...
+    # pere est un chemin (xpath) et fils un etree.Element
+    # ATTENTION : il ne faut pas d'espaces superflues dans la chaine pere.
     if cand.xpath(pere) != []: # test si pere est une branche existante
         cand.xpath(pere)[0].append(fils) # si oui, on accroche le fils
     else: # sinon on créé le père et on va voir le grand-père
-        node = pere.split('/')[-1]
-        grand_pere = parse('{}/' + node, pere)[0]
+        node = pere.split('/')[-1] # récupération du dernier champ du chemin
+        if 'Chimie' in node: node=pere.split('/')[-2]+'/'+node # un traitement
+        # particulier du fait que le champ contient '/' (Physique/Chimie)
+        grand_pere = parse('{}/' + node, pere)[0] # le reste du chemin est le grand-pere
         # analyse et création du père avec tous ses champs...
         noeuds = parse('{}[{}]', node)
         if noeuds is None:
@@ -78,13 +83,15 @@ def accro_branche(cand, pere, fils):
         pere = etree.Element(noeuds[0])
         if noeuds != [node]: # le père a d'autres enfants
             list = noeuds[1].split('][')
+            print('noeud :*',noeuds[1],'*')
             for li in list:
-                dico = parse('{nom}={val}', li)
+                dico = parse('{nom}="{val}"', li)
+                print('nom :*',dico['nom'],'* - val :*',dico['val'],'*')
                 el = etree.Element(dico['nom'])
                 el.text = dico['val']
                 pere.append(el)
         pere.append(fils)
-        acc(cand, grand_pere, pere)
+        accro_branche(cand, grand_pere, pere)
 
 
 ###################################
@@ -108,13 +115,13 @@ def set_candidatures(cand, cc):
     set(cand, query, cc)
     
 def get_note(cand, classe, matiere, date):
-    query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
-    query += 'matière[intitulé ="'+matiere+'"][date="'+date+'"]/note'
+    query = 'bulletins/bulletin[classe="'+classe+'"]/matières/'
+    query += 'matière[intitulé="'+matiere+'"][date="'+date+'"]/note'
     return get(cand, query, '-', 1)
 
 def set_note(cand, classe, matiere, date, note):
-    query = 'bulletins/bulletin[classe = "'+classe+'"]/matières/'
-    query += 'matière[intitulé ="'+matiere+'"][date="'+date+'"]/note'
+    query = 'bulletins/bulletin[classe="'+classe+'"]/matières/'
+    query += 'matière[intitulé="'+matiere+'"][date="'+date+'"]/note'
     if not isnote(note):
         note = '-'
     set(cand, query, note)
@@ -139,24 +146,24 @@ def set_oral_EAF(cand, note):
     
 def get_CM1(cand,cpes):
     if cpes:
-        return get(cand, 'synoptique/matières/matière[intitulé = "Mathématiques"]/note', '-', 1)
+        return get(cand, 'synoptique/matières/matière[intitulé="Mathématiques"]/note', '-', 1)
     else:
         return '-'
 
 def set_CM1(cand, note):
-    query = 'synoptique/matières/matière[intitulé = "Mathématiques"]/note'
+    query = 'synoptique/matières/matière[intitulé="Mathématiques"]/note'
     if not isnote(note):
         note = '-'
     set(cand, query, note)
 
 def get_CP1(cand,cpes):
     if cpes:
-        return get(cand, 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note', '-', 1)
+        return get(cand, 'synoptique/matières/matière[intitulé="Physique/Chimie"]/note', '-', 1)
     else:
         return '-'
 
 def set_CP1(cand, note):
-    query = 'synoptique/matières/matière[intitulé = "Physique/Chimie"]/note'
+    query = 'synoptique/matières/matière[intitulé="Physique/Chimie"]/note'
     if not isnote(note):
         note = '-'
     set(cand, query, note)

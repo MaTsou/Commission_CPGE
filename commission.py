@@ -123,7 +123,8 @@ class Client(): # Objet client "abstrait" pour la class Serveur
     
     def lire_fichier(self):
         # Lit le fichier XML choisi et stocke son contenu dans l'attribut adéquat.
-        self.dossiers = etree.parse(self.fichier).getroot()
+        parser = etree.XMLParser(remove_blank_text=True) # pour que pretty_print fonctionne
+        self.dossiers = etree.parse(self.fichier, parser).getroot()
 
     def sauvegarder(self):
         # Méthode appelée par la méthode "traiter" du Serveur
@@ -371,7 +372,8 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         ## Récupération nom de fichier, dossiers, candidature
         self.fichiers_autres_fil = ['{}admin_{}.xml'.format(r[0],fil.upper()) for fil in self.autres_filieres]
         # Dossiers
-        self.dossiers_autres_fil = [etree.parse(fich).getroot() for fich in self.fichiers_autres_fil]
+        parser = etree.XMLParser(remove_blank_text=True)
+        self.dossiers_autres_fil = [etree.parse(fich, parser).getroot() for fich in self.fichiers_autres_fil]
         # Candidatures
         self.toutes_cand = [self.dossiers[self.num_doss]] # 1ere candidature = candidature en cours..
         self.toutes_cand.extend([root.xpath('./candidat/id_apb[text()={}]'.format(iden))[0].getparent() for root in
@@ -545,8 +547,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def stat(self):
         # Effectue des statistiques sur les candidats
         list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_admin_*.xml"))
-
-        root = [etree.parse(fich).getroot() for fich in list_fich]
+        parser = etree.XMLParser(remove_blank_text=True)
+        root = [etree.parse(fich, parser).getroot() for fich in list_fich]
         fil = [parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)[0][0] for fich in list_fich]
 
         # Initialisation des compteurs
@@ -868,7 +870,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_admin_*.xml"))
         # Pour chaque fichier "epa_admin_*.xml"
         for fich in list_fich:
-            doss = etree.parse(fich).getroot()
+            parser = etree.XMLParser(remove_blank_text=True)
+            doss = etree.parse(fich, parser).getroot()
             # Tout d'abord, calculer le score brut de chaque candidat 
             for cand in doss:
                 xml.calcul_scoreb(cand)
@@ -915,7 +918,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # Pour chaque sous-commission
             for fich in list_fich:
                 # lecture fichier
-                doss = etree.parse(fich).getroot()
+                parser = etree.XMLParser(remove_blank_text=True)
+                doss = etree.parse(fich, parser).getroot()
                 # Les fichiers non vus se voient devenir NC avec
                 # motifs = "Dossier moins bon que le dernier classé"
                 for c in doss:
@@ -964,7 +968,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         r = parse('{}class_{}.xml', kwargs["fichier"]) # récupère nom commission
         txt = ''
         saut = '<div style = "page-break-after: always;"></div>'
-        for cand in etree.parse(kwargs["fichier"]).getroot():
+        parser = etree.XMLParser(remove_blank_text=True)
+        for cand in etree.parse(kwargs["fichier"], parser).getroot():
             if xml.get_scoref(cand) != 'NC':
                 txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1>'.format(r[1].upper())
                 # Le test suivant est un résidu d'une époque où on générait une fiche même si le candidat n'était pas 
@@ -999,7 +1004,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Pour chaque filière :
         for fich in list_fich:
             # lecture fichier
-            doss = etree.parse(fich).getroot()
+            parser = etree.XMLParser(remove_blank_text=True)
+            doss = etree.parse(fich, parser).getroot()
             # 1er tableau : liste ordonnée des candidats retenus, pour l'admin
             nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
             nom += parse(os.path.join(os.curdir, "data", "epa_class_{}.xml"), fich)[0]
