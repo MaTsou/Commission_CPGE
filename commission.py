@@ -343,25 +343,35 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         liste_stat = ''
         if len(glob.glob(os.path.join(os.curdir,"data","epa_admin_*.xml"))) > 0: # si les fichiers admin existent
             # lecture du fichier stat
+            try:
+                with open(os.path.join(os.curdir,"data","stat"), 'br') as fich:
+                    stat = pickle.load(fich)
+            except: # stat n'existe pas
+                self.get_master().stat()
             with open(os.path.join(os.curdir,"data","stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste
             liste_stat = '<h3>Statistiques :</h3>'
-            try: liste_stat += '<ul><li>{} dossiers MPSI</li>'.format(stat['M'])
-            except: None
-            try: liste_stat += '<li>{} dossiers PCSI</li>'.format(stat['P'])
-            except: None
-            try: liste_stat += '<li>{} dossiers CPES</li>'.format(stat['C'])
-            except: None
-            liste_stat += 'dont :'
-            try: liste_stat += '<ul><li>{} dossiers MPSI + PCSI</li>'.format(stat['MP'])
-            except: None
-            try: liste_stat += '<li>{} dossiers MPSI + CPES</li>'.format(stat['MC'])
-            except: None
-            try: liste_stat += '<li>{} dossiers PCSI + CPES</li>'.format(stat['PC'])
-            except: None
-            try: liste_stat += '<li>{} dossiers MPSI + PCSI + CPES</li></ul></ul>'.format(stat['MPC'])
-            except: None
+            # Pour commencer les sommes par filières
+            liste_stat += '<ul>'
+            deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
+            for i in range(len(filieres)):
+                liste_stat += '<li>{} dossiers {}</li>'.format(stat[2**i], filieres[i].upper())
+                deja_fait.append(2**i)
+            # Ensuite les requêtes croisées
+            liste_stat += 'dont :<ul>'
+            for i in range(2**len(filieres)):
+                if not(i in deja_fait):  # avec la fonction math.log2 ce test est facile !!!
+                    seq = []
+                    bina = bin(i)[2:] # bin revoie une chaine qui commence par 'Ob' : on vire !
+                    while len(bina) < len(filieres):
+                        bina = '0{}'.format(bina)
+                    for char in range(len(bina)):
+                        if bina[char] == '1':
+                            seq.append(filieres[len(filieres)-char-1].upper())
+                    txt = ' + '.join(seq)
+                    liste_stat += '<li>{} dossiers {}</li>'.format(stat[i], txt)
+            liste_stat += '</ul></ul>'
         return liste_stat
 
     def genere_liste_decompte(self):
@@ -577,13 +587,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 
     def trouve(self, iden, num_fil, cc, root, fil):
         # Sous-fonction de la fonction stat...
-        # Sert à construire la chaîne "MPC", "M-C", "-P-" indiquant les candidatures multiples..
-        if num_fil < len(root)-1:
+        # Sert à construire le binaire '001', '101', etc, indiquant les candidatures multiples..
+        if num_fil < len(root)-1:  
             cand = root[num_fil+1].xpath('./candidat/id_apb[text()={}]'.format(iden))
             if cand:
-                cc += fil[num_fil + 1]
-            else:
-                cc += '-'
+                cc |= 2**(filieres.index(fil[num_fil + 1].lower())) # un OU évite les surcomptes !
             cc = self.trouve(iden, num_fil + 1, cc, root, fil)
             if cand: xml.set_candidatures(cand[0].getparent(), cc)
         return cc
@@ -593,42 +601,49 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         list_fich = glob.glob(os.path.join(os.curdir, "data", "epa_admin_*.xml"))
         parser = etree.XMLParser(remove_blank_text=True)
         root = [etree.parse(fich, parser).getroot() for fich in list_fich]
-        fil = [parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)[0][0] for fich in list_fich]
+        fil = [parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)[0] for fich in list_fich]
 
         # Initialisation des compteurs
-        # Nouvelle idée à mettre en place pour que ce soit plus robuste :
-        # num serait une variable tableau (triangulaire sup
-        num = [0]*len(root) # nombres de candidats par filière
-        num_mp = 0 # 4 compteurs spécifiques aux filières EPA...
-        num_mc = 0
-        num_pc = 0
-        num_mpc = 0
+        # L'info de candidatures est stockée dans un nombre binaire ou 1 bit 
+        # correspond à 1 filière. Un dictionnaire 'candid' admet ces nombres binaires pour clés,
+        # et les valeurs sont des nombres de candidats. 
+        # candid = {'001' : 609, '011' : 245, ...} indique que 609 candidats ont demandé
+        # le filière 1 et 245 ont demandé à la fois la filière 1 et la filière 2
+
+        # Initialisation du dictionnaire stockant toutes les candidatures
+        candid = {}
+        for i in range(2**len(filieres)):
+            candid[i] = 0
     
+        # Recherche des candidatures
+        # On stocke dans une liste les identifiants des candidats vus,
+        # cela évite de les trouver 2 fois...
+        deja_vu = []
         for i in range(len(root)):  # i, indice de filière
             for candi in root[i]:   # pour toutes les candidatures de la filière i
-                num[i] += 1         # incrémentation d'un compteur
+                index = filieres.index(fil[i].lower()) # trouver le compteur adéquat
+                candid[2**index] += 1 # Un candidat de plus dans cette filière
+                iden = xml.get_id(candi)
                 # puis recherche du même candidat dans les autres filières,
-                # création de la chaîne "MPC"
+                # création du nombre stockant les filières demandées
                 # et incrémentation du compteur adéquat
-                if xml.get_candidatures(candi) == '???': # candidat pas encore vu
-                    iden = xml.get_id(candi)
-                    cc = '-'*i + fil[i]
+                if not(iden in deja_vu): # candidat pas encore vu
+                    deja_vu.append(iden)
+                    cc = 2**index # le bit 'index' du candidat est ON
                     cc = self.trouve(iden, i, cc, root, fil)
-                    xml.set_candidatures(candi,cc)
-                    if cc == 'CMP': num_mpc += 1 # 4 lignes qui sont spécifiques aux filières EPA...
-                    if cc == 'CM-': num_mc += 1
-                    if cc == 'C-P': num_pc += 1
-                    if cc == '-MP': num_mp += 1
+                    xml.set_candidatures(candi, cc) # on écrit le binaire obtenu dans le dossier candidat
+                    # Incrémentation des compteurs
+                    for j in range(2**len(filieres)):
+                        if (cc == j and cc != 2**index): # attention de ne compter ici que les multi-candidatures
+                            candid[j] += 1
         # Sauvegarder
         for i in range(len(root)):
             with open(list_fich[i], 'wb') as fi:
                 fi.write(etree.tostring(root[i], pretty_print=True, encoding='utf-8'))
         
         # Écrire le fichier stat
-        donnees = {fil[i]:num[i] for i in range(0, len(fil))}
-        donnees.update({'MP':num_mp, 'MC':num_mc, 'PC':num_pc, 'MPC':num_mpc})
         with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
-            pickle.dump(donnees, stat_fich)
+            pickle.dump(candid, stat_fich)
             
     @cherrypy.expose
     def traiter_apb(self, **kwargs):
@@ -905,7 +920,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                     clas += ' doss_incomplet'
             lis += 'class = "{}"'.format(clas)
             nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
-            txt = '{:3d}) {: <30}{}'.format(i+1, nom[:29], xml.get_candidatures(liste[i], 'ord'))
+            txt = '{:3d}) {: <30}{}'.format(i+1, nom[:29], xml.get_candidatures(liste[i]))
             lis += ' value="'+txt+'"></input><br>'
         # txt est le txt que contient le bouton. Attention, ses 3 premiers
         # caractères doivent être le numéro du dossier dans la liste des
@@ -1112,7 +1127,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
             # Remplissage du fichier dest
             for cand in doss:
-                data = [xml.get_rang_brut(cand), xml.get_rang_final(cand), xml.get_candidatures(cand, 'ord')]
+                data = [xml.get_rang_brut(cand), xml.get_rang_final(cand), xml.get_candidatures(cand)]
                 data += [fonction(cand) for fonction in [xml.get_nom, xml.get_prenom, xml.get_naiss, xml.get_sexe,
                 xml.get_nation, xml.get_id, xml.get_boursier, xml.get_clas_actu, xml.get_etab, xml.get_commune_etab]]
                 # Les notes...

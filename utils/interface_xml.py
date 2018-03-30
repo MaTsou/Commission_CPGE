@@ -83,10 +83,8 @@ def accro_branche(cand, pere, fils):
         pere = etree.Element(noeuds[0])
         if noeuds != [node]: # le père a d'autres enfants
             list = noeuds[1].split('][')
-            print('noeud :*',noeuds[1],'*')
             for li in list:
                 dico = parse('{nom}="{val}"', li)
-                print('nom :*',dico['nom'],'* - val :*',dico['val'],'*')
                 el = etree.Element(dico['nom'])
                 el.text = dico['val']
                 pere.append(el)
@@ -98,20 +96,26 @@ def accro_branche(cand, pere, fils):
 # Les accesseurs et mutateurs appelés par commission.py
 ###################################
 def get_candidatures(cand, form = ''):
-    # Lit le champ candidatures (MP- ou M-- ou etc.) du candidat cand
-    query = 'diagnostic/candidatures'
-    try:
-        cc = cand.xpath(query)[0].text
-        if form == 'ord': # on rétablit l'ordre des filières donné par la liste filieres (cf parametres.py)
-            cc = ''.join(cc[alfil.index(fil)] for fil in filieres)
-        if form == 'impr': # ordonnées et nom complet.
-            cc = '-'.join(fil.upper() for fil in filieres if cc[alfil.index(fil)]!='-')
-    except:
-        cc = '???'
+    # Lit le champ candidatures (binaire '101' etc.) du candidat cand
+    cc = get(cand, 'diagnostic/candidatures', '???', 0)
+    if form == 'impr': # ordonnées et nom complet.
+        cc = '-'.join(fil.upper() for fil in filieres if cc[filieres.index(fil)]!='-')
     return cc
 
 def set_candidatures(cand, cc):
     query = 'diagnostic/candidatures'
+    # Décodage de cc qui contient un nombre dont l'écriture binaire indique
+    # les candidatures du candidat
+    bina = bin(cc)[2:] # chaine exprimant cc en binaire (on enlève les 2 premiers caract. : '0b')
+    while len(bina) < len(filieres):
+        bina = '0{}'.format(bina) # on complète pour qu'il y ait le bon nb de digits.
+    cc= ''
+    for i in range(len(filieres)):
+        if bina[-1-i] == '1':
+            cc += filieres[i][0].upper()
+        else:
+            cc += '-'
+    # Enregistrement dans le bon champ
     set(cand, query, cc)
     
 def get_note(cand, classe, matiere, date):

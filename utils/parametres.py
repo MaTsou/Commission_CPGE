@@ -35,9 +35,8 @@ motivations = [
     "Age",
     "Aptitude/Attitude face au travail",
     "Discipline/Absences",
-    "Dossier incomplet ou dont l'évaluation est difficile"
+    "Dossier incomplet ou dont l'évaluation est irréalisable"
     ]
-
 
 ###########################################################################
 # Liste des corrections accordées aux jurys...                            #
@@ -49,7 +48,6 @@ nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4
 
 ############################################################################
 # Filières et nombre de jurys par filière				                   #
-# Attention : si modification des filières, il y aura des pb dans les stat #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
 nb_jury = {'mpsi':'3','pcsi':'3','cpes':'2'}
