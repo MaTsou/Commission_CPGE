@@ -1,6 +1,20 @@
+// Mettre en place un gestionnaire d'évènements lié à la function python refresh
+if (!!window.EventSource) {
+	var refresh = new EventSource('/refresh');
+}
+
+// Ajouter un écouteur d'évènements qui recharge la page
+refresh.addEventListener('message', function(event) {
+		window.location.reload(true);
+});
+
 function hide_loader()
 {
-    document.getElementById("patience").style.visibility = "hidden";
+	var txt = document.getElementById("header").innerHTML
+	if (txt.indexOf('Admin') != -1){
+		// Accès Admin
+		document.getElementById("patience").style.visibility = "hidden";
+	}
 }
 
 function show_loader()

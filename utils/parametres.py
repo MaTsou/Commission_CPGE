@@ -5,7 +5,7 @@
 ############################################################################
 # Détection des années                                                     #
 ############################################################################
-annee_terminale, annee_premiere = '2016-2017', '2015-2016'
+annee_terminale, annee_premiere = '2017-2018', '2016-2017'
 
 ############################################################################
 # Coefficients pour le calcul des scores bruts                             #
@@ -29,11 +29,13 @@ prop_prem_trim = .45
 # Ne pas dépasser 5 lignes pour que l'affichage sur navigateur soit beau   # 
 ############################################################################
 motivations = [
-    'Niveau particulièrement élevé/faible en',
-    'Harmonisation du score brut',
-    'Aptitude/Attitude face au travail',
-    'Discipline/Absences',
-    'Dossier incomplet ou moins bon que le dernier classé'
+    "Niveau en LV",
+    "Niveau en sport",
+    "Établissement",
+    "Age",
+    "Aptitude/Attitude face au travail",
+    "Discipline/Absences",
+    "Dossier incomplet ou dont l'évaluation est difficile"
     ]
 
 
@@ -45,9 +47,9 @@ min_correc = -3 # correction minimale
 max_correc = +3 # correction maximale
 nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4 de point)
 
-###########################################################################
-# Filières et nombre de jury par filière				  #
-# Attention : si modification des filères, il y aura des pb dans les stat #
-###########################################################################
+############################################################################
+# Filières et nombre de jurys par filière				                   #
+# Attention : si modification des filières, il y aura des pb dans les stat #
+############################################################################
 filieres = ['mpsi','pcsi','cpes']
 nb_jury = {'mpsi':'3','pcsi':'3','cpes':'2'}

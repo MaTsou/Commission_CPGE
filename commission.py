@@ -47,7 +47,7 @@ from utils.parametres import nb_jury
 class Client(): # Objet client "abstrait" pour la class Serveur
     # Variables de classe :
     # Chargement de tous les "patrons" de pages HTML dans le dictionnaire "html" :
-    with open(os.path.join(os.curdir, "utils", "patrons.html"), "r", encoding="utf8") as fi:
+    with open(os.path. join(os.curdir, "utils", "patrons.html"), "r", encoding="utf8") as fi:
         html = {}
         for ligne in fi:
             if ligne.startswith("[*"):  # étiquette trouvée ==>
@@ -82,6 +82,9 @@ class Client(): # Objet client "abstrait" pour la class Serveur
     
     def get_dossiers(self):
         return self.dossiers
+
+    def get_master(self):
+        return self.master
 
     def set_num_doss(self, num):
         self.num_doss = num
@@ -213,11 +216,26 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
         xml.set_scoref(cand, scoref)
         # 2/ Qui a traité le dossier
         xml.set_jury(cand,self.droits)
+        # 2bis/ On met à jour le fichier des décomptes de commission
+        if xml.get_traite(cand) == '':
+            try:
+                with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
+                    decompt = pickle.load(fich)
+                qui = self.get_droits()
+                for key in decompt.keys():
+                    if key in qui:
+                        decompt[key] += 1
+                with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
+                    pickle.dump(decompt, stat_fich)
+            except:
+                none
         # 3/ "bouléen" traite : le dossier a été traité
         xml.set_traite(cand)
         # 4/ motivation du jury
         xml.set_motifs(cand, kwargs['motif'])
         ## Fin mise à jour dossier
+        # Rafraichit la page menu (de l'admin)
+        self.get_master().set_rafraich(True)
         # On sélectionne le dossier suivant
         if self.num_doss < len(self.dossiers)-1:
             self.num_doss = self.num_doss+1
@@ -228,7 +246,7 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
 
 class Admin(Client): # Objet client (de type Administrateur) pour la class Serveur
 
-    def __init__(self, master, key):
+    def __init__(self, master, key): 
         # constructeur : on créé une instance Client avec droits "admin"
         Client.__init__(self, master, key, 'Administrateur')
         self.autres_filieres = []       # contient la liste des autres (que celle traitée) filières
@@ -329,14 +347,21 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
                 stat = pickle.load(fich)
             # Création de la liste
             liste_stat = '<h3>Statistiques :</h3>'
-            liste_stat += '<ul><li>{} dossiers MPSI</li>'.format(stat['M'])
-            liste_stat += '<li>{} dossiers PCSI</li>'.format(stat['P'])
-            liste_stat += '<li>{} dossiers CPES</li>'.format(stat['C'])
+            try: liste_stat += '<ul><li>{} dossiers MPSI</li>'.format(stat['M'])
+            except: None
+            try: liste_stat += '<li>{} dossiers PCSI</li>'.format(stat['P'])
+            except: None
+            try: liste_stat += '<li>{} dossiers CPES</li>'.format(stat['C'])
+            except: None
             liste_stat += 'dont :'
-            liste_stat += '<ul><li>{} dossiers MPSI + PCSI</li>'.format(stat['MP'])
-            liste_stat += '<li>{} dossiers MPSI + CPES</li>'.format(stat['MC'])
-            liste_stat += '<li>{} dossiers PCSI + CPES</li>'.format(stat['PC'])
-            liste_stat += '<li>{} dossiers MPSI + PCSI + CPES</li></ul></ul>'.format(stat['MPC'])
+            try: liste_stat += '<ul><li>{} dossiers MPSI + PCSI</li>'.format(stat['MP'])
+            except: None
+            try: liste_stat += '<li>{} dossiers MPSI + CPES</li>'.format(stat['MC'])
+            except: None
+            try: liste_stat += '<li>{} dossiers PCSI + CPES</li>'.format(stat['PC'])
+            except: None
+            try: liste_stat += '<li>{} dossiers MPSI + PCSI + CPES</li></ul></ul>'.format(stat['MPC'])
+            except: None
         return liste_stat
 
     def genere_liste_decompte(self):
@@ -452,10 +477,28 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 
     def __init__(self, test, ip):
         # constructeur
-        self.clients = {}# dictionnaire contenant les clients connectés
+        self.clients =  {}# dictionnaire contenant les clients connectés
         self.test = test # booléen : exécution de la version test (avec, notamment, un menu "Admin or Jury ?")
-        navi=webbrowser.get() # Quel est le navigateur par défaut ?
+        self.rafraich = False # booléen qui sert à activer ou nom la fonction refresh
+        navi = webbrowser.get() # Quel est le navigateur par défaut ?
         navi.open_new('http://'+ip+':8080') # on ouvre le navigateur internet, avec la bonne url..
+
+    # Doit-on rafraichir ?
+    def set_rafraich(self, bool = False):
+        self.rafraich = bool
+
+    def get_rafraich(self):
+        return self.rafraich
+
+    # Rafraîchir un client suite à un évènement Server (SSE)
+    @cherrypy.expose
+    def refresh(self, **kwargs):
+        cherrypy.response.headers["content-type"] = "text/event-stream"
+        def msg():
+            if self.get_rafraich():
+                self.set_rafraich(False) # On ne rafraîchit qu'une fois à la fois !
+                yield "event: message\ndata: ok\n:retry:1000\n\n"
+        return msg()
 
     # Accesseurs et mutateurs
     def get_client_cour(self):
@@ -518,6 +561,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def retour_menu(self):
         # Retour menu : sert essentiellement à l'Admin ; bouton RETOUR de la page dossier
+        cherrypy.response.headers["content-type"] = "text/html"
         return self.get_client_cour().genere_menu()
     
     def efface_dest(self, chem):
@@ -552,6 +596,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         fil = [parse(os.path.join(os.curdir, "data", "epa_admin_{}.xml"), fich)[0][0] for fich in list_fich]
 
         # Initialisation des compteurs
+        # Nouvelle idée à mettre en place pour que ce soit plus robuste :
+        # num serait une variable tableau (triangulaire sup
         num = [0]*len(root) # nombres de candidats par filière
         num_mp = 0 # 4 compteurs spécifiques aux filières EPA...
         num_mc = 0
@@ -588,6 +634,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def traiter_apb(self, **kwargs):
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
         # Traite les données brutes d'APB : csv ET pdf
+        cherrypy.response.headers["content-type"] = "text/html"
         # La ligne suivante sera à supprimer lorsque le traitement de l'année sera opérationnel
         print("Année en cours reçue = ", kwargs['annee_en_cours']) # À passer à la fonction lire...
         ## Traitement des csv ##
@@ -621,6 +668,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def choix_comm(self, **kwargs):
         # Gère le choix fait dans le menu commission
+        self.set_rafraich(True) # On rafraîchit les menus des Jurys...
+        cherrypy.response.headers["content-type"] = "text/html"
         # récupère le client
         client = self.get_client_cour()
         # Teste si le fichier n'a pas été choisi par un autre jury
@@ -648,6 +697,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def choix_admin(self, **kwargs):
         # Gère le choix fait dans le menu admin
+        cherrypy.response.headers["content-type"] = "text/html"
         # récupère le client
         client = self.get_client_cour()
         # Mise à jour des attributs du client
@@ -691,6 +741,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         ## Et on sauvegarde immédiatement tout cela...
         client.sauvegarder()
         # Et on retourne au traitement...
+        cherrypy.response.headers["content-type"] = "text/html"
         return self.affi_dossier()
         
     @cherrypy.expose
@@ -899,6 +950,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 nom = os.path.join(os.curdir, "data", "epa_comm_{}{}.xml".format(fil[0], j+1))
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
+        # Création fichier decompte
+        decompt = {}
+        for fil in filieres:
+            decompt['{}'.format(fil.upper())]=0
+        with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
+            pickle.dump(decompt, stat_fich)
         # Enfin, on retourne au menu
         return self.retour_menu()
 
