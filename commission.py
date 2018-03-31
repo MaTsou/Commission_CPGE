@@ -406,9 +406,16 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         r = parse('{}admin_{}.xml', self.fichier) # récupère le chemin vers les fichiers
         ## Récupération nom de fichier, dossiers, candidature
         self.fichiers_autres_fil = ['{}admin_{}.xml'.format(r[0],fil.upper()) for fil in self.autres_filieres]
-        # Dossiers
+        ## Dossiers
         parser = etree.XMLParser(remove_blank_text=True)
-        self.dossiers_autres_fil = [etree.parse(fich, parser).getroot() for fich in self.fichiers_autres_fil]
+        # Ici, je rajoute un try: pour les cas où l'un des fichiers n'existerait pas (on n'est pas obligé)
+        # de faire une commission avec toutes les filières à la fois...
+        self.dossiers_autres_fil = []
+        for fich in self.fichiers_autres_fil:
+            try:
+                self.dossiers_autres_fil.append(etree.parse(fich, parser).getroot())
+            except:
+                None
         # Candidatures
         self.toutes_cand = [self.dossiers[self.num_doss]] # 1ere candidature = candidature en cours..
         self.toutes_cand.extend([root.xpath('./candidat/id_apb[text()={}]'.format(iden))[0].getparent() for root in
@@ -463,7 +470,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         xml.is_complet(cand) # mise à jour de l'état "dossier complet"
 
         # Sauvegarde autres candidatures
-        for i in range(0,len(self.fichiers_autres_fil)):
+        for i in range(len(self.dossiers_autres_fil)):
             with open(self.fichiers_autres_fil[i], 'wb') as fich:
                 fich.write(etree.tostring(self.dossiers_autres_fil[i], pretty_print=True, encoding='utf-8'))
     
@@ -507,7 +514,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         def msg():
             if self.get_rafraich():
                 self.set_rafraich(False) # On ne rafraîchit qu'une fois à la fois !
-                yield "event: message\ndata: ok\n:retry:1000\n\n"
+                yield "event: message\ndata: ok\n:retry:500\n\n"
         return msg()
 
     # Accesseurs et mutateurs
