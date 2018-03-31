@@ -466,7 +466,7 @@ def prepare_lecteurs(champs, test = False):
             colonne = colonne + 1
             continue
 
-        if champs[colonne] == 'Année': # début d'un bulletin
+        if champs[colonne] == 'Année scolaire': # début d'un bulletin
             break
 
         if test:
