@@ -466,7 +466,8 @@ def prepare_lecteurs(champs, test = False):
             colonne = colonne + 1
             continue
 
-        if champs[colonne] == 'Année scolaire': # début d'un bulletin
+        # début d'un bulletin
+        if champs[colonne] in ['Année', 'Année scolaire']:
             break
 
         if test:
@@ -504,8 +505,7 @@ def prepare_lecteurs(champs, test = False):
     matiere = ''
     while colonne < len(champs):
 
-        # on reconnaît le début d'un bulletin à son année : si ça
-        # change, ce code ne marchera plus correctement! FIXME?
+        # on reconnaît le début d'un bulletin à son année
         if champs[colonne] in ['Année', 'Année scolaire']:
             if test:
                 print("Début d'un bulletin via sa date en colonne {0:s}".format(n2c(colonne+1)))
