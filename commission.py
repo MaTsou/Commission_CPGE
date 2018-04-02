@@ -512,9 +512,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def refresh(self, **kwargs):
         cherrypy.response.headers["content-type"] = "text/event-stream"
         def msg():
+            yield "retry: 500\n\n"
             if self.get_rafraich():
                 self.set_rafraich(False) # On ne rafraîchit qu'une fois à la fois !
-                yield "event: message\ndata: ok\n:retry:500\n\n"
+                yield "event: message\ndata: ok\n\n"
         return msg()
 
     # Accesseurs et mutateurs
