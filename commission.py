@@ -273,6 +273,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
             data['bout_etap4'] = '<input type = "button" class ="fichier"'
             data['bout_etap4'] += ' value = "Récolter les fichiers" onclick = "recolt_wait();"/>'
             data['decompt'] = self.genere_liste_decompte()
+            data['liste_stat'] = self.genere_liste_stat()
             # Etape 5 bouton et Etape 6
             list_fich_class = glob.glob(os.path.join(os.curdir,"data","epa_class_*.xml"))
             txt5 = ''
@@ -351,9 +352,9 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
             with open(os.path.join(os.curdir,"data","stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste
-            liste_stat = '<h3>Statistiques :</h3>'
+            liste_stat = '<h4>Statistiques :</h4>'
             # Pour commencer les sommes par filières
-            liste_stat += '<ul>'
+            liste_stat += '<ul style = "margin-top:-5%">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
             for i in range(len(filieres)):
                 liste_stat += '<li>{} dossiers {}</li>'.format(stat[2**i], filieres[i].upper())
@@ -658,8 +659,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
         # Traite les données brutes d'APB : csv ET pdf
         cherrypy.response.headers["content-type"] = "text/html"
-        # La ligne suivante sera à supprimer lorsque le traitement de l'année sera opérationnel
-        print("Année en cours reçue = ", kwargs['annee_en_cours']) # À passer à la fonction lire...
+        #print("Année en cours reçue = ", kwargs['annee_en_cours']) # À passer à la fonction lire : abandon !
         ## Traitement des csv ##
         for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")):
             for fil in filieres:

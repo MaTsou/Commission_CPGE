@@ -32,14 +32,14 @@ function verif_wait()
 	if (rep || list.length <= 1)
 	{
 		// Ici, une boite prompt pour confirmer la valeur de la variable annee_en_cours
-		annee = document.getElementById("annee").value;
-		annee = prompt("Veuillez confirmer ou saisir l'année courante :",annee);
-		if (annee != null) {
-			document.getElementById("annee").value = annee;
-			// Veuillez patientez puis soumission formulaire..
-			show_loader();
-			var form = document.getElementById('traiter');
-			setTimeout(function() {form.submit();},200);}
+		//annee = document.getElementById("annee").value;
+		//annee = prompt("Veuillez confirmer ou saisir l'année courante :",annee);
+		//if (annee != null) {
+		//	document.getElementById("annee").value = annee;
+		// Veuillez patientez puis soumission formulaire..
+		show_loader();
+		var form = document.getElementById('traiter');
+		setTimeout(function() {form.submit();},200);//}
     }
 }
 
