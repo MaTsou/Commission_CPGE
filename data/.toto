@@ -1,2 +1,2 @@
-Ce fichier caché est un alibi pour que git suive le dossier data mais pas son contenu (les infos candidats).
-Il n'y a rien à faire sinon ne pas toucher à ce fichier.
+Un fichier pour que git suive ce dossier..
+Ne pas effacer

@@ -469,6 +469,11 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         # On (re)calcule le score brut !
         xml.calcul_scoreb(cand)
         xml.is_complet(cand) # mise à jour de l'état "dossier complet"
+        # Commentaire éventuel admin
+        motif = kwargs['motif']
+        if not('- Admin :' in motif):
+            motif = '- Admin : {}'.format(motif)
+        xml.set_motifs(cand, motif)
 
         # Sauvegarde autres candidatures
         for i in range(len(self.dossiers_autres_fil)):
@@ -886,19 +891,20 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
         # Construction de la chaine motifs.
         motifs = ''
+        # le premier motif : champ texte.
+        motifs += '<tr><td align = "left">'
+        motifs += '<input type="text" class = "txt_motifs" name="motif" id = "motif" value= "'
+        try:
+            txt = xml.get_motifs(cand)
+        except :
+            txt = ''
+        motifs += '{}"/></td></tr>'.format(txt)
+        # La suite : motifs pré-définis
         for i in range(0, len(motivations)):
             key = 'mot_' + str(i)
             motifs += '<tr><td align = "left"><input type="button" name="'+key
             motifs += '" id="'+key+'" onclick="javascript:maj_motif(this.id)"'
             motifs += ' class = "motif" value ="'+ motivations[i]+'"/></td></tr>'
-        # le dernier motif : autre ... 
-        motifs += '<tr><td align = "left">'
-        motifs += '<input type="text" class = "txt_motifs" name="motif" id = "motif" value= "'
-        try:
-            motifs += xml.get_motifs(cand)+'"/>'
-        except:
-            motifs += '"/>'
-        motifs += "</td></tr>"
     
         # On met tout ça dans un dico data pour passage en argument à page_dossier
         data = self.genere_dict(cand, droits)

@@ -99,7 +99,10 @@ function test_valid()
 		var motif = document.getElementById('motif');
 		var test = false; // test sera vrai si au moins une motivation est saisie ou si correction = 0
         if (cor == 0 && nc.value!=='NC'){test = true;}
-        if (motif.value != ''){test = true;}
+        if (motif.value != ''){
+			if (motif.value.substring(0,9)!='- Admin :') {
+			test = true;}
+		}
         // --> message et formulaire non soumis
         if (!test)
         {alert('Toute correction apportée au score (et aussi NC !) doit être motivée...');}

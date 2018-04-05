@@ -236,7 +236,7 @@ def get_motifs(cand):
 def set_motifs(cand, txt):
     query = 'diagnostic/motifs'
     set(cand, query, txt)
-    
+
 def set_jury(cand,txt):
     # Quel jury a traité ce candidat ?
     query = 'diagnostic/jury'
