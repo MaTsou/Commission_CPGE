@@ -1,4 +1,17 @@
-from .parametres import annee_terminale, annee_premiere
+############################################################################
+# Calcul des années théoriques                                             #
+############################################################################
+# (normalement ce code ne va pas servir en dehors de mars-août, donc
+# ce calcul ne va poser aucun problème)
+
+def calcule_annees():
+    from time import localtime
+    a = localtime().tm_year
+    term = '{0:d}-{1:d}'.format(a-1, a)
+    prem = '{0:d}-{1:d}'.format(a-2, a-1)
+    return prem, term
+
+annee_premiere, annee_terminale = calcule_annees()
 
 # JP: je suis paranoïaque -- déformation professionnelle!
 def verifie_entier(chaine, mini=0, maxi=20):

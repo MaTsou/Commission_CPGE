@@ -67,8 +67,6 @@ from parse import parse
 
 from lxml import etree
 
-from .parametres import annee_terminale
-
 #
 # DESCRIPTION DE L'ÉTAT
 #
@@ -238,48 +236,6 @@ def nouveau_bulletin():
 
 def nouvelle_matiere():
     return etree.Element('matière')
-
-
-#
-# FONCTIONS DE POST-TRAITEMENT
-#
-
-# certains bulletins contiennent toutes les notes et l'année, la
-# plupart tout le bulletin sauf les notes ; il faut donc trouver les
-# notes et les déplacer où on veut.
-
-def fusionne_bulletins(candidat, test = False):
-
-    # on trouve la liste des bulletins sans note:
-    probs = candidat.xpath('bulletins/bulletin[matières[not(matière)]]')
-    for prob in probs:
-        # là, normalement, c'est une fausse boucle : on ne devrait avoir
-        # qu'une année!
-        for node in prob.xpath('année'):
-            annee = node.text
-            autres = candidat.xpath('bulletins/bulletin[année = "{0:s}"]'.format(annee))
-            autres.remove(prob)
-            # ok, on a tous les doublons maintenant (normalement: 0 ou 1)
-            for doublon in autres:
-                prob.xpath('matières')[0].extend(doublon.xpath('matières/matière'))
-                candidat.xpath('bulletins')[0].remove(doublon)
-
-    return candidat
-
-# Si le candidat est en terminale, sa classe sera dans la fiche
-# synoptique et pas dans le bulletin de terminale, donc il faut qu'on
-# recopie cette information.
-
-def trouve_terminale(candidat, test = False):
-    bulletins_courant = candidat.xpath('bulletins/bulletin[année = "{0:s}"]'.format(annee_terminale))
-    if bulletins_courant != []:
-        bulletin_courant = bulletins_courant[0]
-        if bulletin_courant.xpath('classe') == []:
-            classes = candidat.xpath('synoptique/classe')
-            if classes != []:
-                fils = etree.SubElement(bulletin_courant, 'classe')
-                fils.text = classes[0].text
-    return candidat
 
 #
 # IMPLÉMENTATION DE LA RECONNAISSANCE DES CHAMPS
@@ -605,14 +561,7 @@ def execute_lecteurs(lecteurs, csv, test = False):
         for lecteur in lecteurs:
             etat = lecteur(etat, ligne)
 
-    # on procède à l'assainissement de ce qui est encore un peu brut,
-    # par étapes successives
-    res = [fusionne_bulletins(candidat, test)
-           for candidat in etat['candidats']]
-    res = [trouve_terminale(candidat, test)
-           for candidat in res]
-
-    return res
+    return etat['candidats']
 
 def lire(nom, test = False):
     with open(nom, encoding='utf-8-sig') as fich:
