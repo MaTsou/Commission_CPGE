@@ -231,7 +231,10 @@ def set_scoref(cand, scoref):
     
 def get_motifs(cand):
     # Motivation du jury
-    return get(cand, 'diagnostic/motifs', '', 0)
+    if get(cand, 'diagnostic/motifs', '', 0) is None:
+        return ''
+    else: 
+        return get(cand, 'diagnostic/motifs', '', 0)
 
 def set_motifs(cand, txt):
     query = 'diagnostic/motifs'

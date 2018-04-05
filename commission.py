@@ -463,17 +463,17 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
                 for ca in self.toutes_cand: xml.set_CP1(ca, kwargs['CP1'])
             # EAF écrit et oral...      
         if xml.get_ecrit_EAF(cand)!=kwargs['EAF_e']:
-            for ca in self.toutes_cand: xml.set_ecrit_EAF(ca,kwargs['EAF_e'])
+            for ca in self.toutes_cand: xml.set_ecrit_EAF(ca, kwargs['EAF_e'])
         if xml.get_oral_EAF(cand)!=kwargs['EAF_o']:
-            for ca in self.toutes_cand: xml.set_oral_EAF(ca,kwargs['EAF_o'])
+            for ca in self.toutes_cand: xml.set_oral_EAF(ca, kwargs['EAF_o'])
         # On (re)calcule le score brut !
         xml.calcul_scoreb(cand)
         xml.is_complet(cand) # mise à jour de l'état "dossier complet"
         # Commentaire éventuel admin
         motif = kwargs['motif']
-        if not('- Admin :' in motif):
+        if not('- Admin :' in motif or motif==''):
             motif = '- Admin : {}'.format(motif)
-        xml.set_motifs(cand, motif)
+        for ca in self.toutes_cand: xml.set_motifs(ca, motif)
 
         # Sauvegarde autres candidatures
         for i in range(len(self.dossiers_autres_fil)):
@@ -1007,12 +1007,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 parser = etree.XMLParser(remove_blank_text=True)
                 doss = etree.parse(fich, parser).getroot()
                 # Les fichiers non vus se voient devenir NC avec
-                # motifs = "Dossier moins bon que le dernier classé"
+                # motifs = "Dossier moins bon que le dernier classé" (sauf si admin a renseigné un motif)
                 for c in doss:
                     if xml.get_jury(c) == 'Auto':
                         xml.set_correc(c, 'NC')
                         xml.set_scoref(c, 'NC')
-                        xml.set_motifs(c, 'Dossier moins bon que le dernier classé.')
+                        if xml.get_motifs(c) == '':
+                            xml.set_motifs(c, 'Dossier moins bon que le dernier classé.')
                 # Classement selon score_final + age
                 doss[:] = sorted(doss, key = lambda cand: self.convert(cand.xpath('naissance')[0].text))
                 doss[:] = sorted(doss, key = lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')))
