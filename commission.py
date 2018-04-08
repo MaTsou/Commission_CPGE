@@ -255,7 +255,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         self.toutes_cand = []           # toutes les candidatures d'un candidat
     
     def set_droits(self, droits):
-        Client.set_droits(self,'Administrateur ' + droits)
+        Client.set_droits(self,'Administrateur' + droits)
     
     def mise_en_page(self, header, dossier='', liste=''):
         # Fonction de "mise en page" des dossiers : renvoie une page HTML
@@ -297,9 +297,6 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
             data['liste_csv'] = self.genere_liste_csv()
             # liste pdf
             data['liste_pdf'] = self.genere_liste_pdf()
-            # année_en_cours : dans un "input type hidden" : sert au prompt javascript exécuté après clic sur "Traiter"
-            fich = glob.glob(os.path.join(os.curdir,"data","*.csv"))[0] # 1er fichier csv
-            data['annee_en_cours'] = time.strftime("%Y",time.gmtime(os.stat(fich).st_mtime))
             # liste admin
             data['liste_admin'] = self.genere_liste_admin()
             # liste_stat
@@ -585,6 +582,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def retour_menu(self):
         # Retour menu : sert essentiellement à l'Admin ; bouton RETOUR de la page dossier
+        self.get_client_cour().set_droits('')
         cherrypy.response.headers["content-type"] = "text/html"
         return self.get_client_cour().genere_menu()
     
@@ -663,35 +661,45 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def traiter_apb(self, **kwargs):
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
         # Traite les données brutes d'APB : csv ET pdf
-        cherrypy.response.headers["content-type"] = "text/html"
-        #print("Année en cours reçue = ", kwargs['annee_en_cours']) # À passer à la fonction lire : abandon !
-        ## Traitement des csv ##
-        for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")):
-            for fil in filieres:
-                if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
-                    dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
-            xml = lire(source)  # fonction contenue dans apb_csv.py
-            with open(dest, 'wb') as fich:
-                fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
-        ## Fin du traitement des csv ##
-        ## Traitement des pdf ##
-        dest = os.path.join(os.curdir, "data", "docs_candidats")
-        try:
-            self.efface_dest(dest) # on efface toute l'arborescence fille de dest
-        except: # dest n'existe pas !
-            os.mkdir(dest) # on le créé...
-        
-        for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
-            for fil in filieres:
-                if fil in fich.lower():
-                    desti = os.path.join(dest,fil)
-                    os.mkdir(desti)
-                    decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
-        # Fin du traitement pdf#
-        # Faire des statistiques
-        self.stat()
-        # Fin : retour au menu
-        return self.get_client_cour().genere_menu()
+        cherrypy.response.headers["content-type"] = "text/event-stream"
+        flag = True
+        def contenu():
+            yield "Début du Traitement\n\n"
+            ## Traitement des csv ##
+            yield "     Début du traitement des fichiers csv\n"
+            for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")):
+                for fil in filieres:
+                    if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
+                        dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
+                yield "         Fichier {} ... ".format(parse("{}epa_admin_{}.xml", dest)[1])
+                xml = lire(source)  # fonction contenue dans apb_csv.py
+                with open(dest, 'wb') as fich:
+                    fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
+                yield "traité.\n"
+            ## Fin du traitement des csv ##
+            ## Traitement des pdf ##
+            yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
+            dest = os.path.join(os.curdir, "data", "docs_candidats")
+            #try:
+            #    self.efface_dest(dest) # on efface toute l'arborescence fille de dest
+            #except: # dest n'existe pas !
+            #    os.mkdir(dest) # on le créé...
+            for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
+                for fil in filieres:
+                    if fil in fich.lower():
+                        yield "         Fichier {} ... ".format(fil.upper())
+                        #desti = os.path.join(dest,fil)
+                        #os.mkdir(desti)
+                        #decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
+                yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
+            # Fin du traitement pdf#
+            # Faire des statistiques
+            yield "\n     Décompte des candidatures\n\n"
+            self.stat()
+            # Fin : retour au menu
+            self.set_rafraich(True)
+            yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"
+        return contenu()
 
     @cherrypy.expose
     def choix_comm(self, **kwargs):
@@ -731,7 +739,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Mise à jour des attributs du client
         client.set_fichier(kwargs["fichier"])
         r = parse('{}admin_{}.xml', kwargs["fichier"]) # récupère nom de la filière traitée
-        client.set_droits(r[1])
+        client.set_droits(' {}'.format(r[1]))
         client.set_filiere(r[1].lower())
         # Ici, on va charger les dossiers présents dans le fichier choisi :
         client.lire_fichier()
