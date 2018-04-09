@@ -671,11 +671,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 for fil in filieres:
                     if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
                         dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
-                yield "         Fichier {} ... ".format(parse("{}epa_admin_{}.xml", dest)[1])
-                xml = lire(source)  # fonction contenue dans apb_csv.py
-                with open(dest, 'wb') as fich:
-                    fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
-                yield "traité.\n"
+                        yield "         Fichier {} ... ".format(parse("{}epa_admin_{}.xml", dest)[1])
+                        xml = lire(source)  # fonction contenue dans apb_csv.py
+                        with open(dest, 'wb') as fich:
+                            fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
+                        yield "traité.\n"
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
             yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
@@ -691,7 +691,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                         #desti = os.path.join(dest,fil)
                         #os.mkdir(desti)
                         #decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
-                yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
+                        yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
