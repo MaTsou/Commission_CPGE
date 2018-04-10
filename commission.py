@@ -662,7 +662,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
         # Traite les données brutes d'APB : csv ET pdf
         cherrypy.response.headers["content-type"] = "text/event-stream"
-        flag = True
         def contenu():
             yield "Début du Traitement\n\n"
             ## Traitement des csv ##
