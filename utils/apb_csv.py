@@ -307,6 +307,7 @@ def prepare_lecteurs(champs, test = False):
         'Département établissement': 'département',
         'Pays établissement': 'pays',
         'Téléphone établissement': 'téléphone', # pour J!
+        'Candidature validée (O/N)': 'candidature_validée'
     }
     synoptique = {
         "Type de formation": 'classe',
