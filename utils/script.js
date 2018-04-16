@@ -33,6 +33,14 @@ function click_nc()
 		var valid = test_valid();
 	    if (valid) {document.forms['formulaire'].submit();}
     }
+	else {
+		// Accès Admin
+	    // mise à jour du input hidden nc et soumission formulaire
+		var nc = document.getElementById('nc');
+	    nc.value = 'NC';
+		var valid = test_valid();
+	    if (valid) {document.forms['formulaire'].submit();}
+	}
 }
 
 function maj_motif(id)
@@ -109,7 +117,15 @@ function test_valid()
     }
     else {
     	// Accès Admin
-		test = true;
+    	// vérifie qu'il y a un motif si bouton NC
+		var nc = document.getElementById('nc');
+        // Si NC, on teste l'existence d'une motivation
+		var motif = document.getElementById('motif');
+		var test = false; // test sera vrai si une motivation est saisie ou si non NC
+        if (nc.value!=='NC'){test = true;}
+        if (motif.value != ''){test = true;}
+        if (!test)
+        {alert('Veuillez renseigner le champ motivation');}
     }
     return test
 }

@@ -351,102 +351,106 @@ def get_complet(cand):
 
 def calcul_scoreb(cand):
     # Calcul du score brut
-    # Récupération des coef
-    if 'cpes' in get_clas_actu(cand).lower():
-        coef = coef_cpes
-    else:
-        coef = coef_term
-    # moyenne de première
-    tot = 0
-    nb = 0
-    matiere = ['Mathématiques', 'Physique/Chimie']
-    trim = ['trimestre 1','trimestre 2','trimestre 3']
-    for t in trim:
-        for mat in matiere:
-            note = get_note(cand, 'Première', mat, t)
-            if note != '-':
-                tot += vers_num(note)
-                nb += 1
-    if nb > 0:
-        moy_prem = tot/nb
-    else:
-        moy_prem = 0
-    # moyenne de terminale
-    tot = 0
-    nb = 0
-    if coef['cpes']: # candidat en cpes (poids uniforme)
+    # Si correc = 'NC', ce la signifie que l'admin rejette le dossier : scoreb = 0
+    if get_correc(cand) != 'NC':
+        # Récupération des coef
+        if 'cpes' in get_clas_actu(cand).lower():
+            coef = coef_cpes
+        else:
+            coef = coef_term
+        # moyenne de première
+        tot = 0
+        nb = 0
+        matiere = ['Mathématiques', 'Physique/Chimie']
         trim = ['trimestre 1','trimestre 2','trimestre 3']
         for t in trim:
             for mat in matiere:
-                note = get_note(cand, 'Terminale', mat, t)
+                note = get_note(cand, 'Première', mat, t)
                 if note != '-':
                     tot += vers_num(note)
                     nb += 1
         if nb > 0:
-            moy_term = tot/nb
+            moy_prem = tot/nb
         else:
-            moy_term = 0
-    else: # candidat en terminale : 45% 1er trimestre ; 55% 2e trimestre
-        if get_sem_term(cand) == 'on':
-            for mat in matiere:
-                note = get_note(cand, 'Terminale', mat, 'trimestre 1')
-                if note != '-':
-                    tot += vers_num(note)
-                    nb += 1
-        else:
-            trim = ['trimestre 1','trimestre 2']
+            moy_prem = 0
+        # moyenne de terminale
+        tot = 0
+        nb = 0
+        if coef['cpes']: # candidat en cpes (poids uniforme)
+            trim = ['trimestre 1','trimestre 2','trimestre 3']
             for t in trim:
                 for mat in matiere:
                     note = get_note(cand, 'Terminale', mat, t)
                     if note != '-':
-                        if '1' in t:
-                            tot += vers_num(note)*prop_prem_trim
-                            nb += prop_prem_trim 
-                        else:
-                            tot+= vers_num(note)*(1-prop_prem_trim)
-                            nb += 1-prop_prem_trim
-        if nb > 0:
-            moy_term = tot/nb
-        else:
-            moy_term = 0
-    # moyenne EAF : 2/3 pour l'écrit et 1/3 pour l'oral
-    tot = 0
-    nb = 0
-    note = get_ecrit_EAF(cand)
-    if note != '-':
-        tot += vers_num(note)*prop_ecrit_EAF
-        nb += prop_ecrit_EAF
-    note = get_oral_EAF(cand)
-    if note != '-':
-        tot += vers_num(note)*(1-prop_ecrit_EAF)
-        nb += 1-prop_ecrit_EAF
-    if nb > 0:
-        moy_EAF = tot/nb
-    else:
-        moy_EAF = 0
-    # éventuellement moyenne de CPES
-    if coef['cpes']: # candidat en cpes
+                        tot += vers_num(note)
+                        nb += 1
+            if nb > 0:
+                moy_term = tot/nb
+            else:
+                moy_term = 0
+        else: # candidat en terminale : 45% 1er trimestre ; 55% 2e trimestre
+            if get_sem_term(cand) == 'on':
+                for mat in matiere:
+                    note = get_note(cand, 'Terminale', mat, 'trimestre 1')
+                    if note != '-':
+                        tot += vers_num(note)
+                        nb += 1
+            else:
+                trim = ['trimestre 1','trimestre 2']
+                for t in trim:
+                    for mat in matiere:
+                        note = get_note(cand, 'Terminale', mat, t)
+                        if note != '-':
+                            if '1' in t:
+                                tot += vers_num(note)*prop_prem_trim
+                                nb += prop_prem_trim 
+                            else:
+                                tot+= vers_num(note)*(1-prop_prem_trim)
+                                nb += 1-prop_prem_trim
+            if nb > 0:
+                moy_term = tot/nb
+            else:
+                moy_term = 0
+        # moyenne EAF : 2/3 pour l'écrit et 1/3 pour l'oral
         tot = 0
         nb = 0
-        note = get_CM1(cand, True)
+        note = get_ecrit_EAF(cand)
         if note != '-':
-            tot += vers_num(note)
-            nb += 1
-        note = get_CP1(cand, True)
+            tot += vers_num(note)*prop_ecrit_EAF
+            nb += prop_ecrit_EAF
+        note = get_oral_EAF(cand)
         if note != '-':
-            tot += vers_num(note)
-            nb += 1
+            tot += vers_num(note)*(1-prop_ecrit_EAF)
+            nb += 1-prop_ecrit_EAF
         if nb > 0:
-            moy_cpes = tot/nb
+            moy_EAF = tot/nb
         else:
-            moy_cpes = 0
-    # score brut
-    tot = moy_prem*coef['Première']+moy_term*coef['Terminale']+moy_EAF*coef['EAF']
-    nb = coef['Première']+coef['Terminale']+coef['EAF']
-    if coef['cpes']:
-        tot += moy_cpes*coef['cpes']
-        nb += coef['cpes']
-    scoreb = vers_str(tot/nb)
+            moy_EAF = 0
+        # éventuellement moyenne de CPES
+        if coef['cpes']: # candidat en cpes
+            tot = 0
+            nb = 0
+            note = get_CM1(cand, True)
+            if note != '-':
+                tot += vers_num(note)
+                nb += 1
+            note = get_CP1(cand, True)
+            if note != '-':
+                tot += vers_num(note)
+                nb += 1
+            if nb > 0:
+                moy_cpes = tot/nb
+            else:
+                moy_cpes = 0
+        # score brut
+        tot = moy_prem*coef['Première']+moy_term*coef['Terminale']+moy_EAF*coef['EAF']
+        nb = coef['Première']+coef['Terminale']+coef['EAF']
+        if coef['cpes']:
+            tot += moy_cpes*coef['cpes']
+            nb += coef['cpes']
+        scoreb = vers_str(tot/nb)
+    else: # correc = 'NC'
+        scoreb = vers_str(0)
     try:
         cand.xpath('diagnostic/score')[0].text = scoreb
     except:

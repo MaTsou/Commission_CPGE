@@ -32,6 +32,7 @@ from lxml import etree
 import utils.interface_xml as xml
 import utils.decoupage_pdf as decoup
 from utils.apb_csv import lire
+from utils.nettoie_xml import nettoie
 from utils.parametres import motivations
 from utils.parametres import min_correc
 from utils.parametres import max_correc
@@ -198,7 +199,7 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
     def traiter(self, **kwargs):
         # Fonction lancée par la fonction "traiter" du Serveur. Elle même est lancée par validation d'un dossier
         # On récupère "l'objet" xml qui est une candidature
-        cand = self.dossiers[self.num_doss]
+        cand  = self.dossiers[self.num_doss]
         ## On met à jour le contenu de ce dossier :
         # 1/ correction apportée par le jury et score final
         if kwargs['nc'] == 'NC':
@@ -354,7 +355,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
             liste_stat += '<ul style = "margin-top:-5%">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
             for i in range(len(filieres)):
-                liste_stat += '<li>{} dossiers {}</li>'.format(stat[2**i], filieres[i].upper())
+                liste_stat += '<li>{} dossiers {} validés</li>'.format(stat[2**i], filieres[i].upper())
                 deja_fait.append(2**i)
             # Ensuite les requêtes croisées
             liste_stat += 'dont :<ul>'
@@ -363,7 +364,7 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
                     seq = []
                     bina = bin(i)[2:] # bin revoie une chaine qui commence par 'Ob' : on vire !
                     while len(bina) < len(filieres):
-                        bina = '0{}'.format(bina)
+                        bina = '0{}'.format(bina) # les 0 de poids fort sont restaurés
                     for char in range(len(bina)):
                         if bina[char] == '1':
                             seq.append(filieres[len(filieres)-char-1].upper())
@@ -471,6 +472,11 @@ class Admin(Client): # Objet client (de type Administrateur) pour la class Serve
         if not('- Admin :' in motif or motif==''):
             motif = '- Admin : {}'.format(motif)
         for ca in self.toutes_cand: xml.set_motifs(ca, motif)
+        # L'admin a validé le formulaire avec le bouton NC (le candidat ne passera pas en commission)
+        if kwargs['nc'] == 'NC':
+            xml.set_correc(cand, 'NC') # la fonction calcul_scoreb renverra 0 !
+        else:
+            xml.set_correc(cand, '0')
 
         # Sauvegarde autres candidatures
         for i in range(len(self.dossiers_autres_fil)):
@@ -634,7 +640,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         for i in range(len(root)):  # i, indice de filière
             for candi in root[i]:   # pour toutes les candidatures de la filière i
                 index = filieres.index(fil[i].lower()) # trouver le compteur adéquat
-                candid[2**index] += 1 # Un candidat de plus dans cette filière
+                if xml.get_motifs(candi) != '- Admin : Candidature non validée sur ParcoursSUP':
+                    candid[2**index] += 1 # Un candidat de plus dans cette filière
                 iden = xml.get_id(candi)
                 # puis recherche du même candidat dans les autres filières,
                 # création du nombre stockant les filières demandées
@@ -646,7 +653,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                     xml.set_candidatures(candi, cc) # on écrit le binaire obtenu dans le dossier candidat
                     # Incrémentation des compteurs
                     for j in range(2**len(filieres)):
-                        if (cc == j and cc != 2**index): # attention de ne compter ici que les multi-candidatures
+                        if (cc == j and cc != 2**index and xml.get_motifs(candi) !=
+                                '- Admin : Candidature non validée sur ParcoursSUP'): #  seulement les multi-candidatures
                             candid[j] += 1
         # Sauvegarder
         for i in range(len(root)):
@@ -672,6 +680,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                         dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
                         yield "         Fichier {} ... ".format(parse("{}epa_admin_{}.xml", dest)[1])
                         xml = lire(source)  # fonction contenue dans apb_csv.py
+                        xml = nettoie(xml) # Petite toilette du résultat de apb_csv...
                         with open(dest, 'wb') as fich:
                             fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
                         yield "traité.\n"
@@ -679,17 +688,17 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             ## Traitement des pdf ##
             yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
             dest = os.path.join(os.curdir, "data", "docs_candidats")
-            #try:
-            #    self.efface_dest(dest) # on efface toute l'arborescence fille de dest
-            #except: # dest n'existe pas !
-            #    os.mkdir(dest) # on le créé...
+            try:
+                self.efface_dest(dest) # on efface toute l'arborescence fille de dest
+            except: # dest n'existe pas !
+                os.mkdir(dest) # on le créé...
             for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
                 for fil in filieres:
                     if fil in fich.lower():
                         yield "         Fichier {} ... ".format(fil.upper())
-                        #desti = os.path.join(dest,fil)
-                        #os.mkdir(desti)
-                        #decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
+                        desti = os.path.join(dest,fil)
+                        os.mkdir(desti)
+                        decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
                         yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
             # Fin du traitement pdf#
             # Faire des statistiques
@@ -937,8 +946,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             if xml.get_traite(liste[i]) != '':
                     clas += ' doss_traite' # affecte la classe css "doss_traite" aux ...
             if 'admin' in client.get_droits().lower():
-                if xml.get_complet(liste[i]) == 'non':  # Dossier incomplet (seulement admin ?)
-                    clas += ' doss_incomplet'
+                if xml.get_correc(liste[i]) == 'NC':
+                    print('on est bien là !')
+                    clas += ' doss_rejete'
+                else: 
+                    if xml.get_complet(liste[i]) == 'non':  # Dossier incomplet (seulement admin ?)
+                        clas += ' doss_incomplet'
             lis += 'class = "{}"'.format(clas)
             nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
             txt = '{:3d}) {: <30}{}'.format(i+1, nom[:29], xml.get_candidatures(liste[i]))

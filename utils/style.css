@@ -212,6 +212,8 @@ div.breakafter
 
 .doss_incomplet{background-color:LightCoral;} /* admin seulement : incomplet */
 
+.doss_rejete{background-color:DimGray;} /* admin seulement : rejeté */
+
 /***********************************
 			PAGE DOSSIERS
 ************************************/

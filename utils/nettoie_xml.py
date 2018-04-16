@@ -6,6 +6,8 @@ from lxml import etree
 #
 # FONCTIONS DE POST-TRAITEMENT
 #
+# Variables globales
+series_valides = ['Scientifique','Préparation au bac Européen']
 
 # certains bulletins contiennent toutes les notes et l'année, la
 # plupart tout le bulletin sauf les notes ; il faut donc trouver les
@@ -29,11 +31,33 @@ def fusionne_bulletins(candidat, test = False):
 
     return candidat
 
+def filtre(candidat, test = False):
+    # Candidature validée ?
+    if candidat.xpath('synoptique/établissement/candidature_validée')[0].text != 'Oui':
+        node = etree.Element('motifs')
+        node.text = '- Admin : Candidature non validée sur ParcoursSUP'
+        candidat.xpath('diagnostic')[0].append(node)
+    else:
+        # Est-ce la bonne série ?
+        probs = candidat.xpath('bulletins/bulletin[classe="Terminale"]')
+        for prob in probs:
+            # Là, normalement, c'est une fausse boucle
+            if not(prob.xpath('série')[0].text in series_valides):
+                node = etree.Element('motifs')
+                node.text = '- Admin : Vérifier la série'
+                candidat.xpath('diagnostic')[0].append(node)
+    # Fin des filtres; on retourne un candidat mis à jour
+    return candidat
+
+
+
+
 #
 # FONCTION PRINCIPALE
 #
 
-def nettoie(candidats):
+def nettoie(candidats, test = False):
     res = [fusionne_bulletins(candidat, test)
            for candidat in candidats]
-    return res
+    res = [filtre(candidat, test) for candidat in candidats]
+    return candidats
