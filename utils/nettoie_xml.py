@@ -37,6 +37,9 @@ def filtre(candidat, test = False):
         node = etree.Element('motifs')
         node.text = '- Admin : Candidature non validée sur ParcoursSUP'
         candidat.xpath('diagnostic')[0].append(node)
+        node = etree.Element('correc')
+        node.text = 'NC'
+        candidat.xpath('diagnostic')[0].append(node)
     else:
         # Est-ce la bonne série ?
         probs = candidat.xpath('bulletins/bulletin[classe="Terminale"]')

@@ -218,7 +218,7 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
         # 2/ Qui a traité le dossier
         xml.set_jury(cand,self.droits)
         # 2bis/ On met à jour le fichier des décomptes de commission
-        if xml.get_traite(cand) == '':
+        if (xml.get_traite(cand) == '' and cor != 'NC'): # seulement si le candidat n'a pas déjà été vu et si validé!
             try:
                 with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
                     decompt = pickle.load(fich)
@@ -947,7 +947,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                     clas += ' doss_traite' # affecte la classe css "doss_traite" aux ...
             if 'admin' in client.get_droits().lower():
                 if xml.get_correc(liste[i]) == 'NC':
-                    print('on est bien là !')
                     clas += ' doss_rejete'
                 else: 
                     if xml.get_complet(liste[i]) == 'non':  # Dossier incomplet (seulement admin ?)
