@@ -768,7 +768,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Quel candidat ?
         cand = self.get_cand_cour()
         # On génère les 3 parties de la page html
-        self.header = self.genere_header()
+        self.header = client.genere_header()
         self.dossier = self.genere_dossier(cand, droits)
         self.liste = self.genere_liste()
         # On retourne cette page au navigateur
