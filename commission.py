@@ -949,7 +949,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 if xml.get_correc(liste[i]) == 'NC':
                     clas += ' doss_rejete'
                 else: 
-                    if xml.get_complet(liste[i]) == 'non':  # Dossier incomplet (seulement admin ?)
+                    if (xml.get_complet(liste[i]) == 'non' or 'Vérifier la série' in xml.get_motifs(liste[i])):  # Dossier incomplet ou série ?
                         clas += ' doss_incomplet'
             lis += 'class = "{}"'.format(clas)
             nom = xml.get_nom(liste[i])+', '+xml.get_prenom(liste[i])
