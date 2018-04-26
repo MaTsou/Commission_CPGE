@@ -167,14 +167,13 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
         # On calcule le rang du score_final actuel (celui de cand) dans cette liste
         rg = 1
         score_actu = xml.get_scoref(cand)
-        while xml.get_scoref(doss[rg-1]) > score_actu:
-            rg+= 1
+        if doss:
+            while (rg <= len(doss) and xml.get_scoref_num(doss[rg-1]) > score_actu):
+                rg+= 1
         # À ce stade, rg est le rang dans la liste du jury. 
         # La suite consiste à calculer n*(rg-1) + k
         # où n est le nombre de jurys et k l'indice du jury courant.
-        print(self.get_droits())
         q = parse('Jury {:w}{:d}', self.get_droits())
-        print(q)
         n = int(nb_jury[q[0].lower()])
         k = int(q[1])
         return n*(rg-1)+k
@@ -542,7 +541,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def refresh(self, **kwargs):
         cherrypy.response.headers["content-type"] = "text/event-stream"
         def msg():
-            yield "retry: 500\n\n"
+            yield "retry: 5000\n\n"
             if self.get_rafraich():
                 self.set_rafraich(False) # On ne rafraîchit qu'une fois à la fois !
                 yield "event: message\ndata: ok\n\n"

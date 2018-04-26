@@ -45,4 +45,5 @@ nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4
 # Filières et nombre de jurys par filière				                   #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
-nb_jury = {'mpsi':'3','pcsi':'3','cpes':'2'}
+nb_jurys = ['3','3','2']
+nb_jury = dict(zip(filieres, nb_jurys))
