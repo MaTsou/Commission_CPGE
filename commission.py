@@ -48,7 +48,7 @@ from utils.parametres import nb_jury
 class Client(): # Objet client "abstrait" pour la class Serveur
     # Variables de classe :
     # Chargement de tous les "patrons" de pages HTML dans le dictionnaire "html" :
-    with open(os.path. join(os.curdir, "utils", "patrons.html"), "r", encoding="utf8") as fi:
+    with open(os. path. join(os.curdir, "utils", "patrons.html"), "r", encoding="utf8") as fi:
         html = {}
         for ligne in fi:
             if ligne.startswith("[*"):  # étiquette trouvée ==>
@@ -158,6 +158,27 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
     def set_droits(self, droits):
         Client.set_droits(self,'Jury '+droits)
 
+    # Estimation du rg final d'un candidat
+    def get_rgfinal(self, cand):
+        # On récupère les dossiers traités seulement
+        doss = [ca for ca in self.dossiers if (xml.get_traite(ca) != '' and xml.get_correc != 'NC')]
+        # Ceux-ci sont classés par ordre de score final décroissant
+        doss[:] = sorted(doss, key = lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')))
+        # On calcule le rang du score_final actuel (celui de cand) dans cette liste
+        rg = 1
+        score_actu = xml.get_scoref(cand)
+        while xml.get_scoref(doss[rg-1]) > score_actu:
+            rg+= 1
+        # À ce stade, rg est le rang dans la liste du jury. 
+        # La suite consiste à calculer n*(rg-1) + k
+        # où n est le nombre de jurys et k l'indice du jury courant.
+        print(self.get_droits())
+        q = parse('Jury {:w}{:d}', self.get_droits())
+        print(q)
+        n = int(nb_jury[q[0].lower()])
+        k = int(q[1])
+        return n*(rg-1)+k
+
     def get_liste_autres_fichiers_en_cours(self):
         # renvoie la liste des fichiers en cours de traitement.
         return self.master.get_autres_fichiers_en_cours(self)
@@ -216,9 +237,9 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
         xml.set_correc(cand, cor)
         xml.set_scoref(cand, scoref)
         # 2/ Qui a traité le dossier
-        xml.set_jury(cand,self.droits)
+        xml.set_jury(cand, self.droits)
         # 2bis/ On met à jour le fichier des décomptes de commission
-        if (xml.get_traite(cand) == '' and cor != 'NC'): # seulement si le candidat n'a pas déjà été vu et si validé!
+        if (xml.get_traite(cand) == '' and cor != 'NC'): # seulement si le candidat n'a pas déjà été vu et si classé!
             try:
                 with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
                     decompt = pickle.load(fich)
@@ -230,7 +251,7 @@ class Jury(Client): # Objet client (de type jury de commission) pour la class Se
                     pickle.dump(decompt, stat_fich)
             except:
                 none
-        # 3/ "bouléen" traite : le dossier a été traité
+        # 3/ "bouléen" traite : le dossier a été classé
         xml.set_traite(cand)
         # 4/ motivation du jury
         xml.set_motifs(cand, kwargs['motif'])
@@ -883,12 +904,17 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     
     def genere_dossier(self, cand, droits):
         # Génère la partie dossier de la page HTML
+        # Estimation du rang final du candidat
+        rg_fin =''
+        if not('admin' in droits.lower()): # seulement pour les jurys.
+            rg_fin = self.get_client_cour().get_rgfinal(cand)
         # récupération correction
         correc = str(xml.get_correc(cand))
         ncval = ''
         if correc == 'NC':
             correc = 0
             ncval = 'NC'
+            rg_fin = 'NC'
         # Construction de la barre de correction :
         barre = '<tr><td width = "2.5%"></td><td>'
         barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25" name = "correc" id = "correc"\
@@ -926,6 +952,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         data = self.genere_dict(cand, droits)
         data['barre'] = barre
         data['nc'] = nc
+        data['rg_fin'] = rg_fin
         data['motifs'] = motifs
         return Client.html["page_dossier"].format(**data)
         
@@ -991,7 +1018,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # Découpage en n listes de dossiers
             for j in range(0, nbjury):
                 dossier = []    # deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append
-                [dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if i%nbjury == j]
+                [dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if (i+2)%nbjury == j]
+                # (i+2) ligne précédente pour que le jury 1 reçoive le candidat 1, etc.
                 # Sauvegarde
                 res = etree.Element('candidats')
                 [res.append(cand) for cand in dossier]
