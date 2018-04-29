@@ -31,7 +31,7 @@ from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
 import utils.decoupage_pdf as decoup
-from utils.apb_csv import lire
+from utils.csv_parcourssup import lire
 from utils.nettoie_xml import nettoie
 from utils.parametres import motivations
 from utils.parametres import min_correc
@@ -699,8 +699,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                     if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
                         dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
                         yield "         Fichier {} ... ".format(parse("{}epa_admin_{}.xml", dest)[1])
-                        xml = lire(source)  # fonction contenue dans apb_csv.py
-                        xml = nettoie(xml) # Petite toilette du résultat de apb_csv...
+                        xml = lire(source) # première lecture brute
+                        xml = nettoie(xml) # nettoyage doux
                         with open(dest, 'wb') as fich:
                             fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
                         yield "traité.\n"
