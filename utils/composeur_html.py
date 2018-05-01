@@ -417,7 +417,7 @@ class Composeur(object):
     
 ##### La suite concerne les pages qu'on imprime
     def page_impression(self, fich):
-        entete = '{} - {}.'.format(self.titre, fich.filiere())
+        entete = '<h1 align="center" class="titre">{} - {}.</h1>'.format(self.titre, fich.filiere())
         txt = ''
         saut = '<div style = "page-break-after: always;"></div>'
         for cand in fich:
