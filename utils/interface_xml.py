@@ -41,7 +41,7 @@ def vers_str(num):
 # Accesseur et mutateur standardisés
 # Tous fonctionnant selon le même modèle, c'est plus léger ainsi
 ###################################
-def get(cand, query, default, num='False'):
+def _get(cand, query, default, num='False'):
     # lit le champ désigné par 'query' relatif au candidat 'cand'
     # num vaut 'True' si la valeur à retourner est numérique
     try:
@@ -51,9 +51,9 @@ def get(cand, query, default, num='False'):
         result = default
     return result
 
-def set(cand, query, value):
+def _set(cand, query, value):
     # écrit le champ désigné par 'query' relatif au candidat 'cand'
-    # si besoin, appelle la fonction accro_branche qui construit
+    # si besoin, appelle la fonction _accro_branche qui construit
     #l'arborescence manquante dans le fichier xml
     try:
         cand.xpath(query)[0].text = value
@@ -62,9 +62,9 @@ def set(cand, query, value):
         fils = etree.Element(node)
         fils.text = value
         pere = parse('{}/' + node, query)[0]
-        accro_branche(cand, pere, fils)
+        _accro_branche(cand, pere, fils)
 
-def accro_branche(cand, pere, fils):
+def _accro_branche(cand, pere, fils):
     # Reconstruction d'une arborescence incomplète. On procède
     # de manière récursive en commençant par l'extrémité (les feuilles !)...
     # pere est un chemin (xpath) et fils un etree.Element
@@ -89,7 +89,7 @@ def accro_branche(cand, pere, fils):
                 el.text = dico['val']
                 pere.append(el)
         pere.append(fils)
-        accro_branche(cand, grand_pere, pere)
+        _accro_branche(cand, grand_pere, pere)
 
 
 ###################################
@@ -97,7 +97,7 @@ def accro_branche(cand, pere, fils):
 ###################################
 def get_candidatures(cand, form = ''):
     # Lit le champ candidatures du candidat cand
-    cc = get(cand, 'diagnostic/candidatures', '???', 0)
+    cc = _get(cand, 'diagnostic/candidatures', '???', 0)
     if form == 'impr': # ordonnées et nom complet.
         cc = '-'.join(fil.upper() for fil in filieres if cc[filieres.index(fil)]!='-')
     return cc
@@ -116,41 +116,41 @@ def set_candidatures(cand, cc):
         else:
             cc += '-'
     # Enregistrement dans le bon champ
-    set(cand, query, cc)
+    _set(cand, query, cc)
     
 def get_note(cand, classe, matiere, date):
     query = 'bulletins/bulletin[classe="'+classe+'"]/matières/'
     query += 'matière[intitulé="'+matiere+'"][date="'+date+'"]/note'
-    return get(cand, query, '-', 1)
+    return _get(cand, query, '-', 1)
 
 def set_note(cand, classe, matiere, date, note):
     query = 'bulletins/bulletin[classe="'+classe+'"]/matières/'
     query += 'matière[intitulé="'+matiere+'"][date="'+date+'"]/note'
     if not isnote(note):
         note = '-'
-    set(cand, query, note)
+    _set(cand, query, note)
         
 def get_ecrit_EAF(cand):
-    return get(cand, 'synoptique/français.écrit', '-', 1)
+    return _get(cand, 'synoptique/français.écrit', '-', 1)
 
 def set_ecrit_EAF(cand, note):
     query = 'synoptique/français.écrit'
     if not isnote(note):
         note = '-'
-    set(cand, query, note)
+    _set(cand, query, note)
 
 def get_oral_EAF(cand):
-    return get(cand, 'synoptique/français.oral', '-', 1)
+    return _get(cand, 'synoptique/français.oral', '-', 1)
 
 def set_oral_EAF(cand, note):
     query = 'synoptique/français.oral'
     if not isnote(note):
         note = '-'
-    set(cand, query, note)
+    _set(cand, query, note)
     
 def get_CM1(cand,cpes):
     if cpes:
-        return get(cand, 'synoptique/matières/matière[intitulé="Mathématiques"]/note', '-', 1)
+        return _get(cand, 'synoptique/matières/matière[intitulé="Mathématiques"]/note', '-', 1)
     else:
         return '-'
 
@@ -158,11 +158,11 @@ def set_CM1(cand, note):
     query = 'synoptique/matières/matière[intitulé="Mathématiques"]/note'
     if not isnote(note):
         note = '-'
-    set(cand, query, note)
+    _set(cand, query, note)
 
 def get_CP1(cand,cpes):
     if cpes:
-        return get(cand, 'synoptique/matières/matière[intitulé="Physique/Chimie"]/note', '-', 1)
+        return _get(cand, 'synoptique/matières/matière[intitulé="Physique/Chimie"]/note', '-', 1)
     else:
         return '-'
 
@@ -170,23 +170,23 @@ def set_CP1(cand, note):
     query = 'synoptique/matières/matière[intitulé="Physique/Chimie"]/note'
     if not isnote(note):
         note = '-'
-    set(cand, query, note)
+    _set(cand, query, note)
 
 def get_sem_prem(cand):
     # Lit le booléen "bulletins en semestres en classe de première" ?
-    return get(cand, 'diagnostic/sem_prem', 'off', 0)
+    return _get(cand, 'diagnostic/sem_prem', 'off', 0)
 
 def set_sem_prem(cand,bool):
     query = 'diagnostic/sem_prem'
-    set(cand, query, bool)
+    _set(cand, query, bool)
 
 def get_sem_term(cand):
     # Lit le booléen "bulletins en semestres en classe de terminale" ?
-    return get(cand, 'diagnostic/sem_term', 'off', 0)
+    return _get(cand, 'diagnostic/sem_term', 'off', 0)
 
 def set_sem_term(cand,bool):
     query = 'diagnostic/sem_term'
-    set(cand, query, bool)
+    _set(cand, query, bool)
     
 def get_nom(cand):
     return cand.xpath('nom')[0].text
@@ -195,30 +195,30 @@ def get_prenom(cand):
     return cand.xpath('prénom')[0].text
     
 def get_sexe(cand):
-    return get(cand, 'sexe', '?', 0)
+    return _get(cand, 'sexe', '?', 0)
 
 def get_scoreb(cand):
     # score brut
-    return get(cand, 'diagnostic/score', '', 1)
+    return _get(cand, 'diagnostic/score', '', 1)
     
 def get_traite(cand):
-    return get(cand, 'diagnostic/traite', '', 0)
+    return _get(cand, 'diagnostic/traite', '', 0)
 
 def set_traite(cand):
     query = 'diagnostic/traite'
-    set(cand, query, 'DOSSIER TRAITÉ')
+    _set(cand, query, 'DOSSIER TRAITÉ')
 
 def get_correc(cand):
     # correction du jury
-    return get(cand, 'diagnostic/correc', '0', 0)
+    return _get(cand, 'diagnostic/correc', '0', 0)
 
 def set_correc(cand, correc):
     query = 'diagnostic/correc'
-    set(cand, query, correc)
+    _set(cand, query, correc)
 
 def get_scoref(cand):
     # score final
-    return get(cand, 'diagnostic/score_final', get_scoreb(cand), 0)
+    return _get(cand, 'diagnostic/score_final', get_scoreb(cand), 0)
 
 def get_scoref_num(cand): # version numérique, pour le classement NC --> 0
     scoref = get_scoref(cand)
@@ -227,23 +227,23 @@ def get_scoref_num(cand): # version numérique, pour le classement NC --> 0
     
 def set_scoref(cand, scoref):
     query = 'diagnostic/score_final'
-    set(cand, query, scoref)
+    _set(cand, query, scoref)
     
 def get_motifs(cand):
     # Motivation du jury
-    if get(cand, 'diagnostic/motifs', '', 0) is None:
+    if _get(cand, 'diagnostic/motifs', '', 0) is None:
         return ''
     else: 
-        return get(cand, 'diagnostic/motifs', '', 0)
+        return _get(cand, 'diagnostic/motifs', '', 0)
 
 def set_motifs(cand, txt):
     query = 'diagnostic/motifs'
-    set(cand, query, txt)
+    _set(cand, query, txt)
 
 def set_jury(cand,txt):
     # Quel jury a traité ce candidat ?
     query = 'diagnostic/jury'
-    set(cand, query, txt)
+    _set(cand, query, txt)
 
 def get_jury(cand):
     try:
@@ -258,33 +258,33 @@ def get_id(cand):
     return cand.xpath('id_apb')[0].text
 
 def get_INE(cand):
-    return get(cand, 'INE', '?', 0)
+    return _get(cand, 'INE', '?', 0)
 
 def get_naiss(cand):
     return cand.xpath('naissance')[0].text
 
 def get_clas_actu(cand):
-    return get(cand, 'synoptique/classe', '?', 0)
+    return _get(cand, 'synoptique/classe', '?', 0)
 
 def set_clas_actu(cand, classe):
     query = 'synoptique/classe'
-    set(cand, query, classe)
+    _set(cand, query, classe)
 
 def get_etab(cand):
-    etab = get(cand, 'synoptique/établissement/nom', '?', 0)
-    dep = get(cand, 'synoptique/établissement/département', '?', 0)
-    pays = get(cand, 'synoptique/établissement/pays', '?', 0)
+    etab = _get(cand, 'synoptique/établissement/nom', '?', 0)
+    dep = _get(cand, 'synoptique/établissement/département', '?', 0)
+    pays = _get(cand, 'synoptique/établissement/pays', '?', 0)
     return '{} ({}, {})'.format(etab, dep, pays)
     
 def get_commune_etab(cand):
-     return get(cand, 'synoptique/établissement/ville', '?', 0)
+     return _get(cand, 'synoptique/établissement/ville', '?', 0)
 
 def get_nation(cand):
-    return get(cand, 'nationalité', '?', 0)
+    return _get(cand, 'nationalité', '?', 0)
 
 def get_boursier(cand):
-    bours = get(cand, 'boursier', '?', 0)
-    certif = get(cand, 'boursier_certifie', '?', 0)
+    bours = _get(cand, 'boursier', '?', 0)
+    certif = _get(cand, 'boursier_certifie', '?', 0)
     txt = 'oui'
     if 'non boursier' in bours.lower():
         txt = 'non'
@@ -316,7 +316,6 @@ def is_complet(cand):
         add = '2' # à ajouter si le candidat n'est pas noté en semestres
     if get_sem_term(cand) != 'on': # gestion des semestres
         date.update({'{}'.format(add):'trimestre {}'.format(add)})
-    
     classe ={'T':'Terminale'} 
     for cl in classe:
             for mat in matiere:
@@ -335,23 +334,12 @@ def is_complet(cand):
         complet = False
     if get_oral_EAF(cand) == '-':
         complet = False
-    set_complet(cand,complet)
-
-def set_complet(cand,complet):
-    # booléen synthèse complète... (voir fonction iscomplet ci-dessus)
-    if complet:
-        complet = 'oui'
-    else: 
-        complet = 'non'
-    query = 'diagnostic/complet'
-    set(cand, query, complet)
-
-def get_complet(cand):
-    return get(cand, 'diagnostic/complet', '', 0)
+    return complet
 
 def calcul_scoreb(cand):
     # Calcul du score brut
-    # Si correc = 'NC', ce la signifie que l'admin rejette le dossier : scoreb = 0
+    # Si correc = 'NC', cela signifie que l'admin rejette le dossier : scoreb = 0
+    scoreb = vers_str(0) # valeur si correc = 'NC'
     if get_correc(cand) != 'NC':
         # Récupération des coef
         if 'cpes' in get_clas_actu(cand).lower():
@@ -449,27 +437,20 @@ def calcul_scoreb(cand):
             tot += moy_cpes*coef['cpes']
             nb += coef['cpes']
         scoreb = vers_str(tot/nb)
-    else: # correc = 'NC'
-        scoreb = vers_str(0)
-    try:
-        cand.xpath('diagnostic/score')[0].text = scoreb
-    except:
-        el = cand.xpath('diagnostic')[0]
-        subel = etree.SubElement(el, 'score')
-        subel.text = scoreb
+    _set(cand, 'diagnostic/score', scoreb)
         
 def set_rang_final(cand,rg):
     # Stockage rang final
     query = 'diagnostic/rangf'
-    set(cand, query, rg)
+    _set(cand, query, rg)
 
 def get_rang_final(cand):
-    return get(cand, 'diagnostic/rangf', '?', 0)
+    return _get(cand, 'diagnostic/rangf', '?', 0)
 
 def set_rang_brut(cand,rg):
     # Stockage rang brut
     query = 'diagnostic/rangb'
-    set(cand, query, rg)
+    _set(cand, query, rg)
 
 def get_rang_brut(cand):
-    return get(cand, 'diagnostic/rangb', '?', 0)
+    return _get(cand, 'diagnostic/rangb', '?', 0)

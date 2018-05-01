@@ -401,11 +401,10 @@ class Composeur(object):
                     clas += ' doss_traite' # affecte la classe css "doss_traite" aux dossiers qui le sont
             if xml.get_correc(cand) == 'NC':
                 clas += ' doss_rejete' # affecte la classe css "doss_rejete" aux dossiers NC
-            if isinstance(client, Admin): # Admin seulement (mise en évidence des alertes nettoie.py)
-                a = xml.get_complet(cand) == 'non'
-                b = '- Alerte' in xml.get_motifs(cand)
-                if a or b:  # Dossier à mettre en évidence (rouge)
-                    clas += ' doss_incomplet'
+            if isinstance(client, Admin) and '- Alerte' in xml.get_motifs(cand): # Admin seulement (alertes nettoie.py)
+                clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
+            if isinstance(client, Jury) and '- Admin' in xml.get_motifs(cand): # Jury seulement (commentaires Admin)
+                clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
             lis += 'class = "{}"'.format(clas)
             nom = '{}, {}'.format(xml.get_nom(cand), xml.get_prenom(cand))
             # La variable txt qui suit est le texte du bouton. Attention, ses 3 premiers

@@ -30,7 +30,7 @@ import os, sys, time, cherrypy, random, copy, glob, csv, pickle, webbrowser
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
-import utils.decoupage_pdf as decoup
+import utils.boite_a_outils as outil
 from utils.apb_csv import lire
 from utils.nettoie_xml import nettoie
 from utils.parametres import filieres
@@ -54,7 +54,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.test = test  # booléen : version test (avec un menu "Admin or Jury ?")
         self.rafraich = False  # booléen qui sert à activer ou nom la fonction refresh
         self.comm_en_cours = (ip != '127.0.0.1')  # booléen True pendant la commission --> menu ad hoc
-        self.fichiers_utilises = [] # sert à 
+        self.fichiers_utilises = [] # Utile pour que deux jurys ne choisissent pas le même fichier..
         self.html_compose = Composeur(entete)
         navi = webbrowser.get()  # Quel est le navigateur par défaut ?
         navi.open_new('http://'+ip+':8080')  # on ouvre le navigateur internet, avec la bonne url..
@@ -124,7 +124,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         if client.fichier: # le client a déjà sélectionné un fichier, mais il revient au menu
             self.fichiers_utilises.remove(client.fichier.nom) # on fait du ménage
             client.fichier = None
-        # on redéfinit le type de retour (nécessaire quand on a utilisé des SSE
+        # on redéfinit le type de retour (nécessaire quand on a utilisé des SSE)
         # voir la méthode 'refresh'.
         cherrypy.response.headers["content-type"] = "text/html"
         return self.html_compose.menu(client, self.fichiers_utilises, self.comm_en_cours)
@@ -133,23 +133,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def identification(self, **kwargs):
         # Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
         key = cherrypy.session['JE']
-        if kwargs['acces'] == "Accès administrateur":
+        # Ci-dessous, le not('acces' in kwargs) sert à éviter une erreur lorsque la commande navigateur
+        # 'page préc' est utilisée (par exemple après Vérifier/Traiter)
+        if not('acces' in kwargs) or kwargs['acces'] == "Accès administrateur":
             self.clients[key] = Admin(self, key) # création d'une instance admin
         else:
             self.clients[key] = Jury(self, key) # création d'une instance jury
         return self.affiche_menu() # Affichage du menu adéquat
 
-    def efface_dest(self, chem):
-        # Sert dans traiter_csv et dans tableaux/bilans
-        # Supprime les dossiers pointés par le chemin chem
-        for filename in os.listdir(chem):
-            fich = os.path.join(chem, filename)
-            try:
-                os.remove(fich)
-            except: # cas d'un sous-dossier
-                self.efface_dest(fich) # appel récursif pour vider le contenu du sous-dossier
-                os.rmdir(fich) # suppression du sous-dossier
-            
     @cherrypy.expose
     def traiter_apb(self, **kwargs):
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
@@ -173,22 +164,19 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             ## Traitement des pdf ##
             yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
             dest = os.path.join(os.curdir, "data", "docs_candidats")
-            try:
-                self.efface_dest(dest) # on efface toute l'arborescence fille de dest
-            except: # dest n'existe pas !
-                os.mkdir(dest) # on le créé...
+            outil.restaure_virginite(dest) # un coup de jeune pour dest..
             for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
                 for fil in filieres:
                     if fil in fich.lower():
                         yield "         Fichier {} ... ".format(fil.upper())
-                        desti = os.path.join(dest,fil)
+                        desti = os.path.join(dest, fil)
                         os.mkdir(desti)
-                        decoup.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
+                        outil.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
                         yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
-            self.stat()
+            outil.stat()
             # Fin : retour au menu
             self.set_rafraich(True)
             yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"

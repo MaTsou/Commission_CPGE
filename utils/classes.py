@@ -230,10 +230,12 @@ class Admin(Client):
         cand = self.get_cand()
         # Ici, on va répercuter les complétions de l'administrateur dans tous les dossiers que le
         # candidat a déposé.
-        # Recherche des autres candidatures : renvoie une liste (éventuellement vide) de candidatures
+        # Attention ! le traitement du fichier en cours est fait à part car deux objets 'Fichier' qui
+        # auraient le même nom sont malgré tout différents !! On rajoute le bon fichier juste après.
+        # Recherche de tous les fichiers existants :
         list_fich_admin = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))\
                 if fich != self.fichier.nom]
-        # On créé une liste d'objets Fichiers restreinte aux fichiers contenant le candidat en cours
+        # On restreint la liste aux fichiers contenant le candidat en cours
         list_fich_cand = [fich for fich in list_fich_admin if cand in fich]
         # On rajoute le fichier suivi actuellement
         list_fich_cand.append(self.fichier)
@@ -270,23 +272,24 @@ class Admin(Client):
             for fich in list_fich_cand: xml.set_oral_EAF(fich.get_cand(cand), kwargs['EAF_o'])
         # On (re)calcule le score brut !
         xml.calcul_scoreb(cand)
-        #xml.is_complet(cand) # mise à jour de l'état "dossier complet" TOUJOURS UTILE ?
-        # Commentaire éventuel admin
+        # Commentaire éventuel admin + gestion des 'NC'
         # Les commentaires admin sont précédés de '- Admin :' c'est à cela qu'on les reconnaît
         # Notamment, script.js exclut qu'un tel commentaires soit considéré comme une motivation
         # de jury.
         motif = kwargs['motif']
         if not('- Admin :' in motif or motif == ''):
             motif = '- Admin : {}'.format(motif)
-        for fich in list_fich_cand: xml.set_motifs(fich.get_cand(cand), motif)
-        # L'admin a validé le formulaire avec le bouton NC (le candidat ne passera pas en commission)
-        # Pour ce cas là, on ne recopie pas dans toutes les filières. Admin peut exclure une candidature
-        # dans une filière sans l'exclure des autres. IL Y A ALORS UN PB : SI ADMIN A LEVÉ "L'ALERTE" DU
-        # DOSSIER, CELUI-CI N'APPARAITRE PLUS COMME MARQUÉ DANS LES AUTRES FILIÈRES...
         if kwargs['nc'] == 'NC':
+            # L'admin a validé le formulaire avec le bouton NC (le candidat ne passera pas en commission)
+            # Pour ce cas là, on ne recopie pas dans toutes les filières. Admin peut exclure une candidature
+            # dans une filière sans l'exclure des autres. Sécurité !
             xml.set_correc(cand, 'NC') # la fonction calcul_scoreb renverra 0 !
+            xml.set_motifs(self.fichier.get_cand(cand), motif)
         else:
-            xml.set_correc(cand, '0')
+            for fich in list_fich_cand:
+                xml.set_correc(fich.get_cand(cand), '0')
+                xml.set_motifs(fich.get_cand(cand), motif)
+
         # On sauvegarde tous les fichiers retouchés
         for fich in list_fich_cand:
             fich.sauvegarde()

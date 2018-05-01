@@ -1,4 +1,5 @@
 from lxml import etree
+import utils.interface_xml as xml
 
 # Le résultat de la reconnaissance des données sur ParcoursSup est
 # parfois un peu brut : on procède à l'assainissement.
@@ -7,7 +8,7 @@ from lxml import etree
 # FONCTIONS DE POST-TRAITEMENT
 #
 # Variables globales
-series_valides = ['Scientifique','Préparation au bac Européen']
+series_valides = ['Scientifique', 'Préparation au bac Européen']
 
 # certains bulletins contiennent toutes les notes et l'année, la
 # plupart tout le bulletin sauf les notes ; il faut donc trouver les
@@ -32,27 +33,27 @@ def fusionne_bulletins(candidat, test = False):
     return candidat
 
 def filtre(candidat, test = False):
+    prefixe = ''
+    commentaire = ''
     # Candidature validée ?
     if candidat.xpath('synoptique/établissement/candidature_validée')[0].text != 'Oui':
-        node = etree.Element('motifs')
-        node.text = '- Admin : Candidature non validée sur ParcoursSUP'
-        candidat.xpath('diagnostic')[0].append(node)
-        node = etree.Element('correc')
-        node.text = 'NC'
-        candidat.xpath('diagnostic')[0].append(node)
-    else:
-        # Est-ce la bonne série ?
+        commentaire = 'Candidature non validée sur ParcoursSup'
+        xml.set_correc(candidat, 'NC')
+    else: # si validée, on signale les anomalies à l'admin
+        prefixe = '- Alerte :'
+        # 1/ Est-ce la bonne série ?
         probs = candidat.xpath('bulletins/bulletin[classe="Terminale"]')
         for prob in probs:
             # Là, normalement, c'est une fausse boucle
             if not(prob.xpath('série')[0].text in series_valides):
-                node = etree.Element('motifs')
-                node.text = '- Admin : Vérifier la série'
-                candidat.xpath('diagnostic')[0].append(node)
+                commentaire += ' | Vérifier la série |'
+        # 2/ Le dossier est-il complet (toutes les notes présentes + classe actuelle)
+        if not(xml.is_complet(candidat)):
+            commentaire += ' Dossier incomplet |'
+    if commentaire != '':
+        xml.set_motifs(candidat, '{} {}'.format(prefixe, commentaire))
     # Fin des filtres; on retourne un candidat mis à jour
     return candidat
-
-
 
 
 #
