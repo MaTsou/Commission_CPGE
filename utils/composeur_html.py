@@ -13,6 +13,7 @@ from utils.parametres import min_correc
 from utils.parametres import max_correc
 from utils.parametres import nb_correc
 from utils.parametres import motivations
+from utils.parametres import nb_classes
 from utils.classes import Fichier, Client, Jury, Admin
 
 #################################################################################
@@ -247,7 +248,7 @@ class Composeur(object):
         return txt
 
 ##### La suite concerne les pages dossiers #####
-    def page_dossier(self, qui, mem_scroll, format_comm = False):
+    def page_dossier(self, qui, mem_scroll):
         # construction du code html constitutif de la page dossier
         # format_comm = True lorsque la demande est destinée à concevoir les fiches bilan de commission.
         # En effet, cette demande est lancée par Admin, mais l'impression se fait avec un dossier formaté
@@ -256,16 +257,17 @@ class Composeur(object):
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
         # construire ensuite la partie dossier, action de client puis la partie liste;
         # La partie dossier est créée par la fonction genere_dossier; infos données par client.fichier
-        dossier = Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui, format_comm))
+        dossier = Composeur.html['contenu_dossier'].format(\
+                **self.genere_dossier(qui.get_cand(), qui.filiere(), isinstance(qui, Admin)))
         # La partie contenant les actions du client (correction, motivations, validation)
         # est créée par la fonction genere_action;
-        action_client = Composeur.html['contenu_action'].format(**self.genere_action(qui, format_comm))
+        action_client = Composeur.html['contenu_action'].format(**self.genere_action(qui))
         # La partie liste est créée par la fonction genere_liste:
         liste = self.genere_liste(qui, mem_scroll)
         # Affichage d'un bouton RETOUR 'admin uniquement'
         visib = ''
-        if isinstance(qui, Client):
-            visib = 'disabled'
+        if isinstance(qui, Jury):
+            visib = 'none'
         # dictionnaire directement 'digérable' par la chaîne html["MEP_DOSSIER"]
         page += Composeur.html['MEP_DOSSIER'].format(**{
             'dossier' : dossier,
@@ -276,11 +278,9 @@ class Composeur(object):
         page += '</html>'
         return page
 
-    def genere_dossier(self, client, format_comm = False):
-        # Renvoie le dictionnaire contenant les infos du dossier en cours
+    def genere_dossier(self, cand, fil, format_admin = False):
+        """ Renvoie le dictionnaire cont enant les infos du dossier en cours"""
         #### Début
-        # récupération du candidat
-        cand = client.get_cand()
         # Pédigré
         data = {'Nom':xml.get_nom(cand) + ', ' + xml.get_prenom(cand)}
         data['naiss'] = xml.get_naiss(cand)
@@ -288,15 +288,14 @@ class Composeur(object):
         txt = '[{}]-{}'.format(xml.get_id(cand), xml.get_INE(cand))
         data['id'] = txt
         # récup filiere pour connaître le chemin vers le dossier pdf (dans répertoire docs_candidats)
-        fil = client.fichier.filiere()
-        data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil), 'docs_{}'.format(xml.get_id(cand)))
+        data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()), 'docs_{}'.format(xml.get_id(cand)))
         # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
         # et formatage des cases à cocher semestres (actives ou non).
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
         formateur_clas_actu = '{}'
         formateur_note = '{note}'
         visib = 'disabled'
-        if isinstance(client, Admin) or not(format_comm):
+        if format_admin:
             formateur_clas_actu = '<input type="text" id="clas_actu" name="clas_actu" size="10" value="{}"/>'
             formateur_note = '<input type="text" class="notes grossi" id="{}" name="{}" value="{note}"\
                     onfocusout="verif_saisie()"/>'
@@ -329,8 +328,8 @@ class Composeur(object):
         data['cand'] = xml.get_candidatures(cand, 'impr')
         return data
     
-    def genere_action(self, client, format_comm = False):
-        # Renvoie le dictionnaire de la partie 'action' de la page HTML
+    def genere_action(self, client):
+        """ Renvoie le dictionnaire de la partie 'action' de la page HTML"""
         ###
         # Récupération du candidat
         cand = client.get_cand()
@@ -388,7 +387,7 @@ class Composeur(object):
         return data
         
     def genere_liste(self, client, mem_scroll):
-        # Génère la partie liste de la page HTML
+        """ Génère la partie liste de la page HTML"""
         # Construction de la chaine lis : code html de la liste des dossiers.
         lis = '<form id = "form_liste" action = "click_list" method=POST>'
         lis += '<input type="hidden" name = "scroll_mem" value = "{}"/>'.format(mem_scroll)
@@ -416,3 +415,19 @@ class Composeur(object):
         lis = lis + '</form>'
         return lis
     
+##### La suite concerne les pages qu'on imprime
+    def page_impression(self, fich):
+        entete = '{} - {}.'.format(self.titre, fich.filiere())
+        txt = ''
+        saut = '<div style = "page-break-after: always;"></div>'
+        for cand in fich:
+            a = (xml.get_scoref(cand) != 'NC')
+            b = (xml.get_rang_final(cand) <= nb_classes[fich.filiere().lower()])
+            if a and b:
+                txt += entete
+                txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang_final(cand))
+                txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(cand, fich.filiere()))
+                txt += saut
+        txt = txt[:-len(saut)] # On enlève le dernier saut de page...
+        data = {'pages' : txt}
+        return Composeur.html['page_impress'].format(**data) 

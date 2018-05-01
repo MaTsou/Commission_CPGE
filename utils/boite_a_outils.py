@@ -9,6 +9,14 @@ import utils.interface_xml as xml
 from utils.parametres import filieres
 # contient différentes fonctions utiles
 
+############## Trouver le rang d'un candidat dans une liste de dossiers, selon un critère donné
+def rang(cand, dossiers, fonction):
+    rg = 1
+    score_actu = fonction(cand)
+    if dossiers:
+        while (rg <= len(dossiers) and fonction(dossiers[rg-1]) > score_actu):
+            rg+= 1
+    return rg
 
 ############## Manipulation de répertoires
 def efface_dest(chem):

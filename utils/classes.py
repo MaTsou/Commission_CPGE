@@ -23,6 +23,7 @@ from lxml import etree
 import utils.interface_xml as xml
 import utils.boite_a_outils as outil
 from utils.parametres import filieres
+from utils.parametres import nb_jurys
 
 #################################################################################
 #                               Fichier                                         #
@@ -86,20 +87,18 @@ class Fichier(object):
         # renvoie la filière
         return self._filiere
 
-    def convert(naiss):
+    def convert(self, naiss):
         # Convertit une date de naissance en un nombre pour le classement
         dic = parse('{j:d}/{m:d}/{a:d}', naiss)
         return dic['a']*10**4 + dic['m']*10**2 + dic['j']
 
     def ordonne(self, critere):
-        # renvoie une liste des candidatures ordonnées
-        # selon le critère demandé (appartenant à l'attribut
-        # de classe _critere_tri
-        assert critere in _critere_tri.keys()
+        # renvoie une liste des candidatures ordonnées selon le critère demandé
+        # (critère appartenant à l'attribut de classe _critere_tri)
         # Classement par age
-        doss = sorted(self._dossiers, key = lambda cand: convert(cand.xpath('naissance')[0].text))
+        doss = sorted(self._dossiers, key = lambda cand: self.convert(cand.xpath('naissance')[0].text))
         # puis par critere
-        return sorted(doss, key = _critere_tri[critere])
+        return sorted(doss, key = Fichier._criteres_tri[critere])
 
     def sauvegarde(self):
         # Sauvegarde le fichier : mise à jour (par écrasement)
@@ -112,7 +111,7 @@ class Fichier(object):
 #################################################################################
 
 class Client(): 
-    # Objet client "abstrait" pour la class Serveur
+    """ Objet client "abstrait" pour la class Serveur"""
     def __init__(self, master, key, droits):
         # constructeur
         # identifiant du client : contenu du cookie déposé sur la machine client
@@ -132,7 +131,7 @@ class Client():
         
     def set_fichier(self, fich):
         self.fichier = fich
-        r = parse('{}admin_{}.xml', fich.nom) # récupère nom de la filière traitée
+        r = parse('{}_{}.xml', fich.nom) # récupère nom de la filière traitée
         self._droits += ' {}'.format(r[1])
         self.num_doss = 0 # on commence par le premier !
 
@@ -141,7 +140,7 @@ class Client():
 #################################################################################
 
 class Jury(Client): 
-    # Objet client (de type jury de commission) pour la class Serveur
+    """  Objet client (de type jury de commission) pour la class Serveur"""
     def __init__(self, master, key):
         # constructeur : on créé une instance Client avec droits "jury" 
         Client.__init__(self, master, key, 'Jury')
@@ -158,7 +157,7 @@ class Jury(Client):
         doss[:] = sorted(doss, key = lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')))
         # On calcule le rang du score_final actuel (celui de cand) dans cette liste
         rg = 1
-        score_actu = xml.get_scoref(cand)
+        score_actu = xml.get_scoref_num(cand)
         if doss:
             while (rg <= len(doss) and xml.get_scoref_num(doss[rg-1]) > score_actu):
                 rg+= 1
@@ -166,7 +165,7 @@ class Jury(Client):
         # La suite consiste à calculer n*(rg-1) + k
         # où n est le nombre de jurys et k l'indice du jury courant.
         q = parse('Jury {:w}{:d}', self._droits)
-        n = int(nb_jury[q[0].lower()])
+        n = int(nb_jurys[q[0].lower()])
         k = int(q[1])
         return n*(rg-1)+k
 
@@ -216,7 +215,7 @@ class Jury(Client):
 #                               Class Admin                                     #
 #################################################################################
 class Admin(Client): 
-    # Objet client (de type Administrateur) pour la class Serveur
+    """ Objet client (de type Administrateur) pour la class Serveur"""
     def __init__(self, master, key): 
         # constructeur : on créé une instance Client avec droits "admin"
         Client.__init__(self, master, key, 'Administrateur')

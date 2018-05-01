@@ -34,7 +34,7 @@ import utils.boite_a_outils as outil
 from utils.apb_csv import lire
 from utils.nettoie_xml import nettoie
 from utils.parametres import filieres
-from utils.parametres import nb_jury
+from utils.parametres import nb_jurys
 from utils.parametres import entete
 # Chargement de toutes les classes dont le serveur a besoin
 from utils.classes import Fichier, Client, Jury, Admin
@@ -96,7 +96,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             key = cherrypy.session['JE']
             self.clients.pop(key, '')
         cherrypy.session['JE'] = key # Stockée sur la machine client
-        print(cherrypy.session['JE'])
         # Le client est-il sur la machine serveur ?
         if cherrypy.request.local.name == cherrypy.request.remote.ip:
             # Si oui, en mode TEST on affiche un menu de choix : "login Admin ou login Commission ?"
@@ -195,7 +194,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             self.affiche_menu()
         else:
             # sinon, mise à jour des attributs du client
-            client.set_fichier(kwargs["fichier"])
+            client.set_fichier(Fichier(kwargs["fichier"]))
             # Mise à jour de la liste des fichiers utilisés
             self.fichiers_utilises.append(client.fichier.nom)
             ## Initialisation des paramètres
@@ -251,39 +250,29 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     
     @cherrypy.expose
     def genere_fichiers_comm(self):
-        # Générer les fichier comm_mpsi1.xml jusqu'à comm_cpesN.xml
+        # Générer les fichiers comm_XXXX.xml ou XXXX désigne une filière
         # Récupération des fichiers admin
-        list_fich = glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))
+        list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
         # Pour chaque fichier "admin_*.xml"
         for fich in list_fich:
-            parser = etree.XMLParser(remove_blank_text=True)
-            doss = etree.parse(fich, parser).getroot()
             # Tout d'abord, calculer le score brut de chaque candidat 
-            for cand in doss:
+            for cand in fich:
                 xml.calcul_scoreb(cand)
-            # Classement par scoreb décroissant et renseignement du noeud "rang brut"
-            doss[:] = sorted(doss, key = lambda cand: -float(cand.xpath('diagnostic/score')[0].text.replace(',','.')))
-            rg = 1
-            num = 1
-            score_actu = xml.get_scoreb(doss[0])
-            for cand in doss:
-                if xml.get_scoreb(cand) < score_actu:
-                    score_actu = xml.get_scoreb(cand)
-                    rg = num
-                xml.set_rang_brut(cand, str(rg))
-                num += 1
-            # Récupération de la filière 
-            fil = parse(os.path.join(os.curdir, "data", "admin_{}.xml"), fich)
-            nbjury = int(nb_jury[fil[0].lower()])
+            # Classement par scoreb décroissant
+            doss = fich.ordonne('score_b')
+            # Calcul du rang de chaque candidat et renseignement du noeuds 'rang_brut'
+            for cand in fich:
+                xml.set_rang_brut(cand, str(outil.rang(cand, doss, xml.get_scoreb)))
+            # Récupération de la filière et du nombre de jurys 
+            nbjury = int(nb_jurys[fich.filiere().lower()])
             # Découpage en n listes de dossiers
             for j in range(0, nbjury):
                 dossier = []    # deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append
-                [dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if (i+2)%nbjury == j]
-                # (i+2) ligne précédente pour que le jury 1 reçoive le candidat 1, etc.
+                [dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if i%nbjury == j]
                 # Sauvegarde
                 res = etree.Element('candidats')
                 [res.append(cand) for cand in dossier]
-                nom = os.path.join(os.curdir, "data", "comm_{}{}.xml".format(fil[0], j+1))
+                nom = os.path.join(os.curdir, "data", "comm_{}{}.xml".format(fich.filiere().upper(), j+1))
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
         # Création fichier decompte
@@ -293,37 +282,32 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
             pickle.dump(decompt, stat_fich)
         # Enfin, on retourne au menu
-        return self.retour_menu()
+        return self.affiche_menu()
 
     @cherrypy.expose
     def genere_fichiers_class(self):
         # Récolter les fichiers après la commission
         # Pour chaque filière
         # Tout réécrire : le serveur se charge (ou charge l'admin) de détenir tous les fichiers comm
-        # et leur de demande de se mettre à jour, de renvoyer une liste ordonnée pour qu'il puisse créer
+        # et leur demande de se mettre à jour, de renvoyer une liste ordonnée pour qu'il puisse créer
         # de nouveaux fichiers (les *clas*)
         tot_class = {} # dictionnaire contenant les nombres de candidats classés par filière
-        for comm in filieres:
-            list_fich = glob.glob(os.path.join(os.curdir, "data", "comm_{}*.xml".format(comm.upper())))
+        for fil in filieres:
+            path = os.path.join(os.curdir, "data", "comm_{}*.xml".format(fil.upper()))
+            list_fich = [Fichier(fich) for fich in glob.glob(path)]
             list_doss = [] # contiendra les dossiers de chaque sous-comm
             # Pour chaque sous-commission
             for fich in list_fich:
-                # lecture fichier
-                parser = etree.XMLParser(remove_blank_text=True)
-                doss = etree.parse(fich, parser).getroot()
                 # Les fichiers non vus se voient devenir NC avec
-                # motifs = "Dossier moins bon que le dernier classé" (sauf si admin a renseigné un motif)
-                for c in doss:
+                # motifs = "Dossier moins bon que le dernier classé" (sauf s'il y a déjà un motif - Admin)
+                for c in fich:
                     if xml.get_jury(c) == 'Auto':
                         xml.set_correc(c, 'NC')
                         xml.set_scoref(c, 'NC')
                         if xml.get_motifs(c) == '':
                             xml.set_motifs(c, 'Dossier moins bon que le dernier classé.')
-                # Classement selon score_final + age
-                doss[:] = sorted(doss, key = lambda cand: self.convert(cand.xpath('naissance')[0].text))
-                doss[:] = sorted(doss, key = lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')))
-                # On ajoute dans list_doss
-                list_doss.append(doss)
+                # list_doss récupère la liste des dossiers classée selon score_final + age
+                list_doss.append(fich.ordonne('score_f'))
             # Ensuite, on entremêle les dossiers de chaque sous-comm
             doss_fin = []
             if list_doss: # Y a-t-il des dossiers dans cette liste ?
@@ -344,10 +328,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                         rg += 1
                     xml.set_rang_final(cand, nu)
                 # Sauvegarde du fichier class...
-                nom = os.path.join(os.curdir, "data", "class_{}.xml".format(comm.upper()))
+                nom = os.path.join(os.curdir, "data", "class_{}.xml".format(fil.upper()))
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
-            tot_class.update({"{}".format(comm.upper()):rg-1})
+            tot_class.update({"{}".format(fil.upper()):rg-1})
         # On écrit le fichier des décomptes de commission
         with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
             pickle.dump(tot_class, stat_fich)
@@ -357,24 +341,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def page_impression(self, **kwargs):
         # Générer la page html pour impression des fiches bilan de commission
-        r = parse('{}class_{}.xml', kwargs["fichier"]) # récupère nom commission
-        txt = ''
-        saut = '<div style = "page-break-after: always;"></div>'
-        parser = etree.XMLParser(remove_blank_text=True)
-        for cand in etree.parse(kwargs["fichier"], parser).getroot():
-            if xml.get_scoref(cand) != 'NC':
-                txt += '<h1 align="center" class = "titre">EPA - Recrutement CPGE/CPES - {}</h1>'.format(r[1].upper())
-                # Le test suivant est un résidu d'une époque où on générait une fiche même si le candidat n'était pas 
-                # classé !
-                if xml.get_rang_final(cand) == 'NC':
-                    txt += '<div class = encadre>Candidat non classé</div>'
-                else:
-                     txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang_final(cand))
-                txt += self.genere_dossier(cand, "commission")
-                txt += saut
-        txt = txt[:-len(saut)] # On enlève le dernier saut de page...
-        data = {'pages':txt}
-        return Client.html['page_impress'].format(**data) 
+        return self.html_compose.page_impression(Fichier(kwargs['fichier']))
     
     # Générer les tableaux .csv bilans de la commission
     @cherrypy.expose

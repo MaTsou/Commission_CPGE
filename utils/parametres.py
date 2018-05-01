@@ -44,8 +44,10 @@ max_correc = +3 # correction maximale
 nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4 de point)
 
 ############################################################################
-# Filières et nombre de jurys par filière				                   #
+# Filières, nombre de jurys par filière	et nombre de classés par filière   #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
-nb_jurys = ['3','3','2']
-nb_jury = dict(zip(filieres, nb_jurys))
+nb_Jurys = ['3','3','2']
+nb_Classes  = ['120', '140', 'tous']
+nb_jurys = dict(zip(filieres, nb_Jurys))
+nb_classes = dict(zip(filieres, nb_Classes))
