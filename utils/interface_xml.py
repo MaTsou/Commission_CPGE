@@ -96,7 +96,7 @@ def accro_branche(cand, pere, fils):
 # Les accesseurs et mutateurs appelés par commission.py
 ###################################
 def get_candidatures(cand, form = ''):
-    # Lit le champ candidatures (binaire '101' etc.) du candidat cand
+    # Lit le champ candidatures du candidat cand
     cc = get(cand, 'diagnostic/candidatures', '???', 0)
     if form == 'impr': # ordonnées et nom complet.
         cc = '-'.join(fil.upper() for fil in filieres if cc[filieres.index(fil)]!='-')

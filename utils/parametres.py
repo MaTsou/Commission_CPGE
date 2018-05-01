@@ -2,6 +2,8 @@
 # Ce fichier contient tous les paramètres de l'application #
 ############################################################################
 
+# Entête général des pages html:
+entete = 'EPA - Recrutement CPGE/CPES'
 ############################################################################
 # Coefficients pour le calcul des scores bruts                             #
 # Les coefficients ci-dessous sont cumulés. La répartition est faite dans  #
