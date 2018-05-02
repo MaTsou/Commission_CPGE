@@ -258,10 +258,10 @@ class Composeur(object):
         # construire ensuite la partie dossier, action de client puis la partie liste;
         # La partie dossier est créée par la fonction genere_dossier; infos données par client.fichier
         dossier = Composeur.html['contenu_dossier'].format(\
-                **self.genere_dossier(qui, isinstance(qui, Admin)))
+                **self.genere_dossier(qui, qui.get_cand(), isinstance(qui, Admin)))
         # La partie contenant les actions du client (correction, motivations, validation)
         # est créée par la fonction genere_action;
-        action_client = Composeur.html['contenu_action'].format(**self.genere_action(qui))
+        action_client = Composeur.html['contenu_action'].format(**self.genere_action(qui, qui.get_cand()))
         # La partie liste est créée par la fonction genere_liste:
         liste = self.genere_liste(qui, mem_scroll)
         # Affichage d'un bouton RETOUR 'admin uniquement'
@@ -278,11 +278,9 @@ class Composeur(object):
         page += '</html>'
         return page
 
-    def genere_dossier(self, qui, format_admin = False):
+    def genere_dossier(self, qui, cand, format_admin = False):
         """ Renvoie le dictionnaire cont enant les infos du dossier en cours"""
         #### Début
-        # Récupération du candidat
-        cand = qui.get_cand()
         # Pédigré
         data = {'Nom':xml.get_nom(cand) + ', ' + xml.get_prenom(cand)}
         data['naiss'] = xml.get_naiss(cand)
@@ -331,11 +329,9 @@ class Composeur(object):
         data['cand'] = xml.get_candidatures(cand, 'impr')
         return data
     
-    def genere_action(self, client):
+    def genere_action(self, client, cand):
         """ Renvoie le dictionnaire de la partie 'action' de la page HTML"""
         ###
-        # Récupération du candidat
-        cand = client.get_cand()
         # Estimation du rang final du candidat
         rg_fin = ''
         visib = 'none' # n'est visible que pour les jurys
@@ -428,12 +424,12 @@ class Composeur(object):
         saut = '<div style = "page-break-after: always;"></div>'
         for cand in qui.fichier:
             a = (xml.get_scoref(cand) != 'NC')
-            b = (xml.get_rang_final(cand) <= nb_classes[qui.fichier.filiere().lower()])
+            b = not(a) or (int(xml.get_rang_final(cand)) <= int(nb_classes[qui.fichier.filiere().lower()]))
             if a and b:
                 txt += entete
                 txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang_final(cand))
-                txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui))
-                txt += Composeur.html['contenu_action'].format(**self.genere_action(qui))
+                txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui, cand))
+                txt += Composeur.html['contenu_action'].format(**self.genere_action(qui, cand))
                 txt += saut
         txt = txt[:-len(saut)] # On enlève le dernier saut de page...
         return Composeur.html['page_impress'].format(**{'pages' : txt}) 

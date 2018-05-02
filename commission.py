@@ -353,10 +353,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def tableaux_bilan(self):
         # Un peu de ménage...
         dest = os.path.join(os.curdir, "tableaux")
-        try:
-            self.efface_dest(dest) # on efface toute l'arborescence fille de dest
-        except: # dest n'existe pas !
-            os.mkdir(dest) # on le créé...
+        outil.restaure_virginite(dest)
         # Création du fichier d'aide
         with open(os.path.join(dest, "aide.txt"), 'w') as fi:
             txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"

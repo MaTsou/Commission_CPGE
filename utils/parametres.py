@@ -48,6 +48,6 @@ nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
 nb_Jurys = ['3','3','2']
-nb_Classes  = ['120', '140', 'tous']
+nb_Classes  = ['120', '140', '1000']
 nb_jurys = dict(zip(filieres, nb_Jurys))
 nb_classes = dict(zip(filieres, nb_Classes))
