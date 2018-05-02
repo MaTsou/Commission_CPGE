@@ -161,17 +161,17 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                         yield "traité.\n"
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
-            yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
-            dest = os.path.join(os.curdir, "data", "docs_candidats")
-            outil.restaure_virginite(dest) # un coup de jeune pour dest..
-            for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
-                for fil in filieres:
-                    if fil in fich.lower():
-                        yield "         Fichier {} ... ".format(fil.upper())
-                        desti = os.path.join(dest, fil)
-                        os.mkdir(desti)
-                        outil.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
-                        yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
+            #yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
+            #dest = os.path.join(os.curdir, "data", "docs_candidats")
+            #outil.restaure_virginite(dest) # un coup de jeune pour dest..
+            #for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
+            #    for fil in filieres:
+            #        if fil in fich.lower():
+            #            yield "         Fichier {} ... ".format(fil.upper())
+            #            desti = os.path.join(dest, fil)
+            #            os.mkdir(desti)
+            #            outil.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
+            #            yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"

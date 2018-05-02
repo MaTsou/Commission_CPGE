@@ -9,9 +9,6 @@ from utils.parametres import prop_ecrit_EAF
 from utils.parametres import prop_prem_trim
 from utils.parametres import filieres
 
-## Variables globales
-alfil = sorted(filieres) # filières dans l'ordre alphabétique (sert dans get_candidatures)
-
 ###################################
 # Quelques fonctions de conversion
 ###################################
@@ -109,7 +106,7 @@ def set_candidatures(cand, cc):
     bina = bin(cc)[2:] # chaine exprimant cc en binaire (on enlève les 2 premiers caract. : '0b')
     while len(bina) < len(filieres):
         bina = '0{}'.format(bina) # on complète pour qu'il y ait le bon nb de digits.
-    cc= ''
+    cc = ''
     for i in range(len(filieres)):
         if bina[-1-i] == '1':
             cc += filieres[i][0].upper()

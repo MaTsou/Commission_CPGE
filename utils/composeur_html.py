@@ -189,12 +189,12 @@ class Composeur(object):
         if len(glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))) > 0: # si les fichiers admin existent
             # lecture du fichier stat
             try:
-                with open(os.path.join(os.curdir,"data","stat"), 'br') as fich:
+                with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                     stat = pickle.load(fich)
             except: # stat n'existe pas
                 outil.stat() # on le créé
-            with open(os.path.join(os.curdir,"data","stat"), 'br') as fich:
-                stat = pickle.load(fich)
+                with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
+                    stat = pickle.load(fich)
             # Création de la liste
             liste_stat = '<h4>Statistiques :</h4>'
             # Pour commencer les sommes par filières

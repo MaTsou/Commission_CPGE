@@ -76,9 +76,10 @@ def decoup(sourc, dest):
 
 ############## Création des statistiques (nb candidatures par filière).
 def stat():
-    # Effectue des statistiques sur les candidats
+    """ Effectue des statistiques sur les candidats"""
     list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-    # Initialisation des compteurs
+    # On ordonne selon l'ordre spécifié dans filieres (parametres.py)
+    list_fich = sorted(list_fich, key = lambda f: filieres.index(f.filiere().lower()))
     # L'info de candidatures est stockée dans un nombre binaire où 1 bit 
     # correspond à 1 filière. Un dictionnaire 'candid' admet ces nombres binaires pour clés,
     # et les valeurs sont des nombres de candidats. 
@@ -86,42 +87,30 @@ def stat():
     # le filière 1 et 245 ont demandé à la fois la filière 1 et la filière 2
 
     # Initialisation du dictionnaire stockant toutes les candidatures
-    candid = {}
-    for i in range(2**len(filieres)):
-        candid[i] = 0
+    candid = {i : 0 for i in range(2**len(filieres))}
 
-    # Recherche des candidatures
-    # On stocke dans une liste les identifiants des candidats vus,
-    # cela évite de les traiter 2 fois...
-    deja_vu = set([])
-    for fich in list_fich:  # pour chaque fichier (et donc filière !)
-        for candi in fich:   # pour toutes les candidatures de la filière relative au fichier fich
-            iden = xml.get_id(candi)
-            # puis recherche du même candidat dans les autres filières,
-            # création du nombre stockant les filières demandées
-            # et incrémentation du compteur adéquat
-            if not(iden in deja_vu): # candidat pas encore vu
-                deja_vu.add(iden)
-                # on récupère la liste des fichiers contenant ce candidat
-                #list_fich_candi = [f for f in list_fich if (candi in f)]
-                cc = sum([2**filieres.index(f.filiere().lower() for f in list_fich if candi in f])
-                # Liste des valeurs (2^bit) relatives à chacune de ces filières
-                #list_index = [2**filieres.index(f.filiere().lower()) for f in list_fich_candi]
-                ## OU exclusif sur tous les index
-                #cc = 0
-                #for k in list_index:
-                #    cc |= k # évite de compter 2 fois, même si deja_vu gère !
-                ### statistiques
-                if not('non validée' in xml.get_motifs(candi)):
-                    candid[cc] += 1 # incrémentation du compteur candidatures multiples
-                    for f in list_fich_candi:
-                        # Incrémentation du compteur filière (sauf si déjà fait !) :
-                        if cc != 2**filieres.index(f.filiere().lower()):
-                            candid[2**filieres.index(f.filiere().lower())] += 1
-                        # Écriture du noeud 'candidatures'
-                        xml.set_candidatures(f.get_cand(candi), cc)
-        # Sauvegarder
-        fich.sauvegarde()
+    # Recherche des candidatures # je suis très fier de cet algorithme !!
+    # Construction des éléments de recherche
+    l_dict = [ {xml.get_id(cand) : cand for cand in fich} for fich in list_fich ] # liste de dicos
+    l_set = [ set(d.keys()) for d in l_dict ] # list d'ensembles (set())
+    # Création des statistiques
+    for (k,n) in enumerate(l_set):
+        while len(n) > 0:
+            a = n.pop()
+            cc, liste = 2**k, [k]
+            for i in range(k+1, len(list_fich)):
+                if a in l_set[i]:
+                    cc |= 2**i
+                    l_set[i].remove(a)
+                    liste.append(i)
+            [xml.set_candidatures(l_dict[j][a], cc) for j in liste]
+            for j in liste:
+                if not('non validée' in xml.get_motifs(l_dict[j][a])):
+                    candid[2**j]+= 1
+            if len(liste) > 1:
+                candid[cc] += 1
+    # Sauvegarder
+    [fich.sauvegarde() for fich in list_fich]
     
     # Écrire le fichier stat
     with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
