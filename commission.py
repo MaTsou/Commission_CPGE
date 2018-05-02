@@ -335,6 +335,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # On écrit le fichier des décomptes de commission
         with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
             pickle.dump(tot_class, stat_fich)
+        # On lance la génération des tableaux bilan de commission
+        list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "class_*.xml"))]
+        outil.tableaux_bilan(list_fich)
         # Enfin, on retourne au menu
         return self.affiche_menu()
     
@@ -348,95 +351,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.fichiers_utilises.append(client.fichier.nom) ## A CHANGER, ON N'A PAS BESOIN DE ÇA SI ON PASSE {CLIENTS}
         return self.html_compose.page_impression(client)
     
-    # Générer les tableaux .csv bilans de la commission
-    @cherrypy.expose
-    def tableaux_bilan(self):
-        # Un peu de ménage...
-        dest = os.path.join(os.curdir, "tableaux")
-        outil.restaure_virginite(dest)
-        # Création du fichier d'aide
-        with open(os.path.join(dest, "aide.txt"), 'w') as fi:
-            txt = ("En cas de difficultés à ouvrir les .csv avec EXCEL,\n"
-            "il est conseillé d'utiliser le menu fichier-->importer")
-            fi.write(txt)
-        fi.close()
-        # Récupération des fichiers
-        list_fich = glob.glob(os.path.join(os.curdir, "data", "class_*.xml"))
-        # Pour chaque filière :
-        for fich in list_fich:
-            # lecture fichier
-            parser = etree.XMLParser(remove_blank_text=True)
-            doss = etree.parse(fich, parser).getroot()
-            # 1er tableau : liste ordonnée des candidats retenus, pour l'admin
-            nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
-            nom += parse(os.path.join(os.curdir, "data", "class_{}.xml"), fich)[0]
-            nom += '_retenus.csv'
-            c = csv.writer(open(nom, 'w'))
-            entetes = ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance', 'score brut', 'correction', 
-            'score final', 'jury', 'Observations']
-            c.writerow(entetes)
-            for cand in doss:
-                if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-                    data = [fonction(cand) for fonction in [xml.get_rang_brut, xml.get_rang_final, xml.get_nom, 
-                    xml.get_prenom, xml.get_naiss, xml.get_scoreb, xml.get_correc, xml.get_scoref, xml.get_jury, 
-                    xml.get_motifs]]
-                    c.writerow(data)
-            # 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
-            # Le même que pour l'admin, mais sans les notes, ni les rangs bruts...
-            nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin..
-            nom += parse(os.path.join(os.curdir, "data", "class_{}.xml"), fich)[0]
-            nom += '_retenus(sans_note).csv'
-            c = csv.writer(open(nom, 'w'))
-            entetes = ['Rang final', 'Nom', 'Prénom', 'Date de naissance']
-            c.writerow(entetes)
-            for cand in doss:
-                if xml.get_scoref(cand) != 'NC': # seulement les classés !!
-                    data = [fonction(cand) for fonction in [xml.get_rang_final , xml.get_nom, 
-                    xml.get_prenom, xml.get_naiss]]
-                    c.writerow(data)
-            # 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
-            # toutes les notes et qq infos administratives
-            # Fichier destination
-            nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
-            nom += parse(os.path.join(os.curdir, "data", "class_{}.xml"), fich)[0]
-            nom += '_alphabetique.csv'
-            c = csv.writer(open(nom, 'w'))
-            entetes = ['Rang brut', 'Rang final', 'Candidatures', 'Nom', 'Prénom', 'Date de naissance', 'Sexe', 
-            'Nationalité', 'id_apb', 'Boursier', 'Classe actuelle', 'Etablissement', 'Commune Etablissement']
-            # entêtes notes...
-            matiere = {'M':'Mathématiques', 'P':'Physique/Chimie'}
-            date = {'1':'trimestre 1', '2':'trimestre 2', '3':'trimestre 3'}
-            classe = {'P':'Première', 'T':'Terminale'}
-            entetes.extend([cl + mat + da for cl in classe for da in date for mat in matiere])
-            entetes.extend(['F_écrit', 'F_oral', 'CPES_math', 'CPES_phys'])
-            # la suite
-            entetes.extend(['score brut', 'correction', 'score final', 'jury', 'Observations'])
-            c.writerow(entetes)
-            # Classement alphabétique
-            doss[:] = sorted(doss, key = lambda cand: xml.get_nom(cand))
-            # Remplissage du fichier dest
-            for cand in doss:
-                data = [xml.get_rang_brut(cand), xml.get_rang_final(cand), xml.get_candidatures(cand)]
-                data += [fonction(cand) for fonction in [xml.get_nom, xml.get_prenom, xml.get_naiss, xml.get_sexe,
-                xml.get_nation, xml.get_id, xml.get_boursier, xml.get_clas_actu, xml.get_etab, xml.get_commune_etab]]
-                # Les notes...
-                for cl in classe:
-                    for da in date:
-                        for mat in matiere:
-                            key = cl + mat + da
-                            note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
-                            data.append(note)
-                data.extend([xml.get_ecrit_EAF(cand), xml.get_oral_EAF(cand)])
-                cpes = 'cpes' in xml.get_clas_actu(cand).lower()
-                data.extend([xml.get_CM1(cand, cpes), xml.get_CP1(cand, cpes)])
-                # La suite
-                data.extend([fonction(cand) for fonction in [xml.get_scoreb, xml.get_correc, xml.get_scoref,
-                xml.get_jury, xml.get_motifs]])
-                c.writerow(data)
-        # Retour au menu
-        cherrypy.session['tableaux'] = 'ok' # Ça c'est pour un message ok !
-        return self.affiche_menu()
-
 
 ########################################################################
 #                    === PROGRAMME PRINCIPAL ===                       #

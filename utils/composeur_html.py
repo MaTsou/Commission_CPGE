@@ -133,12 +133,7 @@ class Composeur(object):
                 txt6 = ''
                 if len(list_fich_class) > 0:
                     txt5 = self.genere_liste_impression()
-                    txt6 = '<form id = "tableaux" action = "/tableaux_bilan" method = POST align = "center">'
-                    txt6 += '<input type = "button" class = "fichier" name = "tableaux"'
-                    txt6 += 'value = "Générer les tableaux bilan" onclick = "tableaux_wait();"/></form>'
-                    txt6 += '<p>Ceux-ci seront disponibles dans le dossier "./tableaux"...</p>'
                 data['liste_impression'] = txt5
-                data['form_tableaux'] = txt6
             
             else: # avant commission
                 patron += 'avant'

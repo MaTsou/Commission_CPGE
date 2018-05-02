@@ -64,20 +64,16 @@
   <div class = "etape">&nbsp;- 4e étape : récolter le travail de la commission...</div>
   <div class = "liste_admin">
     <br>
-    <form id = "recolte" action = '/genere_fichiers_class' method = POST> {bout_etap4} </form>
     <h2 style = "margin-top:0%;">{decompt}</h2>
+    <form id = "recolte" action = '/genere_fichiers_class' method = POST> {bout_etap4} </form>
   </div>
   <div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
 </div>
 <br>
 <div id = "imprim" class = "sous_menu">
-  <div class = "etape">&nbsp;- 5e étape : imprimer les fiches bilan de la commission :</div>
+  <div class = "etape">&nbsp;- 5e étape : Bilan de la commission :</div>
   <form id = "impress" action = '/page_impression' method = POST"> {liste_impression} </form>			
-</div>
-<br>
-<div id = "imprim" class = "sous_menu">
-  <div class = "etape">&nbsp;- 6e étape : générer les tableaux bilan :</div>
-  {form_tableaux}
+  <h3> Les tableaux récapitulatifs sont dans le dossier "./tableaux"</h3>
 </div>
 <div id ="patience">
   <p><h1>Traitement en cours...</h1></p>

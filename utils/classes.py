@@ -36,7 +36,8 @@ class Fichier(object):
     # Attributs de classe
     _criteres_tri = {
             'score_b' : lambda cand: -float(xml.get_scoreb(cand).replace(',','.')),
-            'score_f' : lambda cand: -float(xml.get_scoref_num(cand).replace(',','.'))
+            'score_f' : lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')),
+            'alpha' : lambda cand: xml.get_nom(cand)
             }
 
     def __init__(self, nom):
