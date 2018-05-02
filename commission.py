@@ -341,7 +341,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def page_impression(self, **kwargs):
         # Générer la page html pour impression des fiches bilan de commission
-        return self.html_compose.page_impression(Fichier(kwargs['fichier']))
+        # récupère le client
+        client = self.get_client_cour()
+        # Mise à jour des attributs du client
+        client.set_fichier(Fichier(kwargs["fichier"]))
+        self.fichiers_utilises.append(client.fichier.nom) ## A CHANGER, ON N'A PAS BESOIN DE ÇA SI ON PASSE {CLIENTS}
+        return self.html_compose.page_impression(client)
     
     # Générer les tableaux .csv bilans de la commission
     @cherrypy.expose

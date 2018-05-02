@@ -258,7 +258,7 @@ class Composeur(object):
         # construire ensuite la partie dossier, action de client puis la partie liste;
         # La partie dossier est créée par la fonction genere_dossier; infos données par client.fichier
         dossier = Composeur.html['contenu_dossier'].format(\
-                **self.genere_dossier(qui.get_cand(), qui.filiere(), isinstance(qui, Admin)))
+                **self.genere_dossier(qui, isinstance(qui, Admin)))
         # La partie contenant les actions du client (correction, motivations, validation)
         # est créée par la fonction genere_action;
         action_client = Composeur.html['contenu_action'].format(**self.genere_action(qui))
@@ -278,9 +278,11 @@ class Composeur(object):
         page += '</html>'
         return page
 
-    def genere_dossier(self, cand, fil, format_admin = False):
+    def genere_dossier(self, qui, format_admin = False):
         """ Renvoie le dictionnaire cont enant les infos du dossier en cours"""
         #### Début
+        # Récupération du candidat
+        cand = qui.get_cand()
         # Pédigré
         data = {'Nom':xml.get_nom(cand) + ', ' + xml.get_prenom(cand)}
         data['naiss'] = xml.get_naiss(cand)
@@ -288,6 +290,7 @@ class Composeur(object):
         txt = '[{}]-{}'.format(xml.get_id(cand), xml.get_INE(cand))
         data['id'] = txt
         # récup filiere pour connaître le chemin vers le dossier pdf (dans répertoire docs_candidats)
+        fil = qui.fichier.filiere()
         data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()), 'docs_{}'.format(xml.get_id(cand)))
         # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
         # et formatage des cases à cocher semestres (actives ou non).
@@ -334,9 +337,11 @@ class Composeur(object):
         # Récupération du candidat
         cand = client.get_cand()
         # Estimation du rang final du candidat
-        rg_fin =''
+        rg_fin = ''
+        visib = 'none' # n'est visible que pour les jurys
         if isinstance(client, Jury): # seulement pour les jurys.
             rg_fin = client.get_rgfinal(cand)
+            visib = '' # n'est visible que pour les jurys
         ### Partie correction :
         # récupération correction
         correc = str(xml.get_correc(cand))
@@ -367,11 +372,11 @@ class Composeur(object):
                 id = "motif" value= "{}"/>'.format(xml.get_motifs(cand))
         motifs += '</td></tr>'
         # La suite : motifs pré-définis
-        for index, mot in enumerate(motivations):
+        for index, motif in enumerate(motivations):
             key = 'mot_' + str(index)
             motifs += '<tr><td align = "left"><input type="button" name="{}"'.format(key)
             motifs += ' id="{}" onclick="javascript:maj_motif(this.id)"'.format(key)
-            motifs += ' class = "motif" value ="{}"/></td></tr>'.format(motivations[index])
+            motifs += ' class = "motif" value ="{}"/></td></tr>'.format(motif)
         # input hidden nc
         # Un champ caché qui sert à stocker le choix 'NC'; champ nécessaire au script.js qui surveille
         # que le jury motive bien ce genre de choix. Pourrait être remplacer par une case à cocher. On
@@ -382,7 +387,7 @@ class Composeur(object):
         data['scoreb'] = xml.get_scoreb(cand)
         data['scoref'] = xml.get_scoref(cand)
         data['nc'] = nc
-        data['rg_fin'] = rg_fin
+        data['rg_fin'] = '<td style = "display:{};">Estimation du rang final : {}</td>'.format(visib, rg_fin)
         data['motifs'] = motifs
         return data
         
@@ -416,18 +421,19 @@ class Composeur(object):
         return lis
     
 ##### La suite concerne les pages qu'on imprime
-    def page_impression(self, fich):
-        entete = '<h1 align="center" class="titre">{} - {}.</h1>'.format(self.titre, fich.filiere())
+    def page_impression(self, qui):
+        cand = qui.get_cand()
+        entete = '<h1 align="center" class="titre">{} - {}.</h1>'.format(self.titre, qui.fichier.filiere().upper())
         txt = ''
         saut = '<div style = "page-break-after: always;"></div>'
-        for cand in fich:
+        for cand in qui.fichier:
             a = (xml.get_scoref(cand) != 'NC')
-            b = (xml.get_rang_final(cand) <= nb_classes[fich.filiere().lower()])
+            b = (xml.get_rang_final(cand) <= nb_classes[qui.fichier.filiere().lower()])
             if a and b:
                 txt += entete
                 txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang_final(cand))
-                txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(cand, fich.filiere()))
+                txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui))
+                txt += Composeur.html['contenu_action'].format(**self.genere_action(qui))
                 txt += saut
         txt = txt[:-len(saut)] # On enlève le dernier saut de page...
-        data = {'pages' : txt}
-        return Composeur.html['page_impress'].format(**data) 
+        return Composeur.html['page_impress'].format(**{'pages' : txt}) 
