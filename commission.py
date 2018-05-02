@@ -26,7 +26,7 @@
 # mais ne touche pas au contenu du dossier.
 
 
-import os, sys, time, cherrypy, random, copy, glob, csv, pickle, webbrowser
+import os, sys, cherrypy, copy, glob, pickle, webbrowser
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
@@ -37,7 +37,7 @@ from utils.parametres import filieres
 from utils.parametres import nb_jurys
 from utils.parametres import entete
 # Chargement de toutes les classes dont le serveur a besoin
-from utils.classes import Fichier, Client, Jury, Admin
+from utils.classes import Fichier, Jury, Admin
 from utils.composeur_html import Composeur
 
 
@@ -154,10 +154,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                     if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
                         dest = os.path.join(os.curdir, "data", "admin_{}.xml".format(fil.upper()))
                         yield "         Fichier {} ... ".format(parse("{}admin_{}.xml", dest)[1])
-                        xml = lire(source)  # fonction contenue dans apb_csv.py
-                        xml = nettoie(xml) # Petite toilette du résultat de apb_csv...
+                        contenu_xml = lire(source)  # fonction contenue dans apb_csv.py
+                        contenu_xml = nettoie(contenu_xml) # Petite toilette du résultat de apb_csv...
                         with open(dest, 'wb') as fich:
-                            fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
+                            fich.write(etree.tostring(contenu_xml, pretty_print=True, encoding='utf-8'))
                         yield "traité.\n"
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##

@@ -21,7 +21,6 @@ import os, sys, glob, pickle
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
-import utils.boite_a_outils as outil
 from utils.parametres import filieres
 from utils.parametres import nb_jurys
 
@@ -78,6 +77,7 @@ class Fichier(object):
         # Renvoie le candidat dont l'identifiant est identique à celui de cand
         # Ne sert qu'à l'admin quand il traite un candidat sur une filière
         # et REPORTE ses modifs dans toutes les filières demandées..
+        # Sert aussi à la fonction stat() dans la toolbox.
         # À n'utiliser que sur des fichiers contenant le candidat ('cand in fichier' True)
         index = 0
         while xml.get_id(cand) != xml.get_id(self._dossiers[index]):
