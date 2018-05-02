@@ -103,17 +103,17 @@ def stat():
             if not(iden in deja_vu): # candidat pas encore vu
                 deja_vu.add(iden)
                 # on récupère la liste des fichiers contenant ce candidat
-                list_fich_candi = [f for f in list_fich if (candi in f)]
+                #list_fich_candi = [f for f in list_fich if (candi in f)]
+                cc = sum([2**filieres.index(f.filiere().lower() for f in list_fich if candi in f])
                 # Liste des valeurs (2^bit) relatives à chacune de ces filières
-                list_index = [2**filieres.index(f.filiere().lower()) for f in list_fich_candi]
-                # OU exclusif sur tous les index
-                cc = 0
-                for k in list_index:
-                    cc |= k # évite de compter 2 fois, même si deja_vu gère !
+                #list_index = [2**filieres.index(f.filiere().lower()) for f in list_fich_candi]
+                ## OU exclusif sur tous les index
+                #cc = 0
+                #for k in list_index:
+                #    cc |= k # évite de compter 2 fois, même si deja_vu gère !
                 ### statistiques
                 if not('non validée' in xml.get_motifs(candi)):
                     candid[cc] += 1 # incrémentation du compteur candidatures multiples
-                    print("j'incrémente {}, le candidat est : {}".format(cc, xml.get_nom(candi)))
                     for f in list_fich_candi:
                         # Incrémentation du compteur filière (sauf si déjà fait !) :
                         if cc != 2**filieres.index(f.filiere().lower()):
