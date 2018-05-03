@@ -2,6 +2,8 @@
 # Ce fichier contient tous les paramètres de l'application #
 ############################################################################
 
+# Entête général des pages html:
+entete = 'EPA - Recrutement CPGE/CPES'
 ############################################################################
 # Coefficients pour le calcul des scores bruts                             #
 # Les coefficients ci-dessous sont cumulés. La répartition est faite dans  #
@@ -42,8 +44,10 @@ max_correc = +3 # correction maximale
 nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4 de point)
 
 ############################################################################
-# Filières et nombre de jurys par filière				                   #
+# Filières, nombre de jurys par filière	et nombre de classés par filière   #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
-nb_jurys = ['3','3','2']
-nb_jury = dict(zip(filieres, nb_jurys))
+nb_Jurys = ['3','3','2']
+nb_Classes  = ['7', '140', '1000']
+nb_jurys = dict(zip(filieres, nb_Jurys))
+nb_classes = dict(zip(filieres, nb_Classes))
