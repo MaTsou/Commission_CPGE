@@ -30,13 +30,8 @@ import os, sys, cherrypy, copy, glob, pickle, webbrowser
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
-<<<<<<< HEAD
-import utils.decoupage_pdf as decoup
 from utils.csv_parcourssup import lire
-=======
 import utils.boite_a_outils as outil
-from utils.apb_csv import lire
->>>>>>> clean_code
 from utils.nettoie_xml import nettoie
 from utils.parametres import filieres
 from utils.parametres import nb_jurys
