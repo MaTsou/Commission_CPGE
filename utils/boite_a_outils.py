@@ -20,6 +20,14 @@ def rang(cand, dossiers, fonction):
             rg+= 1
     return rg
 
+############## Test s'il reste encore des alertes dans les fichiers admin
+def alertes_non_levees():
+    # Récupération des fichiers admin
+    list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
+    for fich in list_fich:
+        flag = ( True in {'- Alerte :' in xml.get_motifs(cand) for cand in fich} )
+        if flag: break # ÇA, C'EST PAS BEAU. UNE BOUCLE WHILE ?
+    return flag
 ############## Manipulation de répertoires
 def efface_dest(chem):
     # Supprime le dossier pointé par le chemin chem

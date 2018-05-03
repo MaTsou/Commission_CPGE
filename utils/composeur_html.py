@@ -145,11 +145,14 @@ class Composeur(object):
                 data['liste_admin'] = self.genere_liste_admin()
                 # liste_stat
                 data['liste_stat'] = self.genere_liste_stat()
-                # Etape 3 bouton
+                # Etape 3 bouton : ce bouton n'est actif que si admin a levé toutes les alertes.
                 txt = ''
                 if len(self.genere_liste_admin()) > 0:
                     txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission"'
-                    txt += 'onclick = "genere_wait();"/>'
+                    affich = ''
+                    if (outil.alertes_non_levees()):
+                        affich = 'disabled'
+                    txt += 'onclick = "genere_wait();" {}/>'.format(affich)
                 data['bout_etap3'] = txt
             # Envoyez le menu
             contenu = Composeur.html[patron].format(**data)
