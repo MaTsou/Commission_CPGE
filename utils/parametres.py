@@ -51,3 +51,17 @@ nb_Jurys = ['3','3','2']
 nb_Classes  = ['7', '140', '1000']
 nb_jurys = dict(zip(filieres, nb_Jurys))
 nb_classes = dict(zip(filieres, nb_Classes))
+
+############################################################################
+# Tableaux à générer en fin de commission                                  #
+############################################################################
+tableau_classes_seulement = [\
+        {'classes' : ['range brut', 'rang final', 'Nom', 'Prénom',
+                'naissance']},
+        {'classes_BdE' : ['rang final', 'Nom', 'Prénom', 'naissance']}\
+]
+
+tableau_tous = [\
+        {'alphabétique' : ['range brut', 'rang final', 'Nom', 'Prénom',
+                'naissance']},
+]
