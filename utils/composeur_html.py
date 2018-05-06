@@ -14,7 +14,7 @@ from utils.parametres import max_correc
 from utils.parametres import nb_correc
 from utils.parametres import motivations
 from utils.parametres import nb_classes
-from utils.classes import Fichier, Client, Jury, Admin
+from utils.classes import Fichier, Jury, Admin
 
 #################################################################################
 #                               Composeur                                       #
@@ -147,10 +147,18 @@ class Composeur(object):
                 data['liste_stat'] = self.genere_liste_stat()
                 # Etape 3 bouton : ce bouton n'est actif que si admin a levé toutes les alertes.
                 txt = ''
+                ### Teste s'il reste encore des alertes dans les fichiers admin
+                # Récupération des fichiers admin
+                list_fich = {Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))}
+                alertes = False
+                while not(alertes) and len(list_fich) > 0:
+                    fich = list_fich.pop()
+                    alertes = ( True in {'- Alerte :' in xml.get(cand, 'Motifs') for cand in fich} )
+                ### Suit
                 if len(self.genere_liste_admin()) > 0:
                     txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission"'
                     affich = ''
-                    if (outil.alertes_non_levees()):
+                    if (alertes):
                         affich = 'disabled'
                     txt += 'onclick = "genere_wait();" {}/>'.format(affich)
                 data['bout_etap3'] = txt
@@ -195,7 +203,7 @@ class Composeur(object):
                 with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                     stat = pickle.load(fich)
             except: # stat n'existe pas
-                outil.stat() # on le créé
+                outils.stat() # on le créé
                 with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                     stat = pickle.load(fich)
             # Création de la liste
@@ -280,14 +288,18 @@ class Composeur(object):
         """ Renvoie le dictionnaire cont enant les infos du dossier en cours"""
         #### Début
         # Pédigré
-        data = {'Nom':xml.get_nom(cand) + ', ' + xml.get_prenom(cand)}
-        data['naiss'] = xml.get_naiss(cand)
-        data['etab'] = xml.get_etab(cand)
-        txt = '[{}]-{}'.format(xml.get_id(cand), xml.get_INE(cand))
+        data = {'Nom':xml.get(cand, 'Nom') + ', ' + xml.get(cand, 'Prénom')}
+        data['Date de naissance'] = xml.get(cand, 'Date de naissance')
+        etab = xml.get(cand, 'Établissement')
+        dep = xml.get(cand, 'Département')
+        pays = xml.get(cand, 'Pays')
+        data['etab'] = '{} ({}, {})'.format(etab, dep, pays)
+        txt = '[{}]-{}'.format(xml.get(cand, 'Num ParcoursSup'), xml.get(cand, 'INE'))
         data['id'] = txt
         # récup filiere pour connaître le chemin vers le dossier pdf (dans répertoire docs_candidats)
         fil = qui.fichier.filiere()
-        data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()), 'docs_{}'.format(xml.get_id(cand)))
+        data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()),
+                'docs_{}'.format(xml.get(cand, 'Num ParcoursSup')))
         # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
         # et formatage des cases à cocher semestres (actives ou non).
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
@@ -295,36 +307,37 @@ class Composeur(object):
         formateur_note = '{note}'
         visib = 'disabled'
         if format_admin:
-            formateur_clas_actu = '<input type="text" id="clas_actu" name="clas_actu" size="10" value="{}"/>'
+            formateur_clas_actu = '<input type="text" id="Classe actuelle" name="Classe actuelle" size="10" value="{}"/>'
             formateur_note = '<input type="text" class="notes grossi" id="{}" name="{}" value="{note}"\
                     onfocusout="verif_saisie()"/>'
             visib = ''
         ### Suite de la création du dictionnaire
         # classe actuelle
-        data['clas_actu'] = formateur_clas_actu.format(xml.get_clas_actu(cand))
+        data['Classe actuelle'] = formateur_clas_actu.format(xml.get(cand, 'Classe actuelle'))
         # cases à cocher semestres
-        if xml.get_sem_prem(cand) == 'on': txt = 'checked'
+        if xml.get(cand, 'sem_prem') == 'on': txt = 'checked'
         data['sem_prem'] = '{} {}'.format(visib, txt)
-        if xml.get_sem_term(cand) == 'on': txt = 'checked'
+        if xml.get(cand, 'sem_term') == 'on': txt = 'checked'
         data['sem_term'] = '{} {}'.format(visib, txt)
         # Notes
-        matiere = {'M':'Mathématiques', 'P':'Physique/Chimie'}
-        date = {'1':'trimestre 1', '2':'trimestre 2', '3':'trimestre 3'}
-        classe = {'P':'Première', 'T':'Terminale'}
+        matiere = ['Mathématiques', 'Physique/Chimie']
+        date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+        classe = ['Première', 'Terminale']
         for cl in classe:
             for mat in matiere:
                 for da in date:
-                    key = cl + mat + da
-                    data[key] = formateur_note.format(key, key, note=xml.get_note(cand, classe[cl], matiere[mat], date[da]))
-        # CPES
-        cpes = ('cpes' in xml.get_clas_actu(cand).lower())  # True si candidat en CPES actuellement
-        data['CM1'] = formateur_note.format('CM1', 'CM1', note = xml.get_CM1(cand, cpes))
-        data['CP1'] = formateur_note.format('CP1', 'CP1', note = xml.get_CP1(cand, cpes))
-        # EAF
-        data['EAF_e'] = formateur_note.format('EAF_e', 'EAF_e', note = xml.get_ecrit_EAF(cand))
-        data['EAF_o'] = formateur_note.format('EAF_o', 'EAF_o', note = xml.get_oral_EAF(cand))
+                    key = '{}_{}_{}'.format(mat, cl, da)
+                    key_script = '{}{}{}'.format(cl[0], mat[0], da[-1])
+                    data[key_script] = formateur_note.format(key_script, key_script, note=xml.get(cand, key))
+        # Autres notes
+        liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
+        for li in liste:
+            if not('cpes' in xml.get(cand, 'Classe actuelle').lower()) and 'cpes' in li.lower():
+                data[li] = formateur_note.format(li, li, note='-')
+            else:
+                data[li] = formateur_note.format(li, li, note=xml.get(cand, li))
         # Suite
-        data['cand'] = xml.get_candidatures(cand, 'impr')
+        data['cand'] = xml.get(cand, 'Candidatures impr')
         return data
     
     def genere_action(self, client, cand):
@@ -338,7 +351,7 @@ class Composeur(object):
             visib = '' # n'est visible que pour les jurys
         ### Partie correction :
         # récupération correction
-        correc = str(xml.get_correc(cand))
+        correc = str(xml.get(cand, 'Correction'))
         ncval = ''
         if correc == 'NC':
             correc = 0
@@ -356,14 +369,14 @@ class Composeur(object):
                 txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
         barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
         "correc_notimpr">{}</tr></table>'.format(txt)
-        barre += '<span class = "correc_impr">'+xml.get_jury(cand)+' : {:+.2f}'.format(float(correc))+'</span>'
+        barre += '<span class = "correc_impr">'+xml.get(cand, 'Jury')+' : {:+.2f}'.format(float(correc))+'</span>'
         barre += '</td></tr>'
         ### Partie motivations :
         # Construction de la chaine motifs.
         # le premier motif : champ texte.
         motifs = '<tr><td align = "left">'
         motifs += '<input type="text" class = "txt_motifs" name="motif"\
-                id = "motif" value= "{}"/>'.format(xml.get_motifs(cand))
+                id = "motif" value= "{}"/>'.format(xml.get(cand, 'Motifs'))
         motifs += '</td></tr>'
         # La suite : motifs pré-définis
         for index, motif in enumerate(motivations):
@@ -378,8 +391,8 @@ class Composeur(object):
         nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
         # On met tout ça dans un dico data pour passage en argument à html['contenu_action']
         data = {'barre' : barre}
-        data['scoreb'] = xml.get_scoreb(cand)
-        data['scoref'] = xml.get_scoref(cand)
+        data['scoreb'] = xml.get(cand, 'Score brut')
+        data['scoref'] = xml.get(cand, 'Score final')
         data['nc'] = nc
         data['rg_fin'] = '<td style = "display:{};">Estimation du rang final : {}</td>'.format(visib, rg_fin)
         data['motifs'] = motifs
@@ -391,25 +404,28 @@ class Composeur(object):
         lis = '<form id = "form_liste" action = "click_list" method=POST>'
         lis += '<input type="hidden" name = "scroll_mem" value = "{}"/>'.format(mem_scroll)
         for index, cand in enumerate(client.fichier):
-            lis += '<input type = "submit" name="num" '
-            clas = 'doss'
-            if cand == client.get_cand(): # affecte la class css "doss_courant" au dossier courant
-                    clas += ' doss_courant'
-            if xml.get_traite(cand) != '':
-                    clas += ' doss_traite' # affecte la classe css "doss_traite" aux dossiers qui le sont
-            if xml.get_correc(cand) == 'NC':
-                clas += ' doss_rejete' # affecte la classe css "doss_rejete" aux dossiers NC
-            if isinstance(client, Admin) and '- Alerte' in xml.get_motifs(cand): # Admin seulement (alertes nettoie.py)
-                clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
-            if isinstance(client, Jury) and '- Admin' in xml.get_motifs(cand): # Jury seulement (commentaires Admin)
-                clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
-            lis += 'class = "{}"'.format(clas)
-            nom = '{}, {}'.format(xml.get_nom(cand), xml.get_prenom(cand))
-            # La variable txt qui suit est le texte du bouton. Attention, ses 3 premiers
-            # caractères doivent être le numéro du dossier dans la liste des
-            # dossiers (client_get_dossiers())... Cela sert dans click_list(), pour identifier sur qui on a clické..
-            txt = '{:3d}) {: <30}{}'.format(index+1, nom[:29], xml.get_candidatures(cand))
-            lis += ' value="{}"></input><br>'.format(txt)
+            # Les candidats rejetés par admin n'apparaissent pas aux jurys
+            if not(isinstance(client, Jury) and xml.get(cand, 'Correction') == 'NC' and '- Admin' in xml.get(cand, 
+                'Motifs')):
+                lis += '<input type = "submit" name="num" '
+                clas = 'doss'
+                if cand == client.get_cand(): # affecte la class css "doss_courant" au dossier courant
+                        clas += ' doss_courant'
+                if xml.get(cand, 'traité'):
+                        clas += ' doss_traite' # affecte la classe css "doss_traite" aux dossiers qui le sont
+                if xml.get(cand, 'Correction') == 'NC':
+                    clas += ' doss_rejete' # affecte la classe css "doss_rejete" aux dossiers NC
+                if isinstance(client, Admin) and '- Alerte' in xml.get(cand, 'Motifs'): # Admin seulement (alertes nettoie.py)
+                    clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
+                if isinstance(client, Jury) and '- Admin' in xml.get(cand, 'Motifs'): # Jury seulement (commentaires Admin)
+                    clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
+                lis += 'class = "{}"'.format(clas)
+                nom = '{}, {}'.format(xml.get(cand, 'Nom'), xml.get(cand, 'Prénom'))
+                # La variable txt qui suit est le texte du bouton. Attention, ses 3 premiers
+                # caractères doivent être le numéro du dossier dans la liste des
+                # dossiers (client_get_dossiers())... Cela sert dans click_list(), pour identifier sur qui on a clické..
+                txt = '{:3d}) {: <30}{}'.format(index+1, nom[:29], xml.get(cand, 'Candidatures'))
+                lis += ' value="{}"></input><br>'.format(txt)
         lis += '-'*7 + ' fin de liste ' + '-'*7
         lis = lis + '</form>'
         return lis
@@ -421,11 +437,11 @@ class Composeur(object):
         txt = ''
         saut = '<div style = "page-break-after: always;"></div>'
         for cand in qui.fichier:
-            a = (xml.get_scoref(cand) != 'NC')
-            b = not(a) or (int(xml.get_rang_final(cand)) <= int(nb_classes[qui.fichier.filiere().lower()]))
+            a = (xml.get(cand, 'Score final') != 'NC')
+            b = not(a) or (int(xml.get(cand, 'Rang final')) <= int(nb_classes[qui.fichier.filiere().lower()]))
             if a and b:
                 txt += entete
-                txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get_rang_final(cand))
+                txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get(cand, 'Rang final'))
                 txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui, cand))
                 txt += Composeur.html['contenu_action'].format(**self.genere_action(qui, cand))
                 txt += saut

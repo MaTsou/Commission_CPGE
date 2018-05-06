@@ -21,6 +21,7 @@ import os, sys, glob, pickle
 from parse import parse
 from lxml import etree
 import utils.interface_xml as xml
+import utils.boite_a_outils as outil
 from utils.parametres import filieres
 from utils.parametres import nb_jurys
 
@@ -34,9 +35,9 @@ class Fichier(object):
 
     # Attributs de classe
     _criteres_tri = {
-            'score_b' : lambda cand: -float(xml.get_scoreb(cand).replace(',','.')),
-            'score_f' : lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')),
-            'alpha' : lambda cand: xml.get_nom(cand)
+            'score_b' : lambda cand: -float(xml.get(cand, 'Score brut').replace(',','.')),
+            'score_f' : lambda cand: -float(xml.get(cand, 'Score final num').replace(',','.')),
+            'alpha' : lambda cand: xml.get(cand, 'Nom')
             }
 
     def __init__(self, nom):
@@ -47,7 +48,7 @@ class Fichier(object):
         parser = etree.XMLParser(remove_blank_text=True) # pour que pretty_print fonctionne
         self._dossiers = etree.parse(nom, parser).getroot()
         # On créé aussi l'ensemble (set) des identifiants des candidats
-        self._identif = {xml.get_id(cand) for cand in self._dossiers}
+        self._identif = {xml.get(cand, 'Num ParcoursSup') for cand in self._dossiers}
         # On récupère la filière. Utilisation d'un set pour éviter les doublons !
         self._filiere = {fil for fil in filieres if fil in nom.lower()}.pop()
 
@@ -63,7 +64,7 @@ class Fichier(object):
         # dans laquelle cand est un noeud xml pointant sur un candidat.
         # Elle retourne un booléen. Utile pour l'admin qui traite un
         # candidat et reporte dans toutes les filières demandées.
-        return xml.get_id(cand) in self._identif
+        return xml.get(cand, 'Num ParcoursSup') in self._identif
     
     def __len__(self):
         # Cette méthode confère un sens à l'opération len(fichier)
@@ -80,7 +81,7 @@ class Fichier(object):
         # Sert aussi à la fonction stat() dans la toolbox.
         # À n'utiliser que sur des fichiers contenant le candidat ('cand in fichier' True)
         index = 0
-        while xml.get_id(cand) != xml.get_id(self._dossiers[index]):
+        while xml.get(cand, 'Num ParcoursSup') != xml.get(self._dossiers[index], 'Num ParcoursSup'):
             index += 1
         return self._dossiers[index]
 
@@ -153,15 +154,11 @@ class Jury(Client):
     # Estimation du rg final d'un candidat
     def get_rgfinal(self, cand):
         # On récupère les dossiers traités seulement
-        doss = [ca for ca in self.fichier if (xml.get_traite(ca) != '' and xml.get_correc != 'NC')]
+        doss = [ca for ca in self.fichier if (xml.get(ca, 'traité') != '' and xml.get(ca, 'Correction') != 'NC')]
         # Ceux-ci sont classés par ordre de score final décroissant
-        doss[:] = sorted(doss, key = lambda cand: -float(xml.get_scoref_num(cand).replace(',','.')))
+        doss[:] = sorted(doss, key = lambda cand: -float(xml.get(cand, 'Score final num').replace(',','.')))
         # On calcule le rang du score_final actuel (celui de cand) dans cette liste
-        rg = 1
-        score_actu = xml.get_scoref_num(cand)
-        if doss:
-            while (rg <= len(doss) and xml.get_scoref_num(doss[rg-1]) > score_actu):
-                rg+= 1
+        rg = outil.rang(cand, doss, 'Score final num')
         # À ce stade, rg est le rang dans la liste du jury. 
         # La suite consiste à calculer n*(rg-1) + k
         # où n est le nombre de jurys et k l'indice du jury courant.
@@ -170,11 +167,6 @@ class Jury(Client):
         k = int(q[1])
         return n*(rg-1)+k
 
-    def get_liste_autres_fichiers_en_cours(self):
-        # renvoie la liste des fichiers en cours de traitement.
-        return self.master.get_autres_fichiers_en_cours(self)
-    # Fin accesseurs et mutateurs
-    
     def traiter(self, **kwargs):
         # Fonction lancée par la fonction "traiter" du Serveur. Elle même est lancée par validation d'un dossier
         # On récupère le candidat
@@ -185,14 +177,14 @@ class Jury(Client):
             cor, scoref = 'NC', 'NC'
         else:
             cor = kwargs['correc']
-            note = float(xml.get_scoreb(cand).replace(',','.')) + float(cor)
+            note = float(xml.get(cand, 'Score brut').replace(',','.')) + float(cor)
             scoref = '{:.2f}'.format(note).replace('.',',')
-        xml.set_correc(cand, cor)
-        xml.set_scoref(cand, scoref)
+        xml.set(cand, 'Correction', cor)
+        xml.set(cand, 'Score final', scoref)
         # 2/ Qui a traité le dossier
-        xml.set_jury(cand, self._droits)
+        xml.set(cand, 'Jury', self._droits)
         # 2bis/ On met à jour le fichier des décomptes de commission
-        if (xml.get_traite(cand) == '' and cor != 'NC'): # seulement si le candidat n'a pas déjà été vu et si classé!
+        if (not(xml.get(cand, 'traité')) and cor != 'NC'): # seulement si le candidat n'a pas déjà été vu et si classé!
             with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
                 decompt = pickle.load(fich)
             qui = self._droits
@@ -202,9 +194,9 @@ class Jury(Client):
             with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
                 pickle.dump(decompt, stat_fich)
         # 3/ "bouléen" traite : le dossier a été traité (classé ou non classé)
-        xml.set_traite(cand)
+        xml.set(cand, 'traité', True)
         # 4/ motivation du jury
-        xml.set_motifs(cand, kwargs['motif'])
+        xml.set(cand, 'Motifs', kwargs['motif'])
         ## Fin mise à jour dossier
         # On sélectionne le dossier suivant
         if self.num_doss < len(self.fichier)-1:
@@ -241,37 +233,35 @@ class Admin(Client):
         list_fich_cand.append(self.fichier)
         ############### Admin a-t-il changé qqc ? Si oui, mise à jour. 
         # Classe actuelle ?
-        if xml.get_clas_actu(cand) != kwargs['clas_actu']:
-            for fich in list_fich_cand: xml.set_clas_actu(fich.get_cand(cand), kwargs['clas_actu'])
+        if xml.get(cand, 'Classe actuelle') != kwargs['Classe actuelle']:
+            for fich in list_fich_cand: xml.set(fich.get_cand(cand), 'Classe actuelle', kwargs['Classe actuelle'])
             # semestres ?
         txt = kwargs.get('sem_prem','off')  # kwargs ne contient 'sem_prem' que si la case est cochée !
-        for fich in list_fich_cand: xml.set_sem_prem(fich.get_cand(cand), txt)
+        for fich in list_fich_cand: xml.set(fich.get_cand(cand), 'sem_prem', txt)
         txt = kwargs.get('sem_term','off')  # kwargs ne contient 'sem_term' que si la case est cochée !
-        for fich in list_fich_cand: xml.set_sem_term(fich.get_cand(cand), txt)
+        for fich in list_fich_cand: xml.set(fich.get_cand(cand), 'sem_term', txt)
             # Cas des notes
-        matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
-        date = {'1':'trimestre 1','2':'trimestre 2','3':'trimestre 3'}
-        classe = {'P':'Première','T':'Terminale'}
+        matiere = ['Mathématiques', 'Physique/Chimie']
+        date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+        classe = ['Première', 'Terminale']
         for cl in classe:
             for mat in matiere:
                 for da in date:
-                    key = cl + mat + da
-                    if xml.get_note(cand, classe[cl], matiere[mat], date[da]) != kwargs[key]:
-                        for fich in list_fich_cand: xml.set_note(fich.get_cand(cand), classe[cl], 
-                        matiere[mat], date[da], kwargs[key])
+                    key_script = '{}{}{}'.format(cl[0], mat[0], da[-1])
+                    key = '{}_{}_{}'.format(mat, cl, da)
+                    if xml.get(cand, key) != kwargs[key_script]:
+                        for fich in list_fich_cand: xml.set(fich.get_cand(cand), key, kwargs[key_script])
             # CPES
-        if 'cpes' in xml.get_clas_actu(cand).lower():
-            if xml.get_CM1(cand, True) != kwargs['CM1']:
-                for fich in list_fich_cand: xml.set_CM1(fich.get_cand(cand), kwargs['CM1'])
-            if xml.get_CP1(cand, True) != kwargs['CP1']:
-                for fich in list_fich_cand: xml.set_CP1(fich.get_cand(cand), kwargs['CP1'])
-            # EAF écrit et oral...      
-        if xml.get_ecrit_EAF(cand) != kwargs['EAF_e']:
-            for fich in list_fich_cand: xml.set_ecrit_EAF(fich.get_cand(cand), kwargs['EAF_e'])
-        if xml.get_oral_EAF(cand) != kwargs['EAF_o']:
-            for fich in list_fich_cand: xml.set_oral_EAF(fich.get_cand(cand), kwargs['EAF_o'])
+        liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
+        for li in liste:
+            if 'cpes' in li.lower():
+                if ('cpes' in xml.get(cand, 'Classe actuelle').lower()) and xml.get(cand, li) != kwargs[li]:
+                    for fich in list_fich_cand: xml.set(fich.get_cand(cand), li, kwargs[li])
+            else:
+                if xml.get(cand, li) != kwargs[li]:
+                    for fich in list_fich_cand: xml.set(fich.get_cand(cand), li, kwargs[li])
         # On (re)calcule le score brut !
-        xml.calcul_scoreb(cand)
+        outil.calcul_scoreb(cand)
         # Commentaire éventuel admin + gestion des 'NC'
         # Les commentaires admin sont précédés de '- Admin :' c'est à cela qu'on les reconnaît
         # Notamment, script.js exclut qu'un tel commentaires soit considéré comme une motivation
@@ -283,12 +273,12 @@ class Admin(Client):
             # L'admin a validé le formulaire avec le bouton NC (le candidat ne passera pas en commission)
             # Pour ce cas là, on ne recopie pas dans toutes les filières. Admin peut exclure une candidature
             # dans une filière sans l'exclure des autres. Sécurité !
-            xml.set_correc(cand, 'NC') # la fonction calcul_scoreb renverra 0 !
-            xml.set_motifs(self.fichier.get_cand(cand), motif)
+            xml.set(cand, 'Correction', 'NC') # la fonction calcul_scoreb renverra 0 !
+            xml.set(self.fichier.get_cand(cand), 'Motifs', motif)
         else:
             for fich in list_fich_cand:
-                xml.set_correc(fich.get_cand(cand), '0')
-                xml.set_motifs(fich.get_cand(cand), motif)
+                xml.set(fich.get_cand(cand), 'Correction', '0')
+                xml.set(fich.get_cand(cand), 'Motifs', motif)
 
         # On sauvegarde tous les fichiers retouchés
         for fich in list_fich_cand:

@@ -163,19 +163,19 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             ## Traitement des pdf ##
             yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
             dest = os.path.join(os.curdir, "data", "docs_candidats")
-            outil.restaure_virginite(dest) # un coup de jeune pour dest..
+            outils.restaure_virginite(dest) # un coup de jeune pour dest..
             for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
                 for fil in filieres:
                     if fil in fich.lower():
                         yield "         Fichier {} ... ".format(fil.upper())
                         desti = os.path.join(dest, fil)
                         os.mkdir(desti)
-                        outil.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
+                        outils.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
                         yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
-            outil.stat()
+            outils.stat()
             # Fin : retour au menu
             self.set_rafraich(True)
             yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"
@@ -257,12 +257,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         for fich in list_fich:
             # Tout d'abord, calculer le score brut de chaque candidat 
             for cand in fich:
-                xml.calcul_scoreb(cand)
+                outils.calcul_scoreb(cand)
             # Classement par scoreb décroissant
             doss = fich.ordonne('score_b')
             # Calcul du rang de chaque candidat et renseignement du noeuds 'rang_brut'
             for cand in fich:
-                xml.set_rang_brut(cand, str(outil.rang(cand, doss, xml.get_scoreb)))
+                xml.set(cand, 'Rang brut',  str(outils.rang(cand, doss, lambda cand: xml.get(cand, 'Score brut'))))
             # Récupération de la filière et du nombre de jurys 
             nbjury = int(nb_jurys[fich.filiere().lower()])
             # Découpage en n listes de dossiers
@@ -301,11 +301,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 # Les fichiers non vus se voient devenir NC avec
                 # motifs = "Dossier moins bon que le dernier classé" (sauf s'il y a déjà un motif - Admin)
                 for c in fich:
-                    if xml.get_jury(c) == 'Auto':
-                        xml.set_correc(c, 'NC')
-                        xml.set_scoref(c, 'NC')
-                        if xml.get_motifs(c) == '':
-                            xml.set_motifs(c, 'Dossier moins bon que le dernier classé.')
+                    if xml.get(c, 'Jury') == 'Auto':
+                        xml.set(c, 'correc', 'NC')
+                        xml.set(c, 'Score final', 'NC')
+                        if xml.get(c, 'Motifs') == '':
+                            xml.set(c, 'Motifs', 'Dossier moins bon que le dernier classé.')
                 # list_doss récupère la liste des dossiers classée selon score_final + age
                 list_doss.append(fich.ordonne('score_f'))
             # Ensuite, on entremêle les dossiers de chaque sous-comm
@@ -323,10 +323,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 rg = 1
                 for cand in res:
                     nu = 'NC'
-                    if xml.get_scoref(cand) != 'NC':
+                    if xml.get(cand, 'Score final') != 'NC':
                         nu = str(rg)
                         rg += 1
-                    xml.set_rang_final(cand, nu)
+                    xml.set(cand, 'Rang final', nu)
                 # Sauvegarde du fichier class...
                 nom = os.path.join(os.curdir, "data", "class_{}.xml".format(fil.upper()))
                 with open(nom, 'wb') as fichier:
@@ -337,7 +337,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             pickle.dump(tot_class, stat_fich)
         # On lance la génération des tableaux bilan de commission
         list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "class_*.xml"))]
-        outil.tableaux_bilan(list_fich)
+        outils.tableaux_bilan(list_fich)
         # Enfin, on retourne au menu
         return self.affiche_menu()
     
