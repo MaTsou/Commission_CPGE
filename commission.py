@@ -286,12 +286,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         return self.affiche_menu()
 
     @cherrypy.expose
-    def genere_fichiers_class(self):
+    def clore_commission(self):
         # Récolter les fichiers après la commission
         # Pour chaque filière
-        # Tout réécrire : le serveur se charge (ou charge l'admin) de détenir tous les fichiers comm
-        # et leur demande de se mettre à jour, de renvoyer une liste ordonnée pour qu'il puisse créer
-        # de nouveaux fichiers (les *clas*)
+        # Récolte du travail de la commission, mise à jour des scores finals.
+        # Classement par ordre de score final décroissant puis réunion des fichiers
+        # de chaque sous-commission en un fichier class_XXXX.xml ou XXXX = filière
+        # Enfin, création des différents tableaux paramétrés dans paramètres.py
         tot_class = {} # dictionnaire contenant les nombres de candidats classés par filière
         for fil in filieres:
             path = os.path.join(os.curdir, "data", "comm_{}*.xml".format(fil.upper()))
@@ -333,9 +334,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
             tot_class.update({"{}".format(fil.upper()):rg-1})
-        # On écrit le fichier des décomptes de commission
-        with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
-            pickle.dump(tot_class, stat_fich)
         # On lance la génération des tableaux bilan de commission
         list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "class_*.xml"))]
         outil.tableaux_bilan(list_fich)
