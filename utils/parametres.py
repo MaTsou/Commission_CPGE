@@ -48,20 +48,36 @@ nb_correc = 4 # inverse du pas de la correction (vaut 4 si on fonctionne par 1/4
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
 nb_Jurys = ['3','3','2']
-nb_Classes  = ['7', '140', '1000']
+nb_Classes  = ['14444', '140', '1000']
 nb_jurys = dict(zip(filieres, nb_Jurys))
 nb_classes = dict(zip(filieres, nb_Classes))
 
 ############################################################################
 # Tableaux à générer en fin de commission                                  #
+# Ces dictionnaires ont pour clés les noms de fichiers et pour arguments   #
+# Les listes d'entêtes.
 ############################################################################
-tableau_classes_seulement = [\
-        {'classes' : ['range brut', 'rang final', 'Nom', 'Prénom',
-                'naissance']},
-        {'classes_BdE' : ['rang final', 'Nom', 'Prénom', 'naissance']}\
-]
+tableaux_candidats_classes = {\
+    'classes' :
+        ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance',
+            'Score brut', 'Correction', 'Score final', 'Jury', 'Motifs'
+        ],\
+    'classes_BdE' :
+        ['Rang final', 'Nom', 'Prénom', 'Date de naissance']\
+}
 
-tableau_tous = [\
-        {'alphabétique' : ['range brut', 'rang final', 'Nom', 'Prénom',
-                'naissance']},
-]
+tableaux_tous_candidats = {\
+    'alphabétique' :
+        ['Rang brut', 'Rang final', 'Candidatures', 'Nom', 'Prénom',
+            'Date de naissance', 'Sexe', 'Nationalité', 'Num ParcoursSup',
+            'Boursier', 'Boursier certifié', 'Classe actuelle', 'Établissement', 'Commune',
+            'Mathématiques Terminale trimestre 1', 'Physique/Chimie Terminale trimestre 1',
+            'Mathématiques Terminale trimestre 2', 'Physique/Chimie Terminale trimestre 2',
+            'Mathématiques Terminale trimestre 3', 'Physique/Chimie Terminale trimestre 3',
+            'Mathématiques Première trimestre 1', 'Physique/Chimie Première trimestre 1',
+            'Mathématiques Première trimestre 2', 'Physique/Chimie Première trimestre 2',
+            'Mathématiques Première trimestre 3', 'Physique/Chimie Première trimestre 3',
+            'Écrit EAF', 'Oral EAF', 'Mathématiques CPES', 'Physique/Chimie CPES',
+            'Score brut', 'Correction', 'Score final', 'Jury', 'Motifs'
+        ]\
+}

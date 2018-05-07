@@ -12,6 +12,8 @@ from utils.parametres import prop_ecrit_EAF
 from utils.parametres import prop_prem_trim
 from utils.parametres import filieres
 from utils.parametres import nb_classes
+from utils.parametres import tableaux_candidats_classes
+from utils.parametres import tableaux_tous_candidats
 # contient différentes fonctions utiles
  
 ############## Test is_complet dossier et calcul score brut
@@ -277,71 +279,26 @@ def tableaux_bilan(list_fich):
     restaure_virginite(dest)
     # Pour chaque filière :
     for fich in list_fich:
-        # 1er tableau : liste ordonnée des candidats retenus, pour l'admin
-        nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
-        nom += fich.filiere()
-        nom += '_retenus.csv'
-        c = csv.writer(open(nom, 'w'))
-        entetes = ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance', 'score brut', 'correction', 
-        'score final', 'jury', 'Observations']
-        c.writerow(entetes)
-        for cand in fich:
-            a = (xml.get(cand, 'Score final') != 'NC')
-            b = not(a) or (int(xml.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
-            if a and b: # seulement les classés dont le rang est inférieur à la limite fixée
-                data = [fonction(cand) for fonction in [xml.get_rang_brut, xml.get_rang_final, xml.get_nom, 
-                xml.get_prenom, xml.get_naiss, xml.get_scoreb, xml.get_correc, xml.get_scoref, xml.get_jury, 
-                xml.get_motifs]]
+        # Tableaux candidats classés
+        for name in tableaux_candidats_classes.keys():
+            # Création du fichier csv
+            nom = os.path.join(os.curdir, "tableaux", "{}_{}.csv".format(fich.filiere(), name))
+            c = csv.writer(open(nom, 'w'))
+            entetes = tableaux_candidats_classes[name]
+            c.writerow(entetes)
+            for cand in fich:
+                a = (xml.get(cand, 'Score final') != 'NC')
+                b = not(a) or (int(xml.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
+                if a and b: # seulement les classés dont le rang est inférieur à la limite fixée
+                    data = [xml.get(cand, champ) for champ in entetes]
+                    c.writerow(data)
+        # Tableaux tous candidats
+        for name in tableaux_tous_candidats:
+            # Création du fichier csv
+            nom = os.path.join(os.curdir, "tableaux", "{}_{}.csv".format(fich.filiere(), name))
+            c = csv.writer(open(nom, 'w'))
+            entetes = tableaux_tous_candidats[name]
+            c.writerow(entetes)
+            for cand in fich.ordonne('alpha'):
+                data = [xml.get(cand, champ) for champ in entetes]
                 c.writerow(data)
-        # 2e tableau : liste ordonnée des candidats retenus, pour Bureau des élèves
-        # Le même que pour l'admin, mais sans les notes, ni les rangs bruts...
-        nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin..
-        nom += fich.filiere()
-        nom += '_retenus(sans_note).csv'
-        c = csv.writer(open(nom, 'w'))
-        entetes = ['Rang final', 'Nom', 'Prénom', 'Date de naissance']
-        c.writerow(entetes)
-        for cand in fich:
-            a = (xml.get(cand, 'Score final') != 'NC')
-            b = not(a) or (int(xml.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
-            if a and b: # seulement les classés dont le rang est inférieur à la limite fixée
-                data = [fonction(cand) for fonction in [xml.get_rang_final , xml.get_nom, 
-                xml.get_prenom, xml.get_naiss]]
-                c.writerow(data)
-        # 3e tableau : Liste alphabétique de tous les candidats avec le numéro dans le classement,
-        # toutes les notes et qq infos administratives
-        # Fichier destination
-        nom = os.path.join(os.curdir, "tableaux", "") # chaîne vide pour avoir / à la fin du chemin...
-        nom += fich.filiere()
-        nom += '_alphabetique.csv'
-        c = csv.writer(open(nom, 'w'))
-        entetes = ['Rang brut', 'Rang final', 'Candidatures', 'Nom', 'Prénom', 'Date de naissance', 'Sexe', 
-        'Nationalité', 'id_apb', 'Boursier', 'Classe actuelle', 'Etablissement', 'Commune Etablissement']
-        # entêtes notes...
-        matiere = {'M':'Mathématiques', 'P':'Physique/Chimie'}
-        date = {'1':'trimestre 1', '2':'trimestre 2', '3':'trimestre 3'}
-        classe = {'P':'Première', 'T':'Terminale'}
-        entetes.extend([cl + mat + da for cl in classe for da in date for mat in matiere])
-        entetes.extend(['F_écrit', 'F_oral', 'CPES_math', 'CPES_phys'])
-        # la suite
-        entetes.extend(['score brut', 'correction', 'score final', 'jury', 'Observations'])
-        c.writerow(entetes)
-        # Remplissage du fichier dest dans l'ordre alphabétique
-        for cand in fich.ordonne('alpha'):
-            data = [xml.get(cand, 'Rang brut'), xml.get(cand, 'Rang final'), xml.get(cand, 'Candidatures')]
-            data += [fonction(cand) for fonction in [xml.get_nom, xml.get_prenom, xml.get_naiss, xml.get_sexe,
-            xml.get_nation, xml.get_id, xml.get_boursier, xml.get_clas_actu, xml.get_etab, xml.get_commune_etab]]
-            # Les notes...
-            for cl in classe:
-                for da in date:
-                    for mat in matiere:
-                        key = cl + mat + da
-                        note = '{}'.format(xml.get_note(cand, classe[cl], matiere[mat],date[da]))
-                        data.append(note)
-            data.extend([xml.get_ecrit_EAF(cand), xml.get_oral_EAF(cand)])
-            cpes = 'cpes' in xml.get_clas_actu(cand).lower()
-            data.extend([xml.get_CM1(cand, cpes), xml.get_CP1(cand, cpes)])
-            # La suite
-            data.extend([fonction(cand) for fonction in [xml.get_scoreb, xml.get_correc, xml.get_scoref,
-            xml.get_jury, xml.get_motifs]])
-            c.writerow(data)

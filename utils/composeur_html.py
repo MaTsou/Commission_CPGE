@@ -251,6 +251,7 @@ class Composeur(object):
         for fich in list_fich:
             txt+= '<input type = "submit" class ="fichier" name = "fichier" value = "{}"/>'.format(fich)
             txt+='<br>'
+        txt+='<h3> Les tableaux récapitulatifs sont dans le dossier "./tableaux"</h3>'
         return txt
 
 ##### La suite concerne les pages dossiers #####
@@ -285,7 +286,7 @@ class Composeur(object):
         return page
 
     def genere_dossier(self, qui, cand, format_admin = False):
-        """ Renvoie le dictionnaire cont enant les infos du dossier en cours"""
+        """ Renvoie le dictionnaire contenant les infos du dossier en cours"""
         #### Début
         # Pédigré
         data = {'Nom':xml.get(cand, 'Nom') + ', ' + xml.get(cand, 'Prénom')}
@@ -326,7 +327,7 @@ class Composeur(object):
         for cl in classe:
             for mat in matiere:
                 for da in date:
-                    key = '{}_{}_{}'.format(mat, cl, da)
+                    key = '{} {} {}'.format(mat, cl, da)
                     key_script = '{}{}{}'.format(cl[0], mat[0], da[-1])
                     data[key_script] = formateur_note.format(key_script, key_script, note=xml.get(cand, key))
         # Autres notes

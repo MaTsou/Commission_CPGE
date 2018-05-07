@@ -257,12 +257,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         for fich in list_fich:
             # Tout d'abord, calculer le score brut de chaque candidat 
             for cand in fich:
-                outils.calcul_scoreb(cand)
+                outil.calcul_scoreb(cand)
             # Classement par scoreb décroissant
             doss = fich.ordonne('score_b')
             # Calcul du rang de chaque candidat et renseignement du noeuds 'rang_brut'
             for cand in fich:
-                xml.set(cand, 'Rang brut',  str(outils.rang(cand, doss, lambda cand: xml.get(cand, 'Score brut'))))
+                xml.set(cand, 'Rang brut',  str(outil.rang(cand, doss, 'Score brut')))
             # Récupération de la filière et du nombre de jurys 
             nbjury = int(nb_jurys[fich.filiere().lower()])
             # Découpage en n listes de dossiers
@@ -302,7 +302,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 # motifs = "Dossier moins bon que le dernier classé" (sauf s'il y a déjà un motif - Admin)
                 for c in fich:
                     if xml.get(c, 'Jury') == 'Auto':
-                        xml.set(c, 'correc', 'NC')
+                        xml.set(c, 'Correction', 'NC')
                         xml.set(c, 'Score final', 'NC')
                         if xml.get(c, 'Motifs') == '':
                             xml.set(c, 'Motifs', 'Dossier moins bon que le dernier classé.')
@@ -337,7 +337,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             pickle.dump(tot_class, stat_fich)
         # On lance la génération des tableaux bilan de commission
         list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "class_*.xml"))]
-        outils.tableaux_bilan(list_fich)
+        outil.tableaux_bilan(list_fich)
         # Enfin, on retourne au menu
         return self.affiche_menu()
     

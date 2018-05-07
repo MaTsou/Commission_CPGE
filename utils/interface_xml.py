@@ -77,15 +77,6 @@ def convert(str):
     # Intérêt seulement esthétique dans la page web
     return vers_str(vers_num(str))
 
-def _boursier(bours):
-    certif = _get(cand, 'boursier_certifie', '?', 0)
-    txt = 'oui'
-    if 'non boursier' in bours.lower():
-        txt = 'non'
-    else:
-        if 'oui' in certif.lower(): txt+= ' certifié'
-    return txt
-
 def formate_candid(cc):
     bina = bin(cc)[2:] # chaine exprimant cc en binaire (on enlève les 2 premiers caract. : '0b')
     while len(bina) < len(filieres):
@@ -141,13 +132,14 @@ def vers_str(num):
 acces = {\
         'Nom'               : {'query' : 'nom', 'defaut' : '?'},
         'Prénom'            : {'query' : 'prénom', 'defaut' : '?'},
-        'sexe'              : {'query' : 'sexe', 'defaut' : '?'},
+        'Sexe'              : {'query' : 'sexe', 'defaut' : '?'},
         'Date de naissance' : {'query' : 'naissance', 'defaut' : '?'},
         'Classe actuelle'   : {'query' : 'synoptique/classe', 'defaut' : '?'},
         'Num ParcoursSup'   : {'query' : 'id_apb', 'defaut' : '?'},
         'INE'               : {'query' : 'INE', 'defaut' : '?'},
         'Nationalité'       : {'query' : 'nationalité', 'defaut' : '?'},
-        'Boursier'          : {'query' : 'boursier', 'defaut' : '?', 'post' : _boursier},
+        'Boursier'          : {'query' : 'boursier', 'defaut' : '?'},
+        'Boursier certifié' : {'query' : 'boursier_certifie', 'defaut' :'?'},
         'Établissement'     : {'query' : 'synoptique/établissement/nom', 'defaut' : '?'},
         'Commune'           : {'query' : 'synoptique/établissement/ville', 'defaut' : '?'},
         'Département'       : {'query' : 'synoptique/établissement/département', 'defaut' : '?'},
@@ -164,7 +156,7 @@ acces = {\
         'Score brut'        : {'query' : 'diagnostic/score', 'defaut' : ''},
         'Correction'        : {'query' : 'diagnostic/correc', 'defaut' : '0'},
         'Score final'       : {'query' : 'diagnostic/scoref', 'defaut' : ''},
-        'Score final num'   : {'query' : 'diagnostic/scoref', 'defaut' : '', 'post' : num_score},
+        'Score final num'   : {'query' : 'diagnostic/scoref', 'defaut' : '0', 'post' : num_score},
         'Rang brut'         : {'query' : 'diagnostic/rangb', 'defaut' : '?'},
         'Rang final'        : {'query' : 'diagnostic/rangf', 'defaut' : '?'}
         }
@@ -176,7 +168,7 @@ classe = ['Première', 'Terminale']
 for cl in classe:
     for mat in matiere:
         for da in date:
-            key = '{}_{}_{}'.format(mat, cl, da)
+            key = '{} {} {}'.format(mat, cl, da)
             query = 'bulletins/bulletin[classe="{}"]/matières/matière[intitulé="{}"][date="{}"]/note'.format(\
                     cl, mat, da)
             acces[key] = {'query' : query, 'defaut' : '-', 'pre' : not_note, 'post' : convert}

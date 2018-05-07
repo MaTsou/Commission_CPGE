@@ -194,9 +194,11 @@ class Jury(Client):
             with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
                 pickle.dump(decompt, stat_fich)
         # 3/ "bouléen" traite : le dossier a été traité (classé ou non classé)
-        xml.set(cand, 'traité', True)
+        xml.set(cand, 'traité', 'oui')
+        print('traité ok')
         # 4/ motivation du jury
         xml.set(cand, 'Motifs', kwargs['motif'])
+        print('Motifs ok')
         ## Fin mise à jour dossier
         # On sélectionne le dossier suivant
         if self.num_doss < len(self.fichier)-1:
@@ -248,7 +250,7 @@ class Admin(Client):
             for mat in matiere:
                 for da in date:
                     key_script = '{}{}{}'.format(cl[0], mat[0], da[-1])
-                    key = '{}_{}_{}'.format(mat, cl, da)
+                    key = '{} {} {}'.format(mat, cl, da)
                     if xml.get(cand, key) != kwargs[key_script]:
                         for fich in list_fich_cand: xml.set(fich.get_cand(cand), key, kwargs[key_script])
             # CPES
