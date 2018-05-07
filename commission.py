@@ -106,11 +106,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             else:
                 # Machine serveur et Mode normal ==> c'est un Client Admin
                 # On créé un objet Admin associé à la clé key
-                self.clients[key] = Admin(self, key)
+                self.clients[key] = Admin(key)
         else:
             # Si non, c'est un Client Jury (peu importe qu'on soit en mode TEST)
             # On créé un objet Jury associé à la clé key
-            self.clients[key] = Jury(self, key)
+            self.clients[key] = Jury(key)
         # On affiche le menu du client
         return self.affiche_menu()
   
@@ -135,9 +135,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Ci-dessous, le not('acces' in kwargs) sert à éviter une erreur lorsque la commande navigateur
         # 'page préc' est utilisée (par exemple après Vérifier/Traiter)
         if not('acces' in kwargs) or kwargs['acces'] == "Accès administrateur":
-            self.clients[key] = Admin(self, key) # création d'une instance admin
+            self.clients[key] = Admin(key) # création d'une instance admin
         else:
-            self.clients[key] = Jury(self, key) # création d'une instance jury
+            self.clients[key] = Jury(key) # création d'une instance jury
         return self.affiche_menu() # Affichage du menu adéquat
 
     @cherrypy.expose

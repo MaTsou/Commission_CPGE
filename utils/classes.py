@@ -114,7 +114,7 @@ class Fichier(object):
 
 class Client(): 
     """ Objet client "abstrait" pour la class Serveur"""
-    def __init__(self, master, key, droits):
+    def __init__(self, key, droits):
         # constructeur
         # identifiant du client : contenu du cookie déposé sur la machine client
         self.je_suis = key  
@@ -122,8 +122,6 @@ class Client():
         self.fichier = None  # contiendra une instance 'Fichier'
         # Index (dans le fichier) du candidat suivi.
         self.num_doss = -1  # -1 signifie : le jury n'est pas en cours de traitement
-        # l'instance serveur détenant ce client
-        self.master = master
     
     def get_droits(self):
         return self._droits
@@ -143,9 +141,9 @@ class Client():
 
 class Jury(Client): 
     """  Objet client (de type jury de commission) pour la class Serveur"""
-    def __init__(self, master, key):
+    def __init__(self, key):
         # constructeur : on créé une instance Client avec droits "jury" 
-        Client.__init__(self, master, key, 'Jury')
+        Client.__init__(self, key, 'Jury')
 
     # Accesseurs et mutateurs
     def set_droits(self, droits):
@@ -211,9 +209,9 @@ class Jury(Client):
 #################################################################################
 class Admin(Client): 
     """ Objet client (de type Administrateur) pour la class Serveur"""
-    def __init__(self, master, key): 
+    def __init__(self, key): 
         # constructeur : on créé une instance Client avec droits "admin"
-        Client.__init__(self, master, key, 'Administrateur')
+        Client.__init__(self, key, 'Administrateur')
     
     def set_droits(self, droits):
         self._droits = 'Administrateur' + droits
