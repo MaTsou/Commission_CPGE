@@ -203,7 +203,8 @@ class Composeur(object):
                 with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                     stat = pickle.load(fich)
             except: # stat n'existe pas
-                outils.stat() # on le créé
+                list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
+                outil.stat(list_fich) # on le créé
                 with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                     stat = pickle.load(fich)
             # Création de la liste
@@ -406,8 +407,10 @@ class Composeur(object):
         lis += '<input type="hidden" name = "scroll_mem" value = "{}"/>'.format(mem_scroll)
         for index, cand in enumerate(client.fichier):
             # Les candidats rejetés par admin n'apparaissent pas aux jurys
-            if not(isinstance(client, Jury) and xml.get(cand, 'Correction') == 'NC' and '- Admin' in xml.get(cand, 
-                'Motifs')):
+            a = isinstance(client, Jury)
+            b = xml.get(cand, 'Correction') == 'NC'
+            c = xml.get(cand, 'Jury') == 'Admin'
+            if not(a and b and c):
                 lis += '<input type = "submit" name="num" '
                 clas = 'doss'
                 if cand == client.get_cand(): # affecte la class css "doss_courant" au dossier courant

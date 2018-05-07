@@ -274,6 +274,7 @@ class Admin(Client):
             # Pour ce cas là, on ne recopie pas dans toutes les filières. Admin peut exclure une candidature
             # dans une filière sans l'exclure des autres. Sécurité !
             xml.set(cand, 'Correction', 'NC') # la fonction calcul_scoreb renverra 0 !
+            xml.set(cand, 'Jury', 'Admin')
             xml.set(self.fichier.get_cand(cand), 'Motifs', motif)
         else:
             for fich in list_fich_cand:

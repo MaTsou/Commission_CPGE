@@ -93,7 +93,9 @@ def formate_impr_candid(cc):
     return '-'.join(fil.upper() for fil in filieres if cc[filieres.index(fil)]!='-')
 
 def formate_jury(jury):
-    return parse('Jury {}', jury)[0]
+    if not('Admin' in jury):
+        jury = parse('Jury {}', jury)[0]
+    return jury
 
 def num_score(sc):
     if sc == 'NC': sc= '0'

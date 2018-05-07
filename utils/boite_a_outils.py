@@ -19,46 +19,36 @@ from utils.parametres import tableaux_tous_candidats
 ############## Test is_complet dossier et calcul score brut
 def is_complet(cand):
     # La synthèse (notes de 1e, Tle, bac français, etc.) est elle complète (sert à l'Admin)
-    complet = True
-    matiere = {'M':'Mathématiques','P':'Physique/Chimie'}
-    # Notes de première
-    date = {'1':'trimestre 1','2':'trimestre 2'}
-    if get_sem_prem(cand) != 'on': # gestion des semestres
-        date.update({'3':'trimestre 3'})
-    classe = {'P':'Première'}
-    for cl in classe:
-            for mat in matiere:
-                for da in date:
-                    key = cl + mat + da
-                    if get_note(cand, classe[cl],matiere[mat],date[da]) == '-':
-                        complet = False
-    # Notes de terminale
-    if 'cpes' in get_clas_actu(cand).lower():
-        date = {'1':'trimestre 1', '2':'trimestre 2'}
-        add = '3' # à ajouter si le candidat n'est pas noté en semestres
-    else:
-        date = {'1':'trimestre 1'}
-        add = '2' # à ajouter si le candidat n'est pas noté en semestres
-    if get_sem_term(cand) != 'on': # gestion des semestres
-        date.update({'{}'.format(add):'trimestre {}'.format(add)})
-    classe ={'T':'Terminale'} 
-    for cl in classe:
-            for mat in matiere:
-                for da in date:
-                    key = cl + mat + da
-                    if get_note(cand, classe[cl],matiere[mat],date[da]) == '-':
-                        complet = False
-    # Notes de CPES
-    if 'cpes' in get_clas_actu(cand).lower():
-        if get_CM1(cand, True) == '-':
-            complet = False
-        if get_CP1(cand, True) == '-':
-            complet = False
+    # Construction de la liste des champs à vérifier
+    champs = set([])
+    matiere = ['Mathématiques', 'Physique/Chimie']
+    # Première
+    classe = 'Première'
+    date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+    for mat in matiere:
+        for da in date:
+            champs.add('{} Première {}'.format(mat , da))
+    # Terminale
+    classe = 'Terminale'
+    date = ['trimestre 1', 'trimestre 2']
+    if 'cpes' in xml.get(cand, 'Classe actuelle').lower():
+        date.append('trimestre 3')
+    for mat in matiere:
+        for da in date:
+            champs.add('{} Terminale {}'.format(mat , da))
+    # CPES
+    if 'cpes' in xml.get(cand, 'Classe actuelle').lower():
+        champs.add('Mathématiques CPES')
+        champs.add('Physique/Chimie CPES')
     # EAF
-    if get_ecrit_EAF(cand) == '-':
-        complet = False
-    if get_oral_EAF(cand) == '-':
-        complet = False
+    champs.add('Écrit EAF')
+    champs.add('Oral EAF')
+    # Test :
+    complet = not(xml.get(cand, 'Classe actuelle') == '?') # une initialisation astucieuse..
+    while (complet and len(champs) > 0):
+        ch = champs.pop()
+        if xml.get(cand, ch) == '-':
+            complet = False
     return complet
 
 def calcul_scoreb(cand):
@@ -78,7 +68,7 @@ def calcul_scoreb(cand):
         trim = ['trimestre 1','trimestre 2','trimestre 3']
         for t in trim:
             for mat in matiere:
-                key = '{}_Première_{}'.format(mat, t)
+                key = '{} Première {}'.format(mat, t)
                 note = xml.get(cand, key)
                 if note != '-':
                     tot += xml.vers_num(note)
@@ -94,7 +84,7 @@ def calcul_scoreb(cand):
             trim = ['trimestre 1','trimestre 2','trimestre 3']
             for t in trim:
                 for mat in matiere:
-                    key = '{}_Terminale_{}'.format(mat, t)
+                    key = '{} Terminale {}'.format(mat, t)
                     note = xml.get(cand, key)
                     if note != '-':
                         tot += xml.vers_num(note)
@@ -106,7 +96,7 @@ def calcul_scoreb(cand):
         else: # candidat en terminale : 45% 1er trimestre ; 55% 2e trimestre (config dans parametre.py)
             if xml.get(cand, 'sem_term') == 'on':
                 for mat in matiere:
-                    key = '{}_Terminale_trimestre 1'.format(mat)
+                    key = '{} Terminale trimestre 1'.format(mat)
                     note = xml.get(cand, key)
                     if note != '-':
                         tot += xml.vers_num(note)
@@ -115,7 +105,7 @@ def calcul_scoreb(cand):
                 trim = ['trimestre 1','trimestre 2']
                 for t in trim:
                     for mat in matiere:
-                        key = '{}_Terminale_{}'.format(mat, t)
+                        key = '{} Terminale {}'.format(mat, t)
                         note = xml.get(cand, key)
                         if note != '-':
                             if '1' in t:
@@ -189,7 +179,8 @@ def efface_dest(chem):
 def restaure_virginite(chem): #  amélioration : shutil a une fonction qui supprime un répertoire non vide
     # Créé le répertoire pointé par chem ou le vide s'il existe
     # En gros, redonne une complète virginité à ce répertoire
-    efface_dest(chem) # on efface chem (s'il existe)
+    if os.path.exists(chem):
+        efface_dest(chem) # on efface chem (s'il existe)
     os.mkdir(chem) # on le (re)-créé
 
 ############## Découpage du fichier PDF (dossiers candidats)
@@ -230,9 +221,8 @@ def decoup(sourc, dest):
 	os.remove(os.path.join(dest, 'docs_-1.pdf'))
 
 ############## Création des statistiques (nb candidatures par filière).
-def stat():
+def stat(list_fich):
     """ Effectue des statistiques sur les candidats"""
-    list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
     # On ordonne selon l'ordre spécifié dans filieres (parametres.py)
     list_fich = sorted(list_fich, key = lambda f: filieres.index(f.filiere().lower()))
     # L'info de candidatures est stockée dans un nombre binaire où 1 bit 

@@ -1,5 +1,6 @@
 from lxml import etree
 import utils.interface_xml as xml
+import utils.boite_a_outils as outil
 
 # Le résultat de la reconnaissance des données sur ParcoursSup est
 # parfois un peu brut : on procède à l'assainissement.
@@ -8,7 +9,10 @@ import utils.interface_xml as xml
 # FONCTIONS DE POST-TRAITEMENT
 #
 # Variables globales
-series_valides = ['Scientifique', 'Préparation au bac Européen']
+series_valides = ["Scientifique", "Préparation au bac Européen"]
+series_non_valides = ["Sciences et Technologies de l'Industrie et du Développement Durable",
+        "Economique et social", "Littéraire", "Sciences et technologie de laboratoire",
+        "Professionnelle"]
 
 # certains bulletins contiennent toutes les notes et l'année, la
 # plupart tout le bulletin sauf les notes ; il faut donc trouver les
@@ -36,22 +40,31 @@ def filtre(candidat, test = False):
     prefixe = ''
     commentaire = ''
     # Candidature validée ?
-    if candidat.xpath('synoptique/établissement/candidature_validée')[0].text != 'Oui':
+    if candidat.xpath('synoptique/établissement/candidature_validée')[0].text.lower() != 'oui':
         commentaire = 'Candidature non validée sur ParcoursSup'
-        xml.set_correc(candidat, 'NC')
-    else: # si validée, on signale les anomalies à l'admin
-        prefixe = '- Alerte :'
-        # 1/ Est-ce la bonne série ?
+        xml.set(candidat, 'Correction', 'NC')
+        xml.set(candidat, 'Jury', 'Admin')
+    else: # si validée,
+        # on récupère la série
+        serie = ''
         probs = candidat.xpath('bulletins/bulletin[classe="Terminale"]')
-        for prob in probs:
-            # Là, normalement, c'est une fausse boucle
-            if not(prob.xpath('série')[0].text in series_valides):
+        for prob in probs: # fausse boucle (normalement)
+            serie = prob.xpath('série')[0].text
+        # Si série non valide, on exclut
+        if serie in series_non_valides:
+            commentaire = 'Série {}'.format(serie)
+            xml.set(candidat, 'Correction', 'NC')
+            xml.set(candidat, 'Jury', 'Admin')
+        else: # sinon, on alerte Admin sur certaines anomalies rencontrées
+            prefixe = '- Alerte :'
+            # 1/ Série reconnue ?
+            if not(serie in series_valides):
                 commentaire += ' | Vérifier la série |'
-        # 2/ Le dossier est-il complet (toutes les notes présentes + classe actuelle)
-        if not(xml.is_complet(candidat)):
-            commentaire += ' Dossier incomplet |'
+            # 2/ Le dossier est-il complet (toutes les notes présentes + classe actuelle)
+            if not(outil.is_complet(candidat)):
+                commentaire += ' Dossier incomplet |'
     if commentaire != '':
-        xml.set_motifs(candidat, '{} {}'.format(prefixe, commentaire))
+        xml.set(candidat, 'Motifs', '{} {}'.format(prefixe, commentaire))
     # Fin des filtres; on retourne un candidat mis à jour
     return candidat
 

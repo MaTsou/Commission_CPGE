@@ -152,8 +152,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")):
                 for fil in filieres:
                     if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
-                        dest = os.path.join(os.curdir, "data", "epa_admin_{}.xml".format(fil.upper()))
-                        yield "         Fichier {} ... ".format(parse("{}epa_admin_{}.xml", dest)[1])
+                        dest = os.path.join(os.curdir, "data", "admin_{}.xml".format(fil.upper()))
+                        yield "         Fichier {} ... ".format(fil.upper())
                         contenu_xml = lire(source) # première lecture brute
                         contenu_xml = nettoie(contenu_xml) # nettoyage doux
                         with open(dest, 'wb') as fich:
@@ -161,21 +161,22 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                         yield "traité.\n"
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
-            yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
-            dest = os.path.join(os.curdir, "data", "docs_candidats")
-            outils.restaure_virginite(dest) # un coup de jeune pour dest..
-            for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
-                for fil in filieres:
-                    if fil in fich.lower():
-                        yield "         Fichier {} ... ".format(fil.upper())
-                        desti = os.path.join(dest, fil)
-                        os.mkdir(desti)
-                        outils.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
-                        yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
+            #yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
+            #dest = os.path.join(os.curdir, "data", "docs_candidats")
+            #outil.restaure_virginite(dest) # un coup de jeune pour dest..
+            #for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
+            #    for fil in filieres:
+            #        if fil in fich.lower():
+            #            yield "         Fichier {} ... ".format(fil.upper())
+            #            desti = os.path.join(dest, fil)
+            #            os.mkdir(desti)
+            #            outil.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
+            #            yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
-            outils.stat()
+            list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
+            outil.stat(list_fich)
             # Fin : retour au menu
             self.set_rafraich(True)
             yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"
