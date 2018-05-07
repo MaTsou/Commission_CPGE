@@ -10,10 +10,7 @@ refresh.addEventListener('message', function(event) {
 
 function hide_loader()
 {
-	var txt = document.getElementById("header").innerHTML
-	if (txt.indexOf('Admin') != -1){
-		// Accès Admin
-		document.getElementById("patience").style.visibility = "hidden";
+	document.getElementById("patience").style.visibility = "hidden";
 	}
 }
 

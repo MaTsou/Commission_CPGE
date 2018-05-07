@@ -97,7 +97,7 @@ class Composeur(object):
             txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>' + txt
         ## Fabrication de la page
         contenu = Composeur.html["menu_comm"].format(**{'liste' : txt})
-        page += Composeur.html["MEP_MENU"].format(**{'contenu' : contenu})
+        page += Composeur.html["MEP_MENU"].format(**{'contenu' : contenu, 'script' : qui.script_menu})
         page += '</html>'
         return page
 
@@ -165,7 +165,7 @@ class Composeur(object):
             # Envoyez le menu
             contenu = Composeur.html[patron].format(**data)
         # Composition de la page
-        page += Composeur.html["MEP_MENU"].format(**{'contenu' : contenu})
+        page += Composeur.html["MEP_MENU"].format(**{'contenu' : contenu, 'script' : qui.script_menu})
         page += '</html>'
         return page
     
@@ -281,6 +281,7 @@ class Composeur(object):
             'dossier' : dossier,
             'action_client' : action_client,
             'liste' : liste,
+            'script' : qui.script_dossiers,
             'visibilite' : visib
             })
         page += '</html>'

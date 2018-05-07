@@ -22,24 +22,11 @@ function maj_note()
 
 function click_nc()
 {
-    // Admin ou Jury ?
-	var txt = document.getElementById("header").innerHTML
-    if (txt.indexOf('Admin') == -1){
-		// Accès Jury
-	    // mise à jour du input hidden nc et soumission formulaire
-		var nc = document.getElementById('nc');
-	    nc.value = 'NC';
-	    maj_note();
-		var valid = test_valid();
-	    if (valid) {document.forms['formulaire'].submit();}
-    }
-	else {
-		// Accès Admin
-	    // mise à jour du input hidden nc et soumission formulaire
-		var nc = document.getElementById('nc');
-	    nc.value = 'NC';
-		var valid = test_valid();
-	    if (valid) {document.forms['formulaire'].submit();}
+	// mise à jour du input hidden nc et soumission formulaire
+	var nc = document.getElementById('nc');
+	nc.value = 'NC';
+	var valid = test_valid();
+	if (valid) {document.forms['formulaire'].submit();}
 	}
 }
 
@@ -48,16 +35,8 @@ function maj_motif(id)
     // lancée par les boutons (+) relatifs aux motivations du jury
     // le paramètre name est le nom du bouton et du label associé !
     // On va mettre à jour la zone de texte motif...
-    // Admin ou Jury ?
-	var txt = document.getElementById("header").innerHTML
-    if (txt.indexOf('Admin') == -1){
-    	    // Accès Jury
-			var src = document.getElementById(id);
-			var dest = document.getElementById('motif');
-            if (dest.value != '')
-            {dest.value += ' | '}
-            dest.value += src.value;
-    }
+    // Admin : rien en se passe
+	{}
 }
 
 function click_range()
@@ -94,39 +73,14 @@ function test_valid()
     // et false sinon...
     // Mémorise le scroll de liste
     get_scroll();
-    // Admin ou Jury ?
-	var txt = document.getElementById("header").innerHTML;
-    if (txt.indexOf('Admin') == -1){
-    	// Accès Jury
-    	// vérifie qu'il y a un motif si correc <> 0 ou NC
-        // Récupération de la correction
-		var correc = document.getElementById('correc');
-		var cor = toFloat(correc.value);
-		var nc = document.getElementById('nc');
-        // Si elle est non nulle ou NC, on teste l'existence d'une motivation
-		var motif = document.getElementById('motif');
-		var test = false; // test sera vrai si au moins une motivation est saisie ou si correction = 0
-        if (cor == 0 && nc.value!=='NC'){test = true;}
-        if (motif.value != ''){
-			if (motif.value.substring(0,9)!='- Admin :') {
-			test = true;}
-		}
-        // --> message et formulaire non soumis
-        if (!test)
-        {alert('Toute correction apportée au score (et aussi NC !) doit être motivée...');}
-    }
-    else {
-    	// Accès Admin
-    	// vérifie qu'il y a un motif si bouton NC
-		var nc = document.getElementById('nc');
-        // Si NC, on teste l'existence d'une motivation
-		var motif = document.getElementById('motif');
-		var test = false; // test sera vrai si une motivation est saisie ou si non NC
-        if (nc.value!=='NC'){test = true;}
-        if (motif.value != ''){test = true;}
-        if (!test)
-        {alert('Veuillez renseigner le champ motivation');}
-    }
+	// vérifie qu'il y a un motif si bouton NC
+	var nc = document.getElementById('nc');
+	// Si NC, on teste l'existence d'une motivation
+	var motif = document.getElementById('motif');
+	var test = false; // test sera vrai si une motivation est saisie ou si non NC
+	if (nc.value!=='NC'){test = true;} // !== test d'inégalité stricte (interdit une conversion)
+	if (motif.value != ''){test = true;}
+	if (!test){alert('Veuillez renseigner le champ motivation');}
     return test
 }
 

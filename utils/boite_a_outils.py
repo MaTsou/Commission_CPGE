@@ -249,7 +249,7 @@ def stat(list_fich):
                     l_set[i].remove(a)
                     liste.append(i)
             [xml.set(l_dict[j][a], 'Candidatures', cc) for j in liste]
-            for j in liste:
+            for j in liste: # le test ci-dessous pourrait exclure les filières inadéquates..
                 if not('non validée' in xml.get(l_dict[j][a], 'Motifs')):
                     candid[2**j]+= 1
             if len(liste) > 1:

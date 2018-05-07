@@ -144,6 +144,9 @@ class Jury(Client):
     def __init__(self, key):
         # constructeur : on créé une instance Client avec droits "jury" 
         Client.__init__(self, key, 'Jury')
+        # Fichiers javascripts
+        self.script_menu = 'utils/scripts/menu_jury.js'
+        self.script_dossiers = 'utils/scripts/dossiers_jury.js'
 
     # Accesseurs et mutateurs
     def set_droits(self, droits):
@@ -212,6 +215,9 @@ class Admin(Client):
     def __init__(self, key): 
         # constructeur : on créé une instance Client avec droits "admin"
         Client.__init__(self, key, 'Administrateur')
+        # Fichiers javascripts
+        self.script_menu = 'utils/scripts/menu_admin.js'
+        self.script_dossiers = 'utils/scripts/dossiers_admin.js'
     
     def set_droits(self, droits):
         self._droits = 'Administrateur' + droits

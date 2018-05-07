@@ -1,7 +1,7 @@
 [*Entete*]
 <head> 
 	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
-	<link rel="stylesheet" type="text/css" media="screen" href="/utils/style.css">
+	<link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
 	<title>Gestion Commission EPA</title>
 	<div id = "header">
     <h1 align="center">{titre}</h1>
@@ -19,7 +19,7 @@
 [*MEP_MENU*]
 <body onload="hide_loader();">
   <div id = "mep_menu">{contenu}</div>
-  <script type="text/javascript" src="/utils/script_menu.js"></script>
+  <script type="text/javascript" src="{script}"></script>
 </body>
 ##########
 [*menu_comm*]
@@ -97,7 +97,7 @@
       <div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
     </div>
     <div>
-      <script type="text/javascript" src="/utils/script.js"></script>
+  <script type="text/javascript" src="{script}"></script>
 </body>
 ##########
 [*contenu_dossier*]
@@ -218,8 +218,8 @@
 <!DOCTYPE html>
 <head style="display:none;">
   <meta content = "text/html; charset = utf-8" http-equiv = "Content-Type">
-  <link rel = "stylesheet" type = "text/css" media = "print" href = "/utils/style_impr.css">
-  <link rel = "stylesheet" type = "text/css" media = "screen" href = "/utils/style_html_impr.css">
+  <link rel = "stylesheet" type = "text/css" media = "print" href = "/utils/fichiers_css/style_impr.css">
+  <link rel = "stylesheet" type = "text/css" media = "screen" href = "/utils/fichiers_css/style_html_impr.css">
   <title>Impression-commission</title>
 </head>
 <body width = "50vw" onload = "window.print();">
