@@ -132,9 +132,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def identification(self, **kwargs):
         # Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
         key = cherrypy.session['JE']
-        # Ci-dessous, le not('acces' in kwargs) sert à éviter une erreur lorsque la commande navigateur
-        # 'page préc' est utilisée (par exemple après Vérifier/Traiter)
-        if not('acces' in kwargs) or kwargs['acces'] == "Accès administrateur":
+        if kwargs.get('acces', '') == "Accès administrateur":
             self.clients[key] = Admin(key) # création d'une instance admin
         else:
             self.clients[key] = Jury(key) # création d'une instance jury
