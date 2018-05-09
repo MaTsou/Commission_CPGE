@@ -11,7 +11,6 @@ refresh.addEventListener('message', function(event) {
 function hide_loader()
 {
 	document.getElementById("patience").style.visibility = "hidden";
-	}
 }
 
 function show_loader()

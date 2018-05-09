@@ -11,7 +11,8 @@ function maj_note()
     if (nc.value == 'NC')
     {
     	document.getElementById('scoref').innerHTML = 'NC';
-    } else {
+    } else
+	{
     	var correc = document.getElementById('correc');
 		var cor = toFloat(correc.value);
     	var scorb = toFloat(document.getElementById('scoreb').innerHTML);
@@ -27,7 +28,6 @@ function click_nc()
 	nc.value = 'NC';
 	var valid = test_valid();
 	if (valid) {document.forms['formulaire'].submit();}
-	}
 }
 
 function maj_motif(id)
@@ -53,12 +53,14 @@ function verif_saisie()
 	// Si elles ne sont pas numériques ou hors de [0;20], un message apparaît...
 	var val = event.target.value;
 	var ok = true;
-	if (isNaN(toFloat(val)) && val != '-'){
+	if (isNaN(toFloat(val)) && val != '-')
+	{
 		alert("Une valeur numérique (ou '-') est attendue...");
 		event.target.focus();
 		ok = false;
 	}
-	if (!isNaN(toFloat(val)) && (toFloat(val) <0 || toFloat(val) >20)){
+	if (!isNaN(toFloat(val)) && (toFloat(val) <0 || toFloat(val) >20))
+	{
 		alert("La valeur saisie n'est pas comprise entre 0 et 20");
 		event.target.focus();
 		ok = false;

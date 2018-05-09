@@ -5,16 +5,11 @@
 #   Contient tout ce qui sert à composer le code html; renvoie
 #   une page html à destination de navigateur.
 
-import os, sys, glob, pickle
-import utils.interface_xml as xml
-import utils.boite_a_outils as outil
-from utils.parametres import filieres
-from utils.parametres import min_correc
-from utils.parametres import max_correc
-from utils.parametres import nb_correc
-from utils.parametres import motivations
-from utils.parametres import nb_classes
-from utils.classes import Fichier, Jury, Admin
+import os, glob, pickle
+from utils.parametres import filieres, min_correc, max_correc, nb_correc, motivations, nb_classes
+from utils.fichier import Fichier
+from utils.clients import Jury, Admin
+from utils.adjoint import stat
 
 #################################################################################
 #                               Composeur                                       #
@@ -45,24 +40,28 @@ class Composeur(object):
 
     # constructeur
     def __init__(self, titre):
+        """ Constructeur """
         # Variable d'instance : entête des pages html générées.
         self.titre = titre
 
     # Méthodes
     def genere_entete(self, titre):
+        """ Génère le code html de l'entête de page """
         page = '<!DOCTYPE html><html>'
         page += Composeur.html['Entete'].format(**{'titre' : titre})
         return page
 
+########################################################
 ##### Ici commence ce qui concerne les pages menus #####
+########################################################
 
     def menu(self, qui = None, fichiers_utilises = None, comm_en_cours = False): 
-        # compose le menu du client 'qui'
-        # fichiers_utilises est une liste qui contient les fichiers déjà
-        # choisis par un jury. Permet d'éviter que deux jurys travaillent
-        # sur un même fichier.
-        # comm_en_cours est un booléen qui permet d'adapter le menu de
-        # l'administrateur lorsque la commission se déroule.
+        """ compose le menu du client 'qui'
+        fichiers_utilises est une liste qui contient les fichiers déjà
+        choisis par un jury. Permet d'éviter que deux jurys travaillent
+        sur un même fichier.
+        comm_en_cours est un booléen qui permet d'adapter le menu de
+        l'administrateur lorsque la commission se déroule. """
         if qui:
             if isinstance(qui, Admin):
                 return self.menu_admin(qui, fichiers_utilises, comm_en_cours)
@@ -75,9 +74,9 @@ class Composeur(object):
             return page # menu 'TEST' : admin ou jury ?
 
     def menu_comm(self, qui, fichiers_utilises):
-        # compose le menu du jury 'qui'
-        # Fichiers utilisés est une liste des fichiers déjà choisis par un jury
-        # Ces fichiers sont inaccessibles (bouton disabled dans genere_menu_comm)
+        """ compose le menu du jury 'qui'
+        Fichiers utilisés est une liste des fichiers déjà choisis par un jury
+        Ces fichiers sont inaccessibles (bouton disabled dans genere_menu_comm) """
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
         ## Contenu = liste de fichiers
@@ -101,20 +100,19 @@ class Composeur(object):
         page += '</html>'
         return page
 
-    # Ci-après, ce qui concerne LES menus administrateur
     def menu_admin(self, qui, fichiers_utilises, comm_en_cours):
-        # Compose le menu administrateur
+        """ Compose le menu administrateur
+        contenu : selon l'état (phase 1, 2 ou 3) du traitement
+        phase 1 : avant la commission, l'admin gère ce qui provient de ParcoursSup,
+                  commente et/ou complète les dossiers
+        phase 2 : l'admin a généré les fichiers *_comm_* destinés à la commission. Les
+                  différents jurys doivent se prononcer sur les dossiers. C'est le coeur
+                  de l'opération de sélection.
+        phase 3 : commission terminée. L'admin doit gérer "l'après sélection" : recomposer
+                  un fichier ordonné par filière, générer tous les tableaux récapitulatifs. """
         data = {}
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
-        ## contenu : selon l'état (phase 1, 2 ou 3) du traitement
-        # phase 1 : avant la commission, l'admin gère ce qui provient de ParcoursSup,
-        #           commente et/ou complète les dossiers
-        # phase 2 : l'admin a généré les fichiers *_comm_* destinés à la commission. Les
-        #           différents jurys doivent se prononcer sur les dossiers. C'est le coeur
-        #           de l'opération de sélection.
-        # phase 3 : commission terminée. L'admin doit gérer "l'après sélection" : recomposer
-        #           un fichier ordonné par filière, générer tous les tableaux récapitulatifs.
         if comm_en_cours: # attention, n'est jamais 'True' si le serveur fonction en localhost
             pass
         else:
@@ -126,7 +124,7 @@ class Composeur(object):
                 data['bout_etap4'] = '<input type = "button" class ="fichier"'
                 data['bout_etap4'] += ' value = "Récolter les fichiers" onclick = "recolt_wait();"/>'
                 data['decompt'] = self.genere_liste_decompte()
-                data['liste_stat'] = self.genere_liste_stat()
+                data['liste_stat'] = self.genere_liste_stat(qui)
                 # Etape 5 bouton et Etape 6
                 list_fich_class = glob.glob(os.path.join(os.curdir,"data","class_*.xml"))
                 txt5 = ''
@@ -144,7 +142,7 @@ class Composeur(object):
                 # liste admin
                 data['liste_admin'] = self.genere_liste_admin()
                 # liste_stat
-                data['liste_stat'] = self.genere_liste_stat()
+                data['liste_stat'] = self.genere_liste_stat(qui)
                 # Etape 3 bouton : ce bouton n'est actif que si admin a levé toutes les alertes.
                 txt = ''
                 ### Teste s'il reste encore des alertes dans les fichiers admin
@@ -153,7 +151,7 @@ class Composeur(object):
                 alertes = False
                 while not(alertes) and len(list_fich) > 0:
                     fich = list_fich.pop()
-                    alertes = ( True in {'- Alerte :' in xml.get(cand, 'Motifs') for cand in fich} )
+                    alertes = ( True in {'- Alerte :' in Fichier.get(cand, 'Motifs') for cand in fich} )
                 ### Suit
                 if len(self.genere_liste_admin()) > 0:
                     txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission"'
@@ -170,21 +168,21 @@ class Composeur(object):
         return page
     
     def genere_liste_csv(self):
-        # Sous-fonction pour le menu admin
+        """ Sous-fonction pour le menu admin : liste des .csv trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.csv")):
             txt += '{}<br>'.format(fich)
         return txt
     
     def genere_liste_pdf(self):
-        # Sous-fonction pour le menu admin
+        """ Sous-fonction pour le menu admin : list des .pdf trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
             txt += '{}<br>'.format(fich)
         return txt
     
     def genere_liste_admin(self):
-        # Sous-fonction pour le menu admin
+        """ Sous-fonction pour le menu admin : liste des boutons admin_*.xml """
         list_fich = glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))
         txt = ''
         if len(list_fich) > 0:
@@ -194,19 +192,18 @@ class Composeur(object):
             txt += '<br>'
         return txt
     
-    def genere_liste_stat(self):
-        # Sous-fonction pour le menu admin
+    def genere_liste_stat(self, qui):
+        """ Sous-fonction pour le menu admin : affichage des statistiques de candidatures """
         liste_stat = ''
         if len(glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))) > 0: # si les fichiers admin existent
             # lecture du fichier stat
-            try:
-                with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
-                    stat = pickle.load(fich)
-            except: # stat n'existe pas
+            chem = os.path.join(os.curdir, "data", "stat")
+            if not(os.path.exists(chem)): # le fichier stat n'existe pas
+                # on le créé
                 list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-                outil.stat(list_fich) # on le créé
-                with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
-                    stat = pickle.load(fich)
+                stat(list_fich) # on le créé
+            with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
+                stat = pickle.load(fich)
             # Création de la liste
             liste_stat = '<h4>Statistiques :</h4>'
             # Pour commencer les sommes par filières
@@ -232,19 +229,19 @@ class Composeur(object):
         return liste_stat
 
     def genere_liste_decompte(self):
-        # Sous-fonction pour le menu admin (pendant commission)
-            try:
-                with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
-                    decompt = pickle.load(fich)
-                    txt = ''
-                for a in decompt.keys():
-                    txt += '{} : {} dossiers classés<br>'.format(a, decompt[a])
-            except:# aucun dossier n'a encore été traité...
+        """ Sous-fonction pour le menu admin (pendant commission) : avancement de la commission """
+        try:
+            with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
+                decompt = pickle.load(fich)
                 txt = ''
-            return txt
+            for a in decompt.keys():
+                txt += '{} : {} dossiers classés<br>'.format(a, decompt[a])
+        except:# aucun dossier n'a encore été traité...
+            txt = ''
+        return txt
 
     def genere_liste_impression(self):
-        # Sous-fonction pour le menu admin
+        """ Sous-fonction pour le menu admin : liste des boutons class_*.xml """
         list_fich = glob.glob(os.path.join(os.curdir,"data","class_*.xml"))
         txt = ''
         if len(list_fich) > 0:
@@ -255,12 +252,14 @@ class Composeur(object):
         txt+='<h3> Les tableaux récapitulatifs sont dans le dossier "./tableaux"</h3>'
         return txt
 
-##### La suite concerne les pages dossiers #####
+########################################################
+#####     La suite concerne les pages dossiers     #####
+########################################################
     def page_dossier(self, qui, mem_scroll):
-        # construction du code html constitutif de la page dossier
+        """ construction du code html constitutif de la page dossier """
         # format_comm = True lorsque la demande est destinée à concevoir les fiches bilan de commission.
         # En effet, cette demande est lancée par Admin, mais l'impression se fait avec un dossier formaté
-        # comme pour Jury : les notes de sont pas des <input type="text" .../>
+        # comme pour Jury : les notes de sont pas des <input type="text" .../> """
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
         # construire ensuite la partie dossier, action de client puis la partie liste;
@@ -291,18 +290,18 @@ class Composeur(object):
         """ Renvoie le dictionnaire contenant les infos du dossier en cours"""
         #### Début
         # Pédigré
-        data = {'Nom':xml.get(cand, 'Nom') + ', ' + xml.get(cand, 'Prénom')}
-        data['Date de naissance'] = xml.get(cand, 'Date de naissance')
-        etab = xml.get(cand, 'Établissement')
-        dep = xml.get(cand, 'Département')
-        pays = xml.get(cand, 'Pays')
+        data = {'Nom':Fichier.get(cand, 'Nom') + ', ' + Fichier.get(cand, 'Prénom')}
+        data['Date de naissance'] = Fichier.get(cand, 'Date de naissance')
+        etab = Fichier.get(cand, 'Établissement')
+        dep = Fichier.get(cand, 'Département')
+        pays = Fichier.get(cand, 'Pays')
         data['etab'] = '{} ({}, {})'.format(etab, dep, pays)
-        txt = '[{}]-{}'.format(xml.get(cand, 'Num ParcoursSup'), xml.get(cand, 'INE'))
+        txt = '[{}]-{}'.format(Fichier.get(cand, 'Num ParcoursSup'), Fichier.get(cand, 'INE'))
         data['id'] = txt
         # récup filiere pour connaître le chemin vers le dossier pdf (dans répertoire docs_candidats)
         fil = qui.fichier.filiere()
         data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()),
-                'docs_{}'.format(xml.get(cand, 'Num ParcoursSup')))
+                'docs_{}'.format(Fichier.get(cand, 'Num ParcoursSup')))
         # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
         # et formatage des cases à cocher semestres (actives ou non).
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
@@ -316,11 +315,11 @@ class Composeur(object):
             visib = ''
         ### Suite de la création du dictionnaire
         # classe actuelle
-        data['Classe actuelle'] = formateur_clas_actu.format(xml.get(cand, 'Classe actuelle'))
+        data['Classe actuelle'] = formateur_clas_actu.format(Fichier.get(cand, 'Classe actuelle'))
         # cases à cocher semestres
-        if xml.get(cand, 'sem_prem') == 'on': txt = 'checked'
+        if Fichier.get(cand, 'sem_prem') == 'on': txt = 'checked'
         data['sem_prem'] = '{} {}'.format(visib, txt)
-        if xml.get(cand, 'sem_term') == 'on': txt = 'checked'
+        if Fichier.get(cand, 'sem_term') == 'on': txt = 'checked'
         data['sem_term'] = '{} {}'.format(visib, txt)
         # Notes
         matiere = ['Mathématiques', 'Physique/Chimie']
@@ -331,16 +330,16 @@ class Composeur(object):
                 for da in date:
                     key = '{} {} {}'.format(mat, cl, da)
                     key_script = '{}{}{}'.format(cl[0], mat[0], da[-1])
-                    data[key_script] = formateur_note.format(key_script, key_script, note=xml.get(cand, key))
+                    data[key_script] = formateur_note.format(key_script, key_script, note=Fichier.get(cand, key))
         # Autres notes
         liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
         for li in liste:
-            if not('cpes' in xml.get(cand, 'Classe actuelle').lower()) and 'cpes' in li.lower():
+            if not('cpes' in Fichier.get(cand, 'Classe actuelle').lower()) and 'cpes' in li.lower():
                 data[li] = formateur_note.format(li, li, note='-')
             else:
-                data[li] = formateur_note.format(li, li, note=xml.get(cand, li))
+                data[li] = formateur_note.format(li, li, note=Fichier.get(cand, li))
         # Suite
-        data['cand'] = xml.get(cand, 'Candidatures impr')
+        data['cand'] = Fichier.get(cand, 'Candidatures impr')
         return data
     
     def genere_action(self, client, cand):
@@ -354,7 +353,7 @@ class Composeur(object):
             visib = '' # n'est visible que pour les jurys
         ### Partie correction :
         # récupération correction
-        correc = str(xml.get(cand, 'Correction'))
+        correc = str(Fichier.get(cand, 'Correction'))
         ncval = ''
         if correc == 'NC':
             correc = 0
@@ -372,14 +371,14 @@ class Composeur(object):
                 txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
         barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
         "correc_notimpr">{}</tr></table>'.format(txt)
-        barre += '<span class = "correc_impr">'+xml.get(cand, 'Jury')+' : {:+.2f}'.format(float(correc))+'</span>'
+        barre += '<span class = "correc_impr">'+Fichier.get(cand, 'Jury')+' : {:+.2f}'.format(float(correc))+'</span>'
         barre += '</td></tr>'
         ### Partie motivations :
         # Construction de la chaine motifs.
         # le premier motif : champ texte.
         motifs = '<tr><td align = "left">'
         motifs += '<input type="text" class = "txt_motifs" name="motif"\
-                id = "motif" value= "{}"/>'.format(xml.get(cand, 'Motifs'))
+                id = "motif" value= "{}"/>'.format(Fichier.get(cand, 'Motifs'))
         motifs += '</td></tr>'
         # La suite : motifs pré-définis
         for index, motif in enumerate(motivations):
@@ -394,8 +393,8 @@ class Composeur(object):
         nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
         # On met tout ça dans un dico data pour passage en argument à html['contenu_action']
         data = {'barre' : barre}
-        data['scoreb'] = xml.get(cand, 'Score brut')
-        data['scoref'] = xml.get(cand, 'Score final')
+        data['scoreb'] = Fichier.get(cand, 'Score brut')
+        data['scoref'] = Fichier.get(cand, 'Score final')
         data['nc'] = nc
         data['rg_fin'] = '<td style = "display:{};">Estimation du rang final : {}</td>'.format(visib, rg_fin)
         data['motifs'] = motifs
@@ -409,27 +408,27 @@ class Composeur(object):
         for index, cand in enumerate(client.fichier):
             # Les candidats rejetés par admin n'apparaissent pas aux jurys
             a = isinstance(client, Jury)
-            b = xml.get(cand, 'Correction') == 'NC'
-            c = xml.get(cand, 'Jury') == 'Admin'
+            b = Fichier.get(cand, 'Correction') == 'NC'
+            c = Fichier.get(cand, 'Jury') == 'Admin'
             if not(a and b and c):
                 lis += '<input type = "submit" name="num" '
                 clas = 'doss'
                 if cand == client.get_cand(): # affecte la class css "doss_courant" au dossier courant
                         clas += ' doss_courant'
-                if xml.get(cand, 'traité'):
+                if Fichier.get(cand, 'traité'):
                         clas += ' doss_traite' # affecte la classe css "doss_traite" aux dossiers qui le sont
-                if xml.get(cand, 'Correction') == 'NC':
+                if Fichier.get(cand, 'Correction') == 'NC':
                     clas += ' doss_rejete' # affecte la classe css "doss_rejete" aux dossiers NC
-                if isinstance(client, Admin) and '- Alerte' in xml.get(cand, 'Motifs'): # Admin seulement (alertes nettoie.py)
+                if isinstance(client, Admin) and '- Alerte' in Fichier.get(cand, 'Motifs'): # Admin seulement (alertes nettoie.py)
                     clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
-                if isinstance(client, Jury) and '- Admin' in xml.get(cand, 'Motifs'): # Jury seulement (commentaires Admin)
+                if isinstance(client, Jury) and '- Admin' in Fichier.get(cand, 'Motifs'): # Jury seulement (commentaires Admin)
                     clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
                 lis += 'class = "{}"'.format(clas)
-                nom = '{}, {}'.format(xml.get(cand, 'Nom'), xml.get(cand, 'Prénom'))
+                nom = '{}, {}'.format(Fichier.get(cand, 'Nom'), Fichier.get(cand, 'Prénom'))
                 # La variable txt qui suit est le texte du bouton. Attention, ses 3 premiers
                 # caractères doivent être le numéro du dossier dans la liste des
                 # dossiers (client_get_dossiers())... Cela sert dans click_list(), pour identifier sur qui on a clické..
-                txt = '{:3d}) {: <30}{}'.format(index+1, nom[:29], xml.get(cand, 'Candidatures'))
+                txt = '{:3d}) {: <30}{}'.format(index+1, nom[:29], Fichier.get(cand, 'Candidatures'))
                 lis += ' value="{}"></input><br>'.format(txt)
         lis += '-'*7 + ' fin de liste ' + '-'*7
         lis = lis + '</form>'
@@ -437,16 +436,19 @@ class Composeur(object):
     
 ##### La suite concerne les pages qu'on imprime
     def page_impression(self, qui):
+        """ Fabrication de la page 'impression des fiches bilan' """
         cand = qui.get_cand()
-        entete = '<h1 align="center" class="titre">{} - {}.</h1>'.format(self.titre, qui.fichier.filiere().upper())
+        fich = qui.fichier
+        entete = '<h1 align="center" class="titre">{} - {}.</h1>'.format(self.titre, fich.filiere().upper())
         txt = ''
         saut = '<div style = "page-break-after: always;"></div>'
-        for cand in qui.fichier:
-            a = (xml.get(cand, 'Score final') != 'NC')
-            b = not(a) or (int(xml.get(cand, 'Rang final')) <= int(nb_classes[qui.fichier.filiere().lower()]))
-            if a and b:
+        for cand in fich:
+            a = (Fichier.get(cand, 'traité') == 'oui')
+            b = (Fichier.get(cand, 'Score final') != 'NC')
+            c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
+            if a and b and c: # seulement les classés dont le rang est inférieur à la limite fixée
                 txt += entete
-                txt += '<div class = encadre>Candidat classé : {}</div>'.format(xml.get(cand, 'Rang final'))
+                txt += '<div class = encadre>Candidat classé : {}</div>'.format(Fichier.get(cand, 'Rang final'))
                 txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui, cand))
                 txt += Composeur.html['contenu_action'].format(**self.genere_action(qui, cand))
                 txt += saut

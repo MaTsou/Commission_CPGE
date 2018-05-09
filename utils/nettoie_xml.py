@@ -1,6 +1,5 @@
 from lxml import etree
-import utils.interface_xml as xml
-import utils.boite_a_outils as outil
+from utils.fichier import Fichier
 
 # Le résultat de la reconnaissance des données sur ParcoursSup est
 # parfois un peu brut : on procède à l'assainissement.
@@ -42,8 +41,8 @@ def filtre(candidat, test = False):
     # Candidature validée ?
     if candidat.xpath('synoptique/établissement/candidature_validée')[0].text.lower() != 'oui':
         commentaire = 'Candidature non validée sur ParcoursSup'
-        xml.set(candidat, 'Correction', 'NC')
-        xml.set(candidat, 'Jury', 'Admin')
+        Fichier.set(candidat, 'Correction', 'NC')
+        Fichier.set(candidat, 'Jury', 'Admin')
     else: # si validée,
         # on récupère la série
         serie = ''
@@ -53,18 +52,20 @@ def filtre(candidat, test = False):
         # Si série non valide, on exclut
         if serie in series_non_valides:
             commentaire = 'Série {}'.format(serie)
-            xml.set(candidat, 'Correction', 'NC')
-            xml.set(candidat, 'Jury', 'Admin')
+            Fichier.set(candidat, 'Correction', 'NC')
+            Fichier.set(candidat, 'Jury', 'Admin')
         else: # sinon, on alerte Admin sur certaines anomalies rencontrées
             prefixe = '- Alerte :'
             # 1/ Série reconnue ?
             if not(serie in series_valides):
                 commentaire += ' | Vérifier la série |'
             # 2/ Le dossier est-il complet (toutes les notes présentes + classe actuelle)
-            if not(outil.is_complet(candidat)):
+            if not(Fichier.is_complet(candidat)):
                 commentaire += ' Dossier incomplet |'
     if commentaire != '':
-        xml.set(candidat, 'Motifs', '{} {}'.format(prefixe, commentaire))
+        Fichier.set(candidat, 'Motifs', '{} {}'.format(prefixe, commentaire))
+    else: # si aucune remarque, on calcule le score brut
+        Fichier.calcul_scoreb(candidat)
     # Fin des filtres; on retourne un candidat mis à jour
     return candidat
 

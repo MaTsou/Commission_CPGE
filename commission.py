@@ -26,18 +26,12 @@
 # mais ne touche pas au contenu du dossier.
 
 
-import os, sys, cherrypy, copy, glob, pickle, webbrowser
-from parse import parse
-from lxml import etree
-import utils.interface_xml as xml
-from utils.csv_parcourssup import lire
-import utils.boite_a_outils as outil
-from utils.nettoie_xml import nettoie
-from utils.parametres import filieres
-from utils.parametres import nb_jurys
+import os, sys, cherrypy, glob, webbrowser
 from utils.parametres import entete
+from utils.adjoint import traiter_csv, traiter_pdf, stat, generation_comm, clore_commission
 # Chargement de toutes les classes dont le serveur a besoin
-from utils.classes import Fichier, Jury, Admin
+from utils.clients import Jury, Admin
+from utils.fichier import Fichier
 from utils.composeur_html import Composeur
 
 
@@ -139,42 +133,27 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         return self.affiche_menu() # Affichage du menu adéquat
 
     @cherrypy.expose
-    def traiter_apb(self, **kwargs):
+    def traiter_parcourssup(self, **kwargs):
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
-        # Traite les données brutes d'APB : csv ET pdf
+        # Traite les données brutes de ParcoursSup : csv ET pdf
         cherrypy.response.headers["content-type"] = "text/event-stream"
+        # trouver l'adjoint :
         def contenu():
             yield "Début du Traitement\n\n"
             ## Traitement des csv ##
-            yield "     Début du traitement des fichiers csv\n"
-            for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")):
-                for fil in filieres:
-                    if fil in source.lower(): # Attention le fichier csv doit contenir la filière...
-                        dest = os.path.join(os.curdir, "data", "admin_{}.xml".format(fil.upper()))
-                        yield "         Fichier {} ... ".format(fil.upper())
-                        contenu_xml = lire(source) # première lecture brute
-                        contenu_xml = nettoie(contenu_xml) # nettoyage doux
-                        with open(dest, 'wb') as fich:
-                            fich.write(etree.tostring(contenu_xml, pretty_print=True, encoding='utf-8'))
-                        yield "traité.\n"
+            generateur = traiter_csv()
+            for txt in generateur:
+                yield txt
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
-            #yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
-            #dest = os.path.join(os.curdir, "data", "docs_candidats")
-            #outil.restaure_virginite(dest) # un coup de jeune pour dest..
-            #for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")):
-            #    for fil in filieres:
-            #        if fil in fich.lower():
-            #            yield "         Fichier {} ... ".format(fil.upper())
-            #            desti = os.path.join(dest, fil)
-            #            os.mkdir(desti)
-            #            outil.decoup(fich, desti) # fonction contenue dans decoupage_pdf.py
-            #            yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
+            #generateur = traiter_pdf()
+            #for txt in generateur:
+            #    yield txt
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
             list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-            outil.stat(list_fich)
+            stat(list_fich)
             # Fin : retour au menu
             self.set_rafraich(True)
             yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"
@@ -224,16 +203,15 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     
     @cherrypy.expose
     def traiter(self, **kwargs):
-        # Fonction appelée par l'appui sur "VALIDER" : valide les choix Jury ou Admin
-        # Cette méthode est appelée par le bouton valider de la page dossier...
+        # Fonction appelée par l'appui sur "CLASSER" : valide les choix Jury ou Admin
+        # Cette méthode est appelée par le bouton classer (ou NC) de la page dossier...
         # Elle sert à mettre à jour le dossier du candidat...
         # C'est le travail du client courant
         self.get_client_cour().traiter(**kwargs)    # chaque client traite à sa manière !!
-        # Si Jury, on rafraîchit la page menu de l'admin
+        # Si Jury, on rafraîchit la page menu de l'admin (décompte des traitements)
         if isinstance(self.get_client_cour(), Jury):
             self.set_rafraich(True)
         # Et on retourne à la page dossier
-        #cherrypy.response.headers["content-type"] = "text/html"
         return self.affi_dossier()
         
     @cherrypy.expose
@@ -250,92 +228,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def genere_fichiers_comm(self):
         # Générer les fichiers comm_XXXX.xml ou XXXX désigne une filière
-        # Récupération des fichiers admin
-        list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-        # Pour chaque fichier "admin_*.xml"
-        for fich in list_fich:
-            # Tout d'abord, calculer le score brut de chaque candidat 
-            for cand in fich:
-                outil.calcul_scoreb(cand)
-            # Classement par scoreb décroissant
-            doss = fich.ordonne('score_b')
-            # Calcul du rang de chaque candidat et renseignement du noeuds 'rang_brut'
-            for cand in fich:
-                xml.set(cand, 'Rang brut',  str(outil.rang(cand, doss, 'Score brut')))
-            # Récupération de la filière et du nombre de jurys 
-            nbjury = int(nb_jurys[fich.filiere().lower()])
-            # Découpage en n listes de dossiers
-            for j in range(0, nbjury):
-                dossier = []    # deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append
-                [dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if i%nbjury == j]
-                # Sauvegarde
-                res = etree.Element('candidats')
-                [res.append(cand) for cand in dossier]
-                nom = os.path.join(os.curdir, "data", "comm_{}{}.xml".format(fich.filiere().upper(), j+1))
-                with open(nom, 'wb') as fichier:
-                    fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
-        # Création fichier decompte
-        decompt = {}
-        for fil in filieres:
-            decompt['{}'.format(fil.upper())]=0
-        with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
-            pickle.dump(decompt, stat_fich)
+        generation_comm()
         # Enfin, on retourne au menu
         return self.affiche_menu()
 
     @cherrypy.expose
     def clore_commission(self):
-        # Récolter les fichiers après la commission
-        # Pour chaque filière
-        # Récolte du travail de la commission, mise à jour des scores finals.
-        # Classement par ordre de score final décroissant puis réunion des fichiers
-        # de chaque sous-commission en un fichier class_XXXX.xml ou XXXX = filière
-        # Enfin, création des différents tableaux paramétrés dans paramètres.py
-        tot_class = {} # dictionnaire contenant les nombres de candidats classés par filière
-        for fil in filieres:
-            path = os.path.join(os.curdir, "data", "comm_{}*.xml".format(fil.upper()))
-            list_fich = [Fichier(fich) for fich in glob.glob(path)]
-            list_doss = [] # contiendra les dossiers de chaque sous-comm
-            # Pour chaque sous-commission
-            for fich in list_fich:
-                # Les fichiers non vus se voient devenir NC avec
-                # motifs = "Dossier moins bon que le dernier classé" (sauf s'il y a déjà un motif - Admin)
-                for c in fich:
-                    if xml.get(c, 'Jury') == 'Auto':
-                        xml.set(c, 'Correction', 'NC')
-                        xml.set(c, 'Score final', 'NC')
-                        if xml.get(c, 'Motifs') == '':
-                            xml.set(c, 'Motifs', 'Dossier moins bon que le dernier classé.')
-                # list_doss récupère la liste des dossiers classée selon score_final + age
-                list_doss.append(fich.ordonne('score_f'))
-            # Ensuite, on entremêle les dossiers de chaque sous-comm
-            doss_fin = []
-            if list_doss: # Y a-t-il des dossiers dans cette liste ?
-                nb = len(list_doss[0])
-                num = 0
-                for i in range(0, nb): # list_doss[0] est le plus grand !!
-                    doss_fin.append(list_doss[0][i])
-                    for k in range(1, len(list_doss)): # reste-t-il des candidats classés dans les listes suivantes ?
-                        if i < len(list_doss[k]): doss_fin.append(list_doss[k][i])
-                res = etree.Element('candidats')
-                [res.append(c) for c in doss_fin]
-                # Rang
-                rg = 1
-                for cand in res:
-                    nu = 'NC'
-                    if xml.get(cand, 'Score final') != 'NC':
-                        nu = str(rg)
-                        rg += 1
-                    xml.set(cand, 'Rang final', nu)
-                # Sauvegarde du fichier class...
-                nom = os.path.join(os.curdir, "data", "class_{}.xml".format(fil.upper()))
-                with open(nom, 'wb') as fichier:
-                    fichier.write(etree.tostring(res, pretty_print=True, encoding='utf-8'))
-            tot_class.update({"{}".format(fil.upper()):rg-1})
-        # On lance la génération des tableaux bilan de commission
-        list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "class_*.xml"))]
-        outil.tableaux_bilan(list_fich)
-        # Enfin, on retourne au menu
+        clore_commission()
+        # Et on retourne au menu
         return self.affiche_menu()
     
     @cherrypy.expose
