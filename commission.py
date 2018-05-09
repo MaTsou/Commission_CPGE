@@ -107,6 +107,16 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             self.clients[key] = Jury(key)
         # On affiche le menu du client
         return self.affiche_menu()
+
+    @cherrypy.expose
+    def identification(self, **kwargs):
+        # Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
+        key = cherrypy.session['JE']
+        if kwargs.get('acces', '') == "Accès administrateur":
+            self.clients[key] = Admin(key) # création d'une instance admin
+        else:
+            self.clients[key] = Jury(key) # création d'une instance jury
+        return self.affiche_menu() # Affichage du menu adéquat
   
     @cherrypy.expose
     def affiche_menu(self):
@@ -123,16 +133,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         return self.html_compose.menu(client, self.fichiers_utilises, self.comm_en_cours)
 
     @cherrypy.expose
-    def identification(self, **kwargs):
-        # Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
-        key = cherrypy.session['JE']
-        if kwargs.get('acces', '') == "Accès administrateur":
-            self.clients[key] = Admin(key) # création d'une instance admin
-        else:
-            self.clients[key] = Jury(key) # création d'une instance jury
-        return self.affiche_menu() # Affichage du menu adéquat
-
-    @cherrypy.expose
     def traiter_parcourssup(self, **kwargs):
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
         # Traite les données brutes de ParcoursSup : csv ET pdf
@@ -146,9 +146,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 yield txt
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
-            #generateur = traiter_pdf()
-            #for txt in generateur:
-            #    yield txt
+            generateur = traiter_pdf()
+            for txt in generateur:
+                yield txt
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
