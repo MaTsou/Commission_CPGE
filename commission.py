@@ -28,7 +28,6 @@
 
 import os, sys, cherrypy, glob, webbrowser
 from utils.parametres import entete
-from utils.adjoint import traiter_csv, traiter_pdf, stat, generation_comm, clore_commission
 # Chargement de toutes les classes dont le serveur a besoin
 from utils.clients import Jury, Admin
 from utils.fichier import Fichier
@@ -137,23 +136,24 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Méthode appelée par l'Admin : bouton "TRAITER / VERIFIER"
         # Traite les données brutes de ParcoursSup : csv ET pdf
         cherrypy.response.headers["content-type"] = "text/event-stream"
-        # trouver l'adjoint :
+        # trouver l'admin :
+        admin = self.get_client_cour()
         def contenu():
             yield "Début du Traitement\n\n"
             ## Traitement des csv ##
-            generateur = traiter_csv()
+            generateur = admin.traiter_csv()
             for txt in generateur:
                 yield txt
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
-            generateur = traiter_pdf()
-            for txt in generateur:
-                yield txt
+            #generateur = admin.traiter_pdf()
+            #for txt in generateur:
+            #    yield txt
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"
             list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-            stat(list_fich)
+            admin.stat(list_fich)
             # Fin : retour au menu
             self.set_rafraich(True)
             yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"
@@ -228,13 +228,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     @cherrypy.expose
     def genere_fichiers_comm(self):
         # Générer les fichiers comm_XXXX.xml ou XXXX désigne une filière
-        generation_comm()
+        self.get_client_cour().generation_comm()
         # Enfin, on retourne au menu
         return self.affiche_menu()
 
     @cherrypy.expose
     def clore_commission(self):
-        clore_commission()
+        self.get_client_cour().clore_commission()
         # Et on retourne au menu
         return self.affiche_menu()
     

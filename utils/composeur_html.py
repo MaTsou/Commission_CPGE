@@ -9,7 +9,6 @@ import os, glob, pickle
 from utils.parametres import filieres, min_correc, max_correc, nb_correc, motivations, nb_classes
 from utils.fichier import Fichier
 from utils.clients import Jury, Admin
-from utils.adjoint import stat
 
 #################################################################################
 #                               Composeur                                       #
@@ -201,7 +200,7 @@ class Composeur(object):
             if not(os.path.exists(chem)): # le fichier stat n'existe pas
                 # on le créé
                 list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-                stat(list_fich) # on le créé
+                qui.stat(list_fich) # on le créé
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste
