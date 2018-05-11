@@ -74,8 +74,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # accessible aux autres jurys... Pour qu'il reste verrouillé, il suffit de ne pas retourner
             # sur la page d'accueil !
             key = cherrypy.session['JE']
-            self.clients.pop(key, '')
-        cherrypy.session['JE'] = key # Stockée sur la machine client
+            self.clients.pop(key, '') # supprime l'entrée correspondante à ce client dans self.clients
+        cherrypy.session['JE'] = key # Cookie de session en place; stocké sur la machine client
         # Le client est-il sur la machine serveur ?
         if cherrypy.request.local.name == cherrypy.request.remote.ip:
             # Si oui, en mode TEST on affiche un menu de choix : "login Admin ou login Commission ?"
@@ -96,9 +96,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 
     @cherrypy.expose
     def identification(self, **kwargs):
-        # Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
+        # Choix Admin ou Jury : fonction appelée par le formulaire de la page d'accueil EN MODE TEST UNIQUEMENT. 
         key = cherrypy.session['JE']
-        if kwargs.get('acces', '') == "Accès administrateur":
+        if kwargs.get('acces', '') == "Accès administrateur": # pourquoi 'acces' n'existe-t-il parfois pas ?!
             self.clients[key] = Admin(key) # création d'une instance admin
         else:
             self.clients[key] = Jury(key) # création d'une instance jury

@@ -140,10 +140,15 @@ class Fichier(object):
                         coef['{} Première trimestre {}'.format(mat, trim)] +=\
                                 coef['{} Première trimestre 3'.format(mat)]/2
             if cls.get(cand, 'sem_term') == 'on':
-                for mat in ['Mathématiques', 'Physique/Chimie']:
-                    coef['{} Terminale trimestre 1'.format(mat)] +=\
-                            coef['{} Terminale trimestre 2'.format(mat)]
-            print('candidat {} : {}'.format(cls.get(cand, 'Nom'),coef))
+                if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
+                    for mat in ['Mathématiques', 'Physique/Chimie']:
+                        for trim in ['1', '2']:
+                            coef['{} Terminale trimestre {}'.format(mat, trim)] +=\
+                                    coef['{} Terminale trimestre 3'.format(mat)]/2
+                else:
+                    for mat in ['Mathématiques', 'Physique/Chimie']:
+                        coef['{} Terminale trimestre 1'.format(mat)] +=\
+                                coef['{} Terminale trimestre 2'.format(mat)]
             # Initialisation :
             somme, poids = 0, 0
             for key in coef.keys():
