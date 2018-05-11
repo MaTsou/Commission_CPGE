@@ -6,7 +6,8 @@
 #   une page html à destination de navigateur.
 
 import os, glob, pickle
-from utils.parametres import filieres, min_correc, max_correc, nb_correc, motivations, nb_classes
+from utils.parametres import min_correc, max_correc, nb_correc
+from config import filieres, motivations, nb_classes
 from utils.fichier import Fichier
 from utils.clients import Jury, Admin
 

@@ -4,7 +4,7 @@
 import os, PyPDF2
 from parse import parse
 from parse import compile
-from utils.parametres import filieres
+from config import filieres
 
 
 ## Méthodes de pré-traitement et de post-traitement

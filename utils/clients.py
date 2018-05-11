@@ -20,7 +20,7 @@ from parse import parse
 from utils.fichier import Fichier
 from utils.csv_parcourssup import lire
 from utils.nettoie_xml import nettoie
-from utils.parametres import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
+from config import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
 from utils.toolbox import decoup, restaure_virginite
 
 #################################################################################

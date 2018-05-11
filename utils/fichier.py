@@ -11,11 +11,9 @@
 
 from parse import parse
 from lxml import etree
-from utils.parametres import filieres
+from config import filieres
 from utils.parametres import coef_cpes
 from utils.parametres import coef_term
-from utils.parametres import prop_ecrit_EAF 
-from utils.parametres import prop_prem_trim
 from utils.toolbox import *
 
 #################################################################################
@@ -127,107 +125,35 @@ class Fichier(object):
     def calcul_scoreb(cls, cand):
         """ Calcul du score brut et renseignement du noeud xml """
         # Si correc = 'NC', cela signifie que l'admin rejette le dossier : scoreb = 0
-        scoreb = vers_str(0) # valeur si correc = 'NC'
+        scoreb = 0 # valeur si correc = 'NC'
         if cls.get(cand, 'Correction') != 'NC':
             # Récupération des coef
             if 'cpes' in cls.get(cand, 'Classe actuelle').lower(): 
-                coef = coef_cpes
+                coef = dict(coef_cpes) # attention, il faut travailler sur une copie de coef_cpes
             else:
-                coef = coef_term
-            # moyenne de première
-            tot = 0
-            nb = 0
-            matiere = ['Mathématiques', 'Physique/Chimie']
-            trim = ['trimestre 1','trimestre 2','trimestre 3']
-            for t in trim:
-                for mat in matiere:
-                    key = '{} Première {}'.format(mat, t)
-                    note = cls.get(cand, key)
-                    if note != '-':
-                        tot += vers_num(note)
-                        nb += 1
-            if nb > 0:
-                moy_prem = tot/nb
-            else:
-                moy_prem = 0
-            # moyenne de terminale
-            tot = 0
-            nb = 0
-            if coef['cpes']: # candidat en cpes (poids uniforme)
-                trim = ['trimestre 1','trimestre 2','trimestre 3']
-                for t in trim:
-                    for mat in matiere:
-                        key = '{} Terminale {}'.format(mat, t)
-                        note = cls.get(cand, key)
-                        if note != '-':
-                            tot += vers_num(note)
-                            nb += 1
-                if nb > 0:
-                    moy_term = tot/nb
-                else:
-                    moy_term = 0
-            else: # candidat en terminale : 45% 1er trimestre ; 55% 2e trimestre (config dans parametre.py)
-                if cls.get(cand, 'sem_term') == 'on':
-                    for mat in matiere:
-                        key = '{} Terminale trimestre 1'.format(mat)
-                        note = cls.get(cand, key)
-                        if note != '-':
-                            tot += vers_num(note)
-                            nb += 1
-                else:
-                    trim = ['trimestre 1','trimestre 2']
-                    for t in trim:
-                        for mat in matiere:
-                            key = '{} Terminale {}'.format(mat, t)
-                            note = cls.get(cand, key)
-                            if note != '-':
-                                if '1' in t:
-                                    tot += vers_num(note)*prop_prem_trim
-                                    nb += prop_prem_trim 
-                                else:
-                                    tot+= vers_num(note)*(1-prop_prem_trim)
-                                    nb += 1-prop_prem_trim
-                if nb > 0:
-                    moy_term = tot/nb
-                else:
-                    moy_term = 0
-            # moyenne EAF : 2/3 pour l'écrit et 1/3 pour l'oral
-            tot = 0
-            nb = 0
-            note = cls.get(cand, 'Écrit EAF')
-            if note != '-':
-                tot += vers_num(note)*prop_ecrit_EAF
-                nb += prop_ecrit_EAF
-            note = cls.get(cand, 'Oral EAF')
-            if note != '-':
-                tot += vers_num(note)*(1-prop_ecrit_EAF)
-                nb += 1-prop_ecrit_EAF
-            if nb > 0:
-                moy_EAF = tot/nb
-            else:
-                moy_EAF = 0
-            # éventuellement moyenne de CPES
-            if coef['cpes']: # candidat en cpes
-                tot = 0
-                nb = 0
-                keys = ['Mathématiques CPES', 'Physique/Chimie CPES']
-                for key in keys:
-                    note = cls.get(cand, key)
-                    if note != '-':
-                        tot += vers_num(note)
-                        nb += 1
-                if nb > 0:
-                    moy_cpes = tot/nb
-                else:
-                    moy_cpes = 0
-            # score brut
-            tot = moy_prem*coef['Première'] + moy_term*coef['Terminale'] + moy_EAF*coef['EAF']
-            nb = coef['Première'] + coef['Terminale'] + coef['EAF']
-            if coef['cpes']:
-                tot += moy_cpes*coef['cpes']
-                nb += coef['cpes']
-            scoreb = vers_str(tot/nb)
-        cls.set(cand, 'Score brut', scoreb)
+                coef = dict(coef_term) # idem !
+            # Pré-traitement pour un candidat noté en semestres
+            # Report de coefficient pour maintien du poids relatif
+            if cls.get(cand, 'sem_prem') == 'on':
+                for mat in ['Mathématiques', 'Physique/Chimie']:
+                    for trim in ['1', '2']:
+                        coef['{} Première trimestre {}'.format(mat, trim)] +=\
+                                coef['{} Première trimestre 3'.format(mat)]/2
+            if cls.get(cand, 'sem_term') == 'on':
+                for mat in ['Mathématiques', 'Physique/Chimie']:
+                    coef['{} Terminale trimestre 1'.format(mat)] +=\
+                            coef['{} Terminale trimestre 2'.format(mat)]
+            print('candidat {} : {}'.format(cls.get(cand, 'Nom'),coef))
+            # Initialisation :
+            somme, poids = 0, 0
+            for key in coef.keys():
+                note = cls.get(cand, key)
+                if note != '-':
+                    somme += vers_num(note)*coef[key]
+                    poids += coef[key]
+            if poids != 0:
+                scoreb = somme/poids
+        cls.set(cand, 'Score brut', vers_str(scoreb))
             
     @classmethod
     def rang(cls, cand, dossiers, critere):
