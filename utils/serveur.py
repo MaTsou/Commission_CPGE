@@ -133,9 +133,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 yield txt
             ## Fin du traitement des csv ##
             ## Traitement des pdf ##
-            #generateur = admin.traiter_pdf()
-            #for txt in generateur:
-            #    yield txt
+            generateur = admin.traiter_pdf()
+            for txt in generateur:
+                yield txt
             # Fin du traitement pdf#
             # Faire des statistiques
             yield "\n     Décompte des candidatures\n\n"

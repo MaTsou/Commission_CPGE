@@ -33,4 +33,4 @@ if '-ip' in sys.argv:
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
 cherrypy.config.update({"server.socket_host":ip})
-cherrypy.quickstart(Serveur(test, ip),'/', config ="utils/config.conf")
+cherrypy.quickstart(Serveur(test, ip),'/', config ="utils/cherrypy.conf")
