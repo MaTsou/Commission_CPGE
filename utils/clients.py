@@ -72,9 +72,9 @@ class Jury(Client):
         # On récupère les dossiers traités seulement
         doss = [ca for ca in self.fichier if (Fichier.get(ca, 'traité') == 'oui' and Fichier.get(ca, 'Correction') != 'NC')]
         # Ceux-ci sont classés par ordre de score final décroissant
-        doss[:] = sorted(doss, key = lambda cand: -Fichier.get(cand, 'Score final num'))
+        doss[:] = sorted(doss, key = lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')))
         # On calcule le rang du score_final actuel (celui de cand) dans cette liste
-        rg = Fichier.rang(cand, doss, 'Score final num')
+        rg = Fichier.rang(cand, doss, 'Score final')
         # À ce stade, rg est le rang dans la liste du jury. 
         # La suite consiste à calculer n*(rg-1) + k
         # où n est le nombre de jurys et k l'indice du jury courant.
@@ -91,7 +91,7 @@ class Jury(Client):
         ## On met à jour le contenu de ce dossier :
         # 1/ correction apportée par le jury et score final
         if kwargs['nc'] == 'NC':
-            cor, scoref = 'NC', 'NC'
+            cor, scoref = 'NC', '0'
         else:
             cor = kwargs['correc']
             note = float(Fichier.get(cand, 'Score brut').replace(',','.')) + float(cor)
@@ -322,9 +322,9 @@ class Admin(Client):
                 # Les fichiers non vus se voient devenir NC avec
                 # motifs = "Dossier moins bon que le dernier classé" (sauf s'il y a déjà un motif - Admin)
                 for c in fich:
-                    if Fichier.get(c, 'Jury') == 'Auto':
+                    if Fichier.get(c, 'traité') != 'oui':
                         Fichier.set(c, 'Correction', 'NC')
-                        Fichier.set(c, 'Score final', 'NC')
+                        Fichier.set(c, 'Score final', '0')
                         if Fichier.get(c, 'Motifs') == '':
                             Fichier.set(c, 'Motifs', 'Dossier moins bon que le dernier classé.')
                 # list_doss récupère la liste des dossiers classée selon score_final + age
@@ -344,7 +344,7 @@ class Admin(Client):
                 rg = 1
                 for cand in res:
                     nu = 'NC'
-                    if Fichier.get(cand, 'Score final') != 'NC':
+                    if Fichier.get(cand, 'Correction') != 'NC':
                         nu = str(rg)
                         rg += 1
                     Fichier.set(cand, 'Rang final', nu)
@@ -373,7 +373,7 @@ class Admin(Client):
                 cw.writerow(entetes)
                 for cand in fich:
                     a = (Fichier.get(cand, 'traité') == 'oui')
-                    b = (Fichier.get(cand, 'Score final') != 'NC')
+                    b = (Fichier.get(cand, 'Correction') != 'NC')
                     c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
                     if a and b and c: # seulement les classés dont le rang est inférieur à la limite fixée
                         data = [Fichier.get(cand, champ) for champ in entetes]

@@ -60,11 +60,6 @@ def formate_jury(jury):
         jury = parse('Jury {}', jury)[0]
     return jury
 
-def num_score(sc):
-    """ Pour les tris, convertit un score 'NC' en la valeur 0 et renvoie un float"""
-    if sc == 'NC': sc = '0'
-    return vers_num(sc)
-
 ## Fonction de découpage du fichier pdf
 def decoup(sourc, dest):
     """ découpage du fichier pdf en autant de fichiers que de candidats """

@@ -387,7 +387,7 @@ class Composeur(object):
             motifs += ' class = "motif" value ="{}"/></td></tr>'.format(motif)
         # input hidden nc
         # Un champ caché qui sert à stocker le choix 'NC'; champ nécessaire au script.js qui surveille
-        # que le jury motive bien ce genre de choix. Pourrait être remplacer par une case à cocher. On
+        # que le jury motive bien ce genre de choix. Pourrait être remplacé par une case à cocher. On
         # supprimerait alors le bouton NC...
         nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
         # On met tout ça dans un dico data pour passage en argument à html['contenu_action']
@@ -443,7 +443,7 @@ class Composeur(object):
         saut = '<div style = "page-break-after: always;"></div>'
         for cand in fich:
             a = (Fichier.get(cand, 'traité') == 'oui')
-            b = (Fichier.get(cand, 'Score final') != 'NC')
+            b = (Fichier.get(cand, 'Correction') != 'NC')
             c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
             if a and b and c: # seulement les classés dont le rang est inférieur à la limite fixée
                 txt += entete

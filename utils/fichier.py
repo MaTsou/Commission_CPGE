@@ -233,9 +233,13 @@ class Fichier(object):
     def rang(cls, cand, dossiers, critere):
         """ Trouver le rang d'un candidat dans une liste de dossiers, selon un critère donné """
         rg = 1
-        score_actu = cls.get(cand, critere)
+        score = lambda ca: float(cls.get(ca, critere).replace(',','.'))
+        # On traite le cas d'un candidat non encore traité : son score est une chaîne vide !
+        score_cand = 0
+        if cls.get(cand, critere) != '':
+            score_cand = score(cand)
         if dossiers:
-            while (rg <= len(dossiers) and cls.get(dossiers[rg-1], critere) > score_actu):
+            while (rg <= len(dossiers) and score(dossiers[rg-1]) > score_cand):
                 rg+= 1
         return rg
     #                                             #
@@ -246,7 +250,7 @@ class Fichier(object):
     # 'ordonne' définie plus bas..
     _criteres_tri = {
             'score_b' : lambda cand: -float(Fichier.get(cand, 'Score brut').replace(',','.')),
-            'score_f' : lambda cand: -Fichier.get(cand, 'Score final num'),
+            'score_f' : lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')),
             'alpha' : lambda cand: Fichier.get(cand, 'Nom')
             }
 
@@ -287,7 +291,6 @@ class Fichier(object):
             'Score brut'        : {'query' : 'diagnostic/score', 'defaut' : ''},
             'Correction'        : {'query' : 'diagnostic/correc', 'defaut' : '0'},
             'Score final'       : {'query' : 'diagnostic/scoref', 'defaut' : ''},
-            'Score final num'   : {'query' : 'diagnostic/scoref', 'defaut' : 0, 'post' : num_score},
             'Rang brut'         : {'query' : 'diagnostic/rangb', 'defaut' : '?'},
             'Rang final'        : {'query' : 'diagnostic/rangf', 'defaut' : '?'}
             }
@@ -350,7 +353,7 @@ class Fichier(object):
         """ Renvoie le candidat dont l'identifiant est identique à celui de cand """
         # Ne sert qu'à l'admin quand il traite un candidat sur une filière
         # et REPORTE ses modifs dans toutes les filières demandées..
-        # Sert aussi à la fonction stat() dans la toolbox.
+        # Sert aussi à la fonction stat() dans la classe Admin.
         # À n'utiliser que sur des fichiers contenant le candidat ('cand in fichier' True)
         # Utile de la rendre plus robuste (gérer l'erreur si 'cand in fichier' False) ?
         index = 0

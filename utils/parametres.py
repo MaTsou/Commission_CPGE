@@ -1,5 +1,5 @@
 ############################################################################
-# Ce fichier contient tous les paramètres de l'application #
+# Ce fichier contient les paramètres stables de l'application              #
 ############################################################################
 
 # Entête général des pages html:
@@ -28,11 +28,12 @@ prop_prem_trim = .45
 motivations = [
     "Niveau en LV",
     "Niveau en sport",
+    "Aptitude/Attitude face au travail",
+    "Comportement",
+    "Harmonisation de la notation",
+    "Évolution",
     "Établissement",
     "Age",
-    "Aptitude/Attitude face au travail",
-    "Discipline/Absences",
-    "Dossier incomplet ou dont l'évaluation est irréalisable"
     ]
 
 ###########################################################################
