@@ -3,9 +3,9 @@
 
 # Ce fichier contient la classe Fichier.
 ###
-#   Contient le contenu (dossiers) d'un fichier dont le nom est
-#   passé au constructeur.
-#   Réuni toutes les méthodes agissant sur ces dossiers et celles
+#   Chaque instance Fichier est construite à partir d'un nom de fichier xml.
+#   Son attribut principal est 'dossiers' : liste de noeuds candidat.
+#   Cet objet réuni toutes les méthodes agissant sur ces dossiers et celles
 #   qui agissent sur le contenu des dossiers : les candidatures.
 ###
 
@@ -28,8 +28,12 @@ class Fichier(object):
     @classmethod
     def get(cls, cand, attr):
         """ accesseur : récupère le contenu d'un noeud xml
-         cand est un etree.Element pointant un candidat
-         attr est une clé du dictionnaire 'acces' défini ci-dessus """
+        cand est un etree.Element pointant un candidat
+        attr est une clé du dictionnaire 'acces' défini ci-dessous """
+        # Le dictionnaire 'acces' contient le chemin xpath relatif à l'attribut attr et éventuellement le nom d'une 
+        # fonction de post-traitement. Celle-ci sert à mettre en 'forme' la valeur lue (nécessairement de type string) 
+        # pour l'usage auquel elle est destinée. 'acces' contient également la valeur à renvoyer dans le cas où le noeud 
+        # n'existe pas (valeur par défaut).
         try:
             result = cand.xpath(Fichier.acces[attr]['query'])[0].text
             if 'post' in Fichier.acces[attr].keys():
@@ -45,7 +49,9 @@ class Fichier(object):
          cand est un etree.Element pointant un candidat
          attr est une clé du dictionnaire 'acces' défini ci-dessus
          value est la valeur à écrire dans le noeud choisi.
-         Si le noeud n'existe pas, la fonction accro_branch (ci-après) """
+         Si le noeud n'existe pas, la fonction accro_branch (ci-après) reconstituera l'arborescence manquante. """
+         # 'acces' contient éventuellement une le nom d'une fonction de pré-traitement. Celle-ci sert à préparer la 
+         # valeur à être stockée dans le fichier xml.
         query = Fichier.acces[attr]['query']
         if 'pre' in Fichier.acces[attr].keys():
             value = Fichier.acces[attr]['pre'](value)
@@ -88,8 +94,11 @@ class Fichier(object):
 
     @classmethod
     def is_complet(cls, cand):
-        """ La synthèse (notes de 1e, Tle, bac français, etc.) est elle complète ? booléen """
-        # Construction de la liste des champs à vérifier
+        """ Renvoie True si tous les éléments nécessaires à un calcul correct du score brut sont présents """
+        # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin 
+        # doit faire tout ce qu'il peut pour la lever..
+        #
+        # Construction de l'ensemble des champs à vérifier
         champs = set([])
         matiere = ['Mathématiques', 'Physique/Chimie']
         # Première
@@ -115,7 +124,7 @@ class Fichier(object):
         champs.add('Oral EAF')
         # Test :
         complet = not(cls.get(cand, 'Classe actuelle') == '?') # une initialisation astucieuse..
-        while (complet and len(champs) > 0):
+        while (complet and len(champs) > 0): # Dès qu'un champ manque à l'appel on arrête et renvoie False
             ch = champs.pop()
             if cls.get(cand, ch) == '-': # '-' est la valeur par défaut d'une note..
                 complet = False
@@ -124,9 +133,9 @@ class Fichier(object):
     @classmethod
     def calcul_scoreb(cls, cand):
         """ Calcul du score brut et renseignement du noeud xml """
-        # Si correc = 'NC', cela signifie que l'admin rejette le dossier : scoreb = 0
-        scoreb = 0 # valeur si correc = 'NC'
-        if cls.get(cand, 'Correction') != 'NC':
+        # Si correction = 'NC', cela signifie que l'admin rejette le dossier : scoreb = 0
+        scoreb = 0 # valeur si correction = 'NC'
+        if cls.get(cand, 'Correction') != 'NC': # l'admin n'a pas rejeté
             # Récupération des coef
             if 'cpes' in cls.get(cand, 'Classe actuelle').lower(): 
                 coef = dict(coef_cpes) # attention, il faut travailler sur une copie de coef_cpes
@@ -188,11 +197,11 @@ class Fichier(object):
     ## acces : dictionnaire contenant les clés d'accès aux informations candidat
     # L'argument est encore un dictionnaire :
     # Celui-ci DOIT contenir :
-    #       une clé 'query' pointant sur le path xml,
-    #       une clé 'defaut' pointant sur la valeur à renvoyer par défaut.
+    #       une clé 'query' donnant le path xml,
+    #       une clé 'defaut' donnant la valeur à renvoyer par défaut.
     # et il PEUT contenir :
-    #       une clé 'pre' pointant sur une fonction de pré-traitement (avant set),
-    #       une clé 'post' pointant sur une fonction de post-traitement (après get).
+    #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
+    #       une clé 'post' donnant une fonction de post-traitement (après get).
     acces = {\
             'Nom'               : {'query' : 'nom', 'defaut' : '?'},
             'Prénom'            : {'query' : 'prénom', 'defaut' : '?'},
@@ -246,13 +255,14 @@ class Fichier(object):
     ############# Méthodes d'instance #############
     #                                             #
     def __init__(self, nom):
-        """ Constructeur """
+        """ Constructeur d'une instance Fichier.
+        'nom' est le chemin d'un fichier xml. """
         # stockage du nom
         self.nom = nom
         # A priori, il n'est pas nécessaire de vérifier que le
         # fichier 'nom' existe, cela a été fait avant la construction
-        parser = etree.XMLParser(remove_blank_text=True) # pour que pretty_print fonctionne
-        self._dossiers = etree.parse(nom, parser).getroot()
+        parser = etree.XMLParser(remove_blank_text=True) # pour que pretty_print fonctionne bien
+        self._dossiers = etree.parse(nom, parser).getroot() # récupération du contenu du fichier
         # On créé aussi l'ensemble (set) des identifiants des candidats
         self._identif = {Fichier.get(cand, 'Num ParcoursSup') for cand in self._dossiers}
         # On récupère la filière. Utilisation d'un set pour éviter les doublons !
@@ -282,7 +292,7 @@ class Fichier(object):
 
     def get_cand(self, cand):
         """ Renvoie le candidat dont l'identifiant est identique à celui de cand """
-        # Ne sert qu'à l'admin quand il traite un candidat sur une filière
+        # Sert à l'admin quand il traite un candidat sur une filière
         # et REPORTE ses modifs dans toutes les filières demandées..
         # Sert aussi à la fonction stat() dans la classe Admin.
         # À n'utiliser que sur des fichiers contenant le candidat ('cand in fichier' True)

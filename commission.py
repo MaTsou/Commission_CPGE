@@ -1,19 +1,6 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
-##### Principe de l'application ####
-# Le programme principal lance un gestionnaire de serveur. Il se présente sous la forme d'une instance d'un objet 
-# "Serveur". Cet objet dispose d'un attribut qui est un dictionnaire d'instances d'objets "Client". Ceci afin 
-# d'identifier qui dépose telle ou telle requête.
-#
-# Les clients sont ici de 2 types : soit de type administrateur, soit de type jury. Chacun est héritier d'une classe 
-# plus générale : "Client". En effet, admin et jury partagent certaines caractéristiques, parce que ce sont tous deux 
-# des clients du serveur. Cependant, les actions qu'ils peuvent exécutés étant différentes, il a fallu distinguer ces 
-# objets. Notamment dans le traitement d'un dossier de candidature, l'administrateur peut compléter certaines infos 
-# (notes notamment) manquantes mais ne juge pas le dossier alors qu'un jury corrige le score brut, commente son choix, 
-# mais ne touche pas au contenu du dossier.
-
-
 import os, sys, cherrypy
 from utils.serveur import Serveur
 
@@ -21,6 +8,16 @@ from utils.serveur import Serveur
 #                    === PROGRAMME PRINCIPAL ===                       #
 ########################################################################
 
+""" Le programme principal lance un gestionnaire (cherrypy) de serveur (ici
+sous la forme d'une instance d'un objet "Serveur").
+
+Le lancement de ce programme peut se faire par double clic sur son icone : lancement standard, sans option.
+ou en ligne de commande 'python commission.py'. Il est alors possible de préciser certaines options :
+  -test : lance une version test du programme (un menu supplémentaire est alors disponible)
+  -ip x.x.x.x : lance le serveur sur une ip non locale (sert au moment de la commission,
+    tout le reste se fait en local) """
+
+# Début du code :
 # Récupération des options de lancement ('-test' pour une version test, '-ip 196.168.1.10' pour changer l'ip serveur)
 test = False
 if '-test' in sys.argv:
