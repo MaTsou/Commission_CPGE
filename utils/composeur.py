@@ -2,8 +2,9 @@
 #-*- coding: utf-8 -*-
 
 # Ce fichier contient la classe Composeur
-#   Contient tout ce qui sert à composer le code html; renvoie
-#   une page html à destination de navigateur.
+#   Un objet Composeur tout ce qui sert à composer le code html; Il est
+#   mandaté par le serveur à chaque fois qu'une page doit être envoyée à
+#   un client.
 
 import os, glob, pickle
 from utils.parametres import min_correc, max_correc, nb_correc
@@ -20,9 +21,19 @@ class Composeur(object):
     utile (statistiques, ..)"""
 
     ### Attributs de classe
-    # Chargement de tous les "patrons" de pages HTML dans le dictionnaire "html" :
+    # Cet premier attribut nommé 'html' est un dictionnaire, contenant des patrons
+    # de page # ou de morceaux de page (entête, dossier, liste des dossiers, etc.).
+    # Chacun de # ces patrons (contenus dans le fichier 'patrons.html') se présente
+    # sous la forme # d'une chaîne de caractères prête à être 'formatée'.
+    # Par exemple, la chaîne :
+    # ch = "Demain je {action} la cuisine"
+    # pourra être formatée par la syntaxe :
+    # ch.format(**{'action' : 'fais'})
+    # C'est ainsi qu'on obtient des pages html "dynamiques" (dont le contenu change
+    # en fonction du contexte).
+    html = {}
+    # Chargement des patrons :
     with open(os. path. join(os.curdir, "utils", "patrons.html"), "r", encoding="utf8") as fi:
-        html = {}
         for ligne in fi:
             if ligne.startswith("[*"):  # étiquette trouvée ==>
                 label = ligne.strip()   # suppression LF et esp évent.
@@ -35,13 +46,12 @@ class Composeur(object):
                     txt += ligne
 
     # corrections proposées aux jurys (faire attention que 0 soit dans la liste !!)
+    # Cette liste sert ) fabriquer la barre de correction proposée aux jurys.
     corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0, (max_correc-min_correc)*nb_correc+1)]
     ### Fin déclaration attributs de classe
 
-    # constructeur
     def __init__(self, titre):
-        """ Constructeur """
-        # Variable d'instance : entête des pages html générées.
+        """ constructeur d'une instance Composeur. Reçoit une titre de page en paramètre. """
         self.titre = titre
 
     # Méthodes
@@ -76,11 +86,10 @@ class Composeur(object):
     def menu_comm(self, qui, fichiers_utilises):
         """ compose le menu du jury 'qui'
         Fichiers utilisés est une liste des fichiers déjà choisis par un jury
-        Ces fichiers sont inaccessibles (bouton disabled dans genere_menu_comm) """
+        Ces fichiers sont inaccessibles (bouton disabled) """
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
         ## Contenu = liste de fichiers
-        txt = ''
         # Recherche des fichiers destinés à la commission
         list_fich = glob.glob(os.path.join(os.curdir, "data", "comm_*.xml"))
         txt = ''
@@ -113,7 +122,7 @@ class Composeur(object):
         data = {}
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
-        if comm_en_cours: # attention, n'est jamais 'True' si le serveur fonction en localhost
+        if comm_en_cours: # attention, n'est jamais 'True' si le serveur fonctionne en localhost
             pass
         else:
             list_fich_comm = glob.glob(os.path.join(os.curdir,"data","comm_*.xml"))
@@ -127,11 +136,9 @@ class Composeur(object):
                 data['liste_stat'] = self.genere_liste_stat(qui)
                 # Etape 5 bouton et Etape 6
                 list_fich_class = glob.glob(os.path.join(os.curdir,"data","class_*.xml"))
-                txt5 = ''
-                txt6 = ''
+                data['liste_impression'] = ''
                 if len(list_fich_class) > 0:
-                    txt5 = self.genere_liste_impression()
-                data['liste_impression'] = txt5
+                    data['liste_impression'] = self.genere_liste_impression()
             
             else: # avant commission
                 patron += 'avant'
@@ -144,16 +151,16 @@ class Composeur(object):
                 # liste_stat
                 data['liste_stat'] = self.genere_liste_stat(qui)
                 # Etape 3 bouton : ce bouton n'est actif que si admin a levé toutes les alertes.
-                txt = ''
-                ### Teste s'il reste encore des alertes dans les fichiers admin
+                ### Testons s'il reste encore des alertes dans les fichiers admin
                 # Récupération des fichiers admin
                 list_fich = {Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))}
                 alertes = False
-                while not(alertes) and len(list_fich) > 0:
+                while not(alertes) and len(list_fich) > 0: # à la première alerte détectée alertes = True
                     fich = list_fich.pop()
                     alertes = ( True in {'- Alerte :' in Fichier.get(cand, 'Motifs') for cand in fich} )
-                ### Suit
-                if len(self.genere_liste_admin()) > 0:
+                ### Suite
+                txt = ''
+                if len(data['liste_admin']) > 0: # si les fichiers admin existent :
                     txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission"'
                     affich = ''
                     if (alertes):
@@ -198,13 +205,14 @@ class Composeur(object):
         if len(glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))) > 0: # si les fichiers admin existent
             # lecture du fichier stat
             chem = os.path.join(os.curdir, "data", "stat")
-            if not(os.path.exists(chem)): # le fichier stat n'existe pas
+            if not(os.path.exists(chem)): # le fichier stat n'existe pas (cela ne devrait pas arriver)
                 # on le créé
                 list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-                qui.stat(list_fich) # on le créé
+                qui.stat(list_fich)
+            # maintenant on peut effectivement lire le fichier stat
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
-            # Création de la liste
+            # Création de la liste à afficher
             liste_stat = '<h4>Statistiques :</h4>'
             # Pour commencer les sommes par filières
             liste_stat += '<ul style = "margin-top:-5%">'
@@ -215,7 +223,7 @@ class Composeur(object):
             # Ensuite les requêtes croisées
             liste_stat += 'dont :<ul>'
             for i in range(2**len(filieres)):
-                if not(i in deja_fait):  # avec la fonction math.log2 ce test est facile !!!
+                if not(i in deja_fait):  # avec la fonction math.log2 ce test serait facile !!!
                     seq = []
                     bina = bin(i)[2:] # bin revoie une chaine qui commence par 'Ob' : on vire !
                     while len(bina) < len(filieres):
@@ -230,7 +238,7 @@ class Composeur(object):
 
     def genere_liste_decompte(self):
         """ Sous-fonction pour le menu admin (pendant commission) : avancement de la commission """
-        try:
+        try: # normalement, decomptes existe !
             with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
                 decompt = pickle.load(fich)
                 txt = ''
@@ -246,10 +254,10 @@ class Composeur(object):
         txt = ''
         if len(list_fich) > 0:
             txt = '<h2>Choisissez le fichier que vous souhaitez imprimer</h2>'
-        for fich in list_fich:
-            txt+= '<input type = "submit" class ="fichier" name = "fichier" value = "{}"/>'.format(fich)
-            txt+='<br>'
-        txt+='<h3> Les tableaux récapitulatifs sont dans le dossier "./tableaux"</h3>'
+            for fich in list_fich:
+                txt += '<input type = "submit" class ="fichier" name = "fichier" value = "{}"/>'.format(fich)
+                txt +='<br>'
+            txt +='<h3> Les tableaux récapitulatifs sont dans le dossier "./tableaux"</h3>'
         return txt
 
 ########################################################
@@ -259,10 +267,13 @@ class Composeur(object):
         """ construction du code html constitutif de la page dossier """
         # format_comm = True lorsque la demande est destinée à concevoir les fiches bilan de commission.
         # En effet, cette demande est lancée par Admin, mais l'impression se fait avec un dossier formaté
-        # comme pour Jury : les notes de sont pas des <input type="text" .../> """
+        # comme pour Jury : les notes de sont pas des <input type="text" .../>. C'est ensuite le code css
+        # qui se charge d'adapter l'aspect de la page pour l'impression (fond blanc, barre de correction
+        # invisible, remplacée par une indication du jury qui a traité le dossier et la correction faite,
+        # liste des dossiers également invisible; vive le css !)
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
-        # construire ensuite la partie dossier, action de client puis la partie liste;
+        # construire ensuite les parties dossier, action de client puis liste des dossiers;
         # La partie dossier est créée par la fonction genere_dossier; infos données par client.fichier
         dossier = Composeur.html['contenu_dossier'].format(\
                 **self.genere_dossier(qui, qui.get_cand(), isinstance(qui, Admin)))
@@ -307,20 +318,20 @@ class Composeur(object):
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
         formateur_clas_actu = '{}'
         formateur_note = '{note}'
-        visib = 'disabled'
+        activ = 'disabled'
         if format_admin:
             formateur_clas_actu = '<input type="text" id="Classe actuelle" name="Classe actuelle" size="10" value="{}"/>'
             formateur_note = '<input type="text" class="notes grossi" id="{}" name="{}" value="{note}"\
                     onfocusout="verif_saisie()"/>'
-            visib = ''
+            activ = ''
         ### Suite de la création du dictionnaire
         # classe actuelle
         data['Classe actuelle'] = formateur_clas_actu.format(Fichier.get(cand, 'Classe actuelle'))
         # cases à cocher semestres
         if Fichier.get(cand, 'sem_prem') == 'on': txt = 'checked'
-        data['sem_prem'] = '{} {}'.format(visib, txt)
+        data['sem_prem'] = '{} {}'.format(activ, txt)
         if Fichier.get(cand, 'sem_term') == 'on': txt = 'checked'
-        data['sem_term'] = '{} {}'.format(visib, txt)
+        data['sem_term'] = '{} {}'.format(activ, txt)
         # Notes
         matiere = ['Mathématiques', 'Physique/Chimie']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
@@ -350,7 +361,7 @@ class Composeur(object):
         visib = 'none' # n'est visible que pour les jurys
         if isinstance(client, Jury): # seulement pour les jurys.
             rg_fin = client.get_rgfinal(cand)
-            visib = '' # n'est visible que pour les jurys
+            visib = '' # est visible pour les jurys
         ### Partie correction :
         # récupération correction
         correc = str(Fichier.get(cand, 'Correction'))
@@ -359,7 +370,8 @@ class Composeur(object):
             correc = 0
             ncval = 'NC'
             rg_fin = 'NC'
-        # Construction de la barre de correction :
+        # Construction de la barre de correction : POURQUOI LA FAIRE À CHAQUE FOIS --> ATTRIBUT DE CLASSE !
+        # ATTENTION : MIN="-3" MAX="3" ETC. DOIVENT ÊTRE REMPLACÉS PAR LES PARAMÈTRES ADÉQUATS.
         barre = '<tr><td width = "2.5%"></td><td>'
         barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25" name = "correc" id = "correc"\
         onchange="javascript:maj_note();" onmousemove="javascript:maj_note();" onclick="click_range();" value =\
@@ -380,7 +392,7 @@ class Composeur(object):
         motifs += '<input type="text" class = "txt_motifs" name="motif"\
                 id = "motif" value= "{}"/>'.format(Fichier.get(cand, 'Motifs'))
         motifs += '</td></tr>'
-        # La suite : motifs pré-définis
+        # La suite : motifs pré-définis À METTRE EN VARIABLE DE CLASSE !
         for index, motif in enumerate(motivations):
             key = 'mot_' + str(index)
             motifs += '<tr><td align = "left"><input type="button" name="{}"'.format(key)
@@ -414,20 +426,26 @@ class Composeur(object):
                 lis += '<input type = "submit" name="num" '
                 clas = 'doss'
                 if cand == client.get_cand(): # affecte la class css "doss_courant" au dossier courant
-                        clas += ' doss_courant'
-                if Fichier.get(cand, 'traité'):
-                        clas += ' doss_traite' # affecte la classe css "doss_traite" aux dossiers qui le sont
-                if Fichier.get(cand, 'Correction') == 'NC':
-                    clas += ' doss_rejete' # affecte la classe css "doss_rejete" aux dossiers NC
-                if isinstance(client, Admin) and '- Alerte' in Fichier.get(cand, 'Motifs'): # Admin seulement (alertes nettoie.py)
+                        clas += ' doss_courant' # candidat sélectionné entouré d'un cadre coloré
+                if Fichier.get(cand, 'traité'): # affecte la classe css "doss_traite" aux dossiers qui le sont
+                        clas += ' doss_traite' # candidat traité = background vert.
+                if Fichier.get(cand, 'Correction') == 'NC': # affecte la classe css "doss_rejete" aux dossiers NC
+                    clas += ' doss_rejete' # candidat NC = background gris.
+                ### dossiers à mettre en évidence (fond rouge) :
+                # client Admin ET alerte déposée par nettoie.py
+                if isinstance(client, Admin) and '- Alerte' in Fichier.get(cand, 'Motifs'):
                     clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
-                if isinstance(client, Jury) and '- Admin' in Fichier.get(cand, 'Motifs'): # Jury seulement (commentaires Admin)
+                # ou client Jury et admin a laissé un commentaire
+                if isinstance(client, Jury) and '- Admin' in Fichier.get(cand, 'Motifs'):
                     clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
+                ### fin dossiers à mettre en évidence
                 lis += 'class = "{}"'.format(clas)
                 nom = '{}, {}'.format(Fichier.get(cand, 'Nom'), Fichier.get(cand, 'Prénom'))
                 # La variable txt qui suit est le texte du bouton. Attention, ses 3 premiers
                 # caractères doivent être le numéro du dossier dans la liste des
                 # dossiers (client_get_dossiers())... Cela sert dans click_list(), pour identifier sur qui on a clické..
+                # une police monospace est utilisée pour l'esthétique et la largeur affectée au nom est fixée. Ainsi, 
+                # les informations de candidatures multiples sont alignées.
                 txt = '{:3d}) {: <30}{}'.format(index+1, nom[:29], Fichier.get(cand, 'Candidatures'))
                 lis += ' value="{}"></input><br>'.format(txt)
         lis += '-'*7 + ' fin de liste ' + '-'*7
@@ -441,7 +459,7 @@ class Composeur(object):
         fich = qui.fichier
         entete = '<h1 align="center" class="titre">{} - {}.</h1>'.format(self.titre, fich.filiere().upper())
         txt = ''
-        saut = '<div style = "page-break-after: always;"></div>'
+        saut = '<div style = "page-break-after: always;"></div>' # on saute une page entre chaque candidat
         for cand in fich:
             a = (Fichier.get(cand, 'traité') == 'oui')
             b = (Fichier.get(cand, 'Correction') != 'NC')
@@ -452,5 +470,5 @@ class Composeur(object):
                 txt += Composeur.html['contenu_dossier'].format(**self.genere_dossier(qui, cand))
                 txt += Composeur.html['contenu_action'].format(**self.genere_action(qui, cand))
                 txt += saut
-        txt = txt[:-len(saut)] # On enlève le dernier saut de page...
+        txt = txt[:-len(saut)] # On enlève le dernier saut de page... sinon on a une page blanche !
         return Composeur.html['page_impress'].format(**{'pages' : txt}) 

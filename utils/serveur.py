@@ -36,7 +36,7 @@ from utils.parametres import entete
 # Chargement de toutes les classes dont le serveur a besoin
 from utils.clients import Jury, Admin
 from utils.fichier import Fichier
-from utils.composeur_html import Composeur
+from utils.composeur import Composeur
 
 
 ########################################################################
