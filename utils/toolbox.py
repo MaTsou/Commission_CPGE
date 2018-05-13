@@ -7,7 +7,7 @@ from parse import compile
 from config import filieres
 
 
-## Méthodes de pré-traitement et de post-traitement
+## Méthodes de pré-traitement et de post-traitement utilisées dans les fonctions get et set de la classe Fichier.
 # accompagnées de fonctions de conversion utiles à la classe Fichier
 def isnote(note):
     """ Teste si 'note' est bien un réel compris entre 0 et 20 """
@@ -19,6 +19,7 @@ def isnote(note):
     return bool and vers_num(note)>=0 and vers_num(note)<=20
 
 def vers_num(str):
+    """ Transforme une chaîne contenant un nombre en un float """
     return float(str.replace(',','.'))
 
 def vers_str(num):
