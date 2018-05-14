@@ -322,14 +322,14 @@ caption
 	
 .motiv /* Cellule titre = Motivations(s) de la commission */
 	{
-		width : 42vw;
+		width : 73vw;
 		text-align : left;
 		font-size : 1.2em;
 	}
 
 .motif /* Bouton "motifs" commission */
 	{
-		width : 42vw; /* 60% de 70% de vw */
+		width : 21vw; /* la moitié de 60% de 70% de vw */
 		height : 2em;
 		text-align : left;
 		font-size : 1em;
@@ -362,7 +362,7 @@ caption
 
 .valid /* div du bouton valider */
 	{
-		width : 25vw; /* 40% de 70% de vw */
+		width : 14vw; /* 40% de 70% de vw */
 		text-align : center;
 		vertical-align : center;
 	}

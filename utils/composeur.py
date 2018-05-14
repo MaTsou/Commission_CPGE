@@ -48,6 +48,39 @@ class Composeur(object):
     # corrections proposées aux jurys (faire attention que 0 soit dans la liste !!)
     # Cette liste sert ) fabriquer la barre de correction proposée aux jurys.
     corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0, (max_correc-min_correc)*nb_correc+1)]
+
+    # Barre de correction :
+    # Elle s'inscrit dans une 'table' html à 3 colonnes (score brut | barre | score final)
+    barre = '<tr><td width = "2.5%"></td>' # un peu d'espace
+    barre += '<td><input type = "range" class = "range" min="{}" max = "{}" step = "{}" name = "correc" id = "correc"\
+    onchange="javascript:maj_note();" onmousemove="javascript:maj_note();" onclick="click_range();"'\
+    .format(min_correc, max_correc, 1/float(nb_correc))
+    barre += ' value = "{}"/></td>' # champ rempli dans la fonction 'genere_action'
+    barre += '<td width = "2.5%"></td></tr>' # on termine par un peu d'espace
+    txt = '' # on construit maintenant la liste des valeurs...
+    for index, valeur in enumerate(corrections):
+        if (index % 2 == 0):
+            txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
+    barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
+    "correc_notimpr">{}</tr></table>'.format(txt)
+    barre += '<span class = "correc_impr">{} : {:+.2f}</span>' # champs remplis dans la fonction 'genere_action'
+    barre += '</td></tr>'
+
+    # Liste des motivations
+    # Le premier élément est une zone de texte
+    motifs = '<table style = "align:center;">'
+    motifs += '<tr><td align = "left" colspan = "2"><input type="text" class = "txt_motifs" name="motif"\
+            id = "motif" value= "{}"/></td></tr>'
+    # La suite, les motifs pré-définis dans config.py
+    for index, motif in enumerate(motivations):
+        motifs += '<tr>'
+        for j in range(2):
+            key = 'mot_{}{}'.format(str(index), str(j)) # cette clé sert au code javascript de la page..
+            motifs += '<td align = "left"><input type="button" name="{}"'.format(key)
+            motifs += ' id="{}" onclick="javascript:maj_motif(this.id)"'.format(key)
+            motifs += ' class = "motif" value ="{}"/></td>'.format(motif[j])
+        motifs += '</tr>'
+    motifs += '</table>'
     ### Fin déclaration attributs de classe
 
     def __init__(self, titre):
@@ -362,6 +395,7 @@ class Composeur(object):
         if isinstance(client, Jury): # seulement pour les jurys.
             rg_fin = client.get_rgfinal(cand)
             visib = '' # est visible pour les jurys
+        rang_final = '<td style = "display:{};">Estimation du rang final : {}</td>'.format(visib, rg_fin)
         ### Partie correction :
         # récupération correction
         correc = str(Fichier.get(cand, 'Correction'))
@@ -370,46 +404,23 @@ class Composeur(object):
             correc = 0
             ncval = 'NC'
             rg_fin = 'NC'
-        # Construction de la barre de correction : POURQUOI LA FAIRE À CHAQUE FOIS --> ATTRIBUT DE CLASSE !
-        # ATTENTION : MIN="-3" MAX="3" ETC. DOIVENT ÊTRE REMPLACÉS PAR LES PARAMÈTRES ADÉQUATS.
-        barre = '<tr><td width = "2.5%"></td><td>'
-        barre += '<input type = "range" class = "range" min="-3" max = "3" step = ".25" name = "correc" id = "correc"\
-        onchange="javascript:maj_note();" onmousemove="javascript:maj_note();" onclick="click_range();" value =\
-        "{}"/>'.format(correc)
-        barre += '</td><td width = "2.5%"></td></tr>' # fin de la ligne range
-        txt = '' # on construit maintenant la liste des valeurs...
-        for index, valeur in enumerate(Composeur.corrections):
-            if (index % 2 == 0):
-                txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
-        barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
-        "correc_notimpr">{}</tr></table>'.format(txt)
-        barre += '<span class = "correc_impr">'+Fichier.get(cand, 'Jury')+' : {:+.2f}'.format(float(correc))+'</span>'
-        barre += '</td></tr>'
+        # Construction de la barre de correction qu'on alimente avec les infos courantes..
+        barre = Composeur.barre.format(correc, Fichier.get(cand, 'Jury'), float(correc))
         ### Partie motivations :
-        # Construction de la chaine motifs.
-        # le premier motif : champ texte.
-        motifs = '<tr><td align = "left">'
-        motifs += '<input type="text" class = "txt_motifs" name="motif"\
-                id = "motif" value= "{}"/>'.format(Fichier.get(cand, 'Motifs'))
-        motifs += '</td></tr>'
-        # La suite : motifs pré-définis À METTRE EN VARIABLE DE CLASSE !
-        for index, motif in enumerate(motivations):
-            key = 'mot_' + str(index)
-            motifs += '<tr><td align = "left"><input type="button" name="{}"'.format(key)
-            motifs += ' id="{}" onclick="javascript:maj_motif(this.id)"'.format(key)
-            motifs += ' class = "motif" value ="{}"/></td></tr>'.format(motif)
-        # input hidden nc
+        motifs = Composeur.motifs.format(Fichier.get(cand, 'Motifs'))
+        ### input hidden nc
         # Un champ caché qui sert à stocker le choix 'NC'; champ nécessaire au script.js qui surveille
         # que le jury motive bien ce genre de choix. Pourrait être remplacé par une case à cocher. On
         # supprimerait alors le bouton NC...
         nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
         # On met tout ça dans un dico data pour passage en argument à html['contenu_action']
-        data = {'barre' : barre}
-        data['scoreb'] = Fichier.get(cand, 'Score brut')
-        data['scoref'] = Fichier.get(cand, 'Score final')
-        data['nc'] = nc
-        data['rg_fin'] = '<td style = "display:{};">Estimation du rang final : {}</td>'.format(visib, rg_fin)
-        data['motifs'] = motifs
+        data = {'barre' : barre,
+                'scoreb' : Fichier.get(cand, 'Score brut'),
+                'scoref' : Fichier.get(cand, 'Score final'),
+                'nc' : nc,
+                'rg_fin' : rang_final,
+                'motifs' : motifs
+                }
         return data
         
     def genere_liste(self, client, mem_scroll):

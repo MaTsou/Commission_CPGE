@@ -14,14 +14,10 @@ nombre_de_candidats_classes  = ['120', '140', '1000']
 # Ne pas dépasser 7 lignes pour que l'affichage sur navigateur soit beau   # 
 ############################################################################
 motivations = [
-    "Niveau en LV",
-    "Niveau en sport",
-    "Aptitude/Attitude face au travail",
-    "Comportement",
-    "Harmonisation de la notation",
-    "Évolution",
-    "Établissement",
-    "Age",
+    ["Niveau en LV", "Harmonisation de la notation"],
+    ["Niveau en sport", "Aptitude/Attitude face au travail"],
+    ["Age", "Évolution"],
+    ["Établissement", "Comportement"],
     ]
 
 ############################################################################
