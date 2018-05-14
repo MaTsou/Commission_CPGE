@@ -177,11 +177,9 @@ class Admin(Client):
         for cl in classe:
             for mat in matiere:
                 for da in date:
-                    key_script = '{}{}{}'.format(cl[0], mat[0], da[-1]) # changera peut-être, les noms de notes dans
-                    # le fichier patrons.html est 'stylisé' : PM1 pour Mathématiques Première trimestre 1.. 
                     key = '{} {} {}'.format(mat, cl, da)
-                    if Fichier.get(cand, key) != kwargs[key_script]: # la note a-t-elle été modifiée ?
-                        for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), key, kwargs[key_script])
+                    if Fichier.get(cand, key) != kwargs[key]: # la note a-t-elle été modifiée ?
+                        for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), key, kwargs[key])
         # CPES et EAF
         liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
         for li in liste:

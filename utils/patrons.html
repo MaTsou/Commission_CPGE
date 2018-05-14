@@ -103,14 +103,15 @@
 [*contenu_dossier*]
 <table width = "100%" align = "center">
   <tr>
-    <td class="grossi" align = "left" colspan ="1">{Nom}</td>
+    <td class="grossi" align = "left" colspan ="1">{Nom}, {Prénom}</td>
     <td class="grossi" align = "center"> né(e) le {Date de naissance}</td>
-    <td class="grossi" align = "right">[Id]-INE : {id}</td>
+    <td class="grossi" align = "right">[Id]-INE : [{Num ParcoursSup}]-{INE}</td>
   </tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
   <tr>
-    <td class="grossi" align = "left" colspan = "3">Actuellement en {Classe actuelle}, {etab}</td>
+    <td class="grossi" align = "left" colspan = "3">Actuellement en {Classe actuelle}, {Établissement} ({Département}, 
+      {Pays})</td>
   </tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
@@ -131,17 +132,17 @@
     <td rowspan = "4">
       <table class = "bord" width = "100%">
         <tr><th> Math </th><th> Phys </th></tr>
-        <tr><td> {PM1} </td><td> {PP1} </td></tr>
-        <tr><td> {PM2} </td><td> {PP2} </td></tr>
-        <tr><td> {PM3} </td><td> {PP3} </td></tr>
+        <tr><td> {Mathématiques Première trimestre 1} </td><td> {Physique/Chimie Première trimestre 1} </td></tr>
+        <tr><td> {Mathématiques Première trimestre 2} </td><td> {Physique/Chimie Première trimestre 2} </td></tr>
+        <tr><td> {Mathématiques Première trimestre 3} </td><td> {Physique/Chimie Première trimestre 3} </td></tr>
       </table>
     </td>
     <td rowspan = "4" align = "right">
       <table class = "bord" width = "100%">
         <tr><th> Math </th><th> Phys </th></tr>
-        <tr><td> {TM1} </td><td> {TP1} </td></tr>
-        <tr><td> {TM2} </td><td> {TP2} </td></tr>
-        <tr><td> {TM3} </td><td> {TP3} </td></tr>
+        <tr><td> {Mathématiques Terminale trimestre 1} </td><td> {Physique/Chimie Terminale trimestre 1} </td></tr>
+        <tr><td> {Mathématiques Terminale trimestre 2} </td><td> {Physique/Chimie Terminale trimestre 2} </td></tr>
+        <tr><td> {Mathématiques Terminale trimestre 3} </td><td> {Physique/Chimie Terminale trimestre 3} </td></tr>
       </table>
     </td>
     <td rowspan = "2">

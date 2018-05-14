@@ -333,15 +333,12 @@ class Composeur(object):
     def genere_dossier(self, qui, cand, format_admin = False):
         """ Renvoie le dictionnaire contenant les infos du dossier en cours"""
         #### Début
+        data = {}
         # Pédigré
-        data = {'Nom':Fichier.get(cand, 'Nom') + ', ' + Fichier.get(cand, 'Prénom')}
-        data['Date de naissance'] = Fichier.get(cand, 'Date de naissance')
-        etab = Fichier.get(cand, 'Établissement')
-        dep = Fichier.get(cand, 'Département')
-        pays = Fichier.get(cand, 'Pays')
-        data['etab'] = '{} ({}, {})'.format(etab, dep, pays)
-        txt = '[{}]-{}'.format(Fichier.get(cand, 'Num ParcoursSup'), Fichier.get(cand, 'INE'))
-        data['id'] = txt
+        liste_attr = ['Nom', 'Prénom', 'Date de naissance', 'Établissement', 'Département',
+                'Pays', 'Num ParcoursSup', 'INE']
+        for attr in liste_attr:
+            data[attr] = Fichier.get(cand, attr)
         # récup filiere pour connaître le chemin vers le dossier pdf (dans répertoire docs_candidats)
         fil = qui.fichier.filiere()
         data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()),
@@ -361,8 +358,10 @@ class Composeur(object):
         # classe actuelle
         data['Classe actuelle'] = formateur_clas_actu.format(Fichier.get(cand, 'Classe actuelle'))
         # cases à cocher semestres
+        txt = ''
         if Fichier.get(cand, 'sem_prem') == 'on': txt = 'checked'
         data['sem_prem'] = '{} {}'.format(activ, txt)
+        txt = ''
         if Fichier.get(cand, 'sem_term') == 'on': txt = 'checked'
         data['sem_term'] = '{} {}'.format(activ, txt)
         # Notes
@@ -373,8 +372,7 @@ class Composeur(object):
             for mat in matiere:
                 for da in date:
                     key = '{} {} {}'.format(mat, cl, da)
-                    key_script = '{}{}{}'.format(cl[0], mat[0], da[-1])
-                    data[key_script] = formateur_note.format(key_script, key_script, note=Fichier.get(cand, key))
+                    data[key] = formateur_note.format(key, key, note=Fichier.get(cand, key))
         # Autres notes
         liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
         for li in liste:
