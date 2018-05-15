@@ -216,32 +216,30 @@ class Admin(Client):
     def traiter_csv(self):
         """ Traiter les fichiers .csv en provenance de ParcoursSup. """
         # Cette méthode est un générateur. Ceci permet l'envoi au navigateur d'un indicateur d'avancement.
-        yield "     Début du traitement des fichiers csv\n"
         for source in glob.glob(os.path.join(os.curdir, "data", "*.csv")): # On itère sur la liste des fichiers .csv
             for fil in filieres: # et sur chacune des filières
                 if fil in source.lower(): # Attention pour être traité, le nom du fichier csv doit contenir la filière...
                     dest = os.path.join(os.curdir, "data", "admin_{}.xml".format(fil.upper())) # nom du fichier produit
-                    yield "         Fichier {} ... ".format(fil.upper())
+                    yield "Fichier {} ... ".format(fil.upper())
                     contenu_xml = lire(source) # première lecture brute
                     contenu_xml = nettoie(contenu_xml) # nettoyage doux, filtrage des dossiers invalides + Alertes
                     with open(dest, 'wb') as fich: # Écriture du fichier admin_FILIÈRE.xml
                         fich.write(etree.tostring(contenu_xml, pretty_print=True, encoding='utf-8'))
-                    yield "traité.\n"
+                    yield "traité."
 
     def traiter_pdf(self):
         """ Traiter les fichiers .pdf en provenance de ParcoursSup. """
         # Générateur pour les mêmes raisons que traiter_csv..
-        yield "\n     Début du traitement des fichiers pdf (traitement long, restez patient...)\n"
         dest = os.path.join(os.curdir, "data", "docs_candidats") # dossier destination
         restaure_virginite(dest) # un coup de jeune pour dest..
         for fich in glob.glob(os.path.join(os.curdir, "data", "*.pdf")): # itération sur tous les pdf trouvés
             for fil in filieres: # et sur toutes les filières
                 if fil in fich.lower(): # un fichier n'est traité que si son nom contient une filière connue.
-                    yield "         Fichier {} ... ".format(fil.upper())
+                    yield "Fichier {} ... ".format(fil.upper())
                     desti = os.path.join(dest, fil)
                     os.mkdir(desti) # un dossier par filière
                     decoup(fich, desti) # fonction de découpage du pdf : dans la toolbox
-                    yield "traité.\n".format(parse("{}_{4s}.pdf", fich)[1])
+                    yield "traité.".format(parse("{}_{4s}.pdf", fich)[1])
 
     def stat(self, list_fich):
         """ Effectue des statistiques sur les candidats """

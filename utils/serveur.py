@@ -152,29 +152,47 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def traiter_parcourssup(self, **kwargs):
         """ Appelée quand l'admin clique sur le bouton 'Traiter / Vérifier' qui se trouve dans son premier menu.  Lance 
         le traitement des fichiers *.csv et *.pdf en provenance de ParcoursSup, puis un décompte des candidatures 
-        (fonction stat). Retourne une page de type 'event-stream' qui indique l'avancement de ce traitement. """
-        cherrypy.response.headers["content-type"] = "text/event-stream" # type de retour 'event-stream'
+        (fonction stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
         admin = self.get_client_cour() # admin <-- qui est le demandeur ?
-        def contenu(): # générateur fournissant au navigateur, au compte-goutte, le contenu de la page.
-            yield "Début du Traitement\n\n"
-            ## Traitement des csv ##
-            generateur = admin.traiter_csv() # la fonction traiter_csv (voir classe Admin) est également un générateur
-            for txt in generateur: # générateur qu'on sollicite jusqu'à épuisement.
-                yield txt
-            ## Fin du traitement des csv ##
-            ## Traitement des pdf ##
-            generateur = admin.traiter_pdf() # On reproduit ce fonctionnement avec traiter_pdf..
-            for txt in generateur:
-                yield txt
-            # Fin du traitement pdf#
-            # Faire des statistiques
-            yield "\n     Décompte des candidatures\n\n"
-            list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-            admin.stat(list_fich) # combien de demande par filière, et multi-candidatures..
-            # Fin : retour au menu
-            self.set_rafraich(True) # utile ? à tester.
-            yield "\n\nTRAITEMENT TERMINÉ.      --- VEUILLEZ CLIQUER SUR 'PAGE PRÉCÉDENTE' POUR REVENIR AU MENU  ---"
-        return contenu()
+        # page est une entête html (à envoyer avec chaque élément de la page !! sinon erreur)
+        page = """<!DOCTYPE html><html><head> 
+            <meta content="text/html; charset=utf-8" http-equiv="Content-type"> 
+            <link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
+            <title>Gestion Commission</title>
+            </head>"""
+        # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
+        yield '{}<h1 align="center">Traitement des données ParcoursSup</h1><div style="padding-left:10%;">'.format(page)
+        ## Traitement des csv : ##
+        yield "<h2>Début du traitement des fichiers csv</h2>" # On envoie le sous-titre csv
+        flag = False # drapeau servant dans la boucle ci-après
+        # la fonction admin.traiter_csv() est un générateur ...
+        for txt in admin.traiter_csv(): # ... générateur qu'on sollicite jusqu'à épuisement.
+            if flag: # 2e partie de la ligne : on affiche "traité</p>"
+                txt = '{}</p>'.format(txt)
+            else: # 1e partie de la ligne : on affiche "<p>Fichier blabla ..."
+                txt = '<p style="padding-left:3em;">{}'.format(txt)
+            yield '{}{}'.format(page, txt)
+            flag ^= 1 # on change flag en son complémentaire
+        ## Fin du traitement des csv ##
+        ## Traitement des pdf : on de la même manière qu'avec les csv ##
+        yield "<h2>Début du traitement des fichiers pdf (traitement long, restez patient...)</h2>"
+        for txt in admin.traiter_pdf():
+            if flag:
+                txt = '{}</p>'.format(txt)
+            else:
+                txt = '<p style="padding-left:3em;">{}'.format(txt)
+            yield '{}{}'.format(page, txt)
+            flag ^= 1
+        # Fin du traitement pdf#
+        # Faire des statistiques
+        yield '{}<h2>Décompte des candidatures</h2>'.format(page)
+        list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
+        admin.stat(list_fich) # combien de demande par filière, et multi-candidatures..
+        yield '{}<p style="padding-left:3em;">Décompte terminé.</p>'.format(page)
+        # Fin : retour au menu
+        bouton = """<div style="align:center;"><form action="/affiche_menu" method = POST>
+                <input type = "submit" class ="gros_bout" value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
+        yield '{}{}'.format(page, bouton)
 
     @cherrypy.expose
     def choix_comm(self, **kwargs):
