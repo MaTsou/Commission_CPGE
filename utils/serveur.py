@@ -155,44 +155,36 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         (fonction stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
         admin = self.get_client_cour() # admin <-- qui est le demandeur ?
         # page est une entête html (à envoyer avec chaque élément de la page !! sinon erreur)
-        page = """<!DOCTYPE html><html><head> 
-            <meta content="text/html; charset=utf-8" http-equiv="Content-type"> 
+        meta = """<meta content="text/html; charset=utf-8" http-equiv="Content-type">"""
+        entete = """<!DOCTYPE html><html><head>{}
             <link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
             <title>Gestion Commission</title>
-            </head>"""
+            </head>""".format(meta)
         # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
-        yield '{}<h1 align="center">Traitement des données ParcoursSup</h1><div style="padding-left:10%;">'.format(page)
-        ## Traitement des csv : ##
-        yield "<h2>Début du traitement des fichiers csv</h2>" # On envoie le sous-titre csv
-        flag = False # drapeau servant dans la boucle ci-après
-        # la fonction admin.traiter_csv() est un générateur ...
-        for txt in admin.traiter_csv(): # ... générateur qu'on sollicite jusqu'à épuisement.
-            if flag: # 2e partie de la ligne : on affiche "traité</p>"
-                txt = '{}</p>'.format(txt)
-            else: # 1e partie de la ligne : on affiche "<p>Fichier blabla ..."
-                txt = '<p style="padding-left:3em;">{}'.format(txt)
-            yield '{}{}'.format(page, txt)
-            flag ^= 1 # on change flag en son complémentaire
-        ## Fin du traitement des csv ##
-        ## Traitement des pdf : on de la même manière qu'avec les csv ##
-        yield "<h2>Début du traitement des fichiers pdf (traitement long, restez patient...)</h2>"
-        for txt in admin.traiter_pdf():
-            if flag:
-                txt = '{}</p>'.format(txt)
-            else:
-                txt = '<p style="padding-left:3em;">{}'.format(txt)
-            yield '{}{}'.format(page, txt)
-            flag ^= 1
-        # Fin du traitement pdf#
+        yield '{}<h1 align="center">Traitement des données ParcoursSup</h1><div style="padding-left:10%;">'.format(entete)
+        ## Début du traitement ##
+        # dico contient toutes les méthodes (de type générateur) a appeler
+        dico = {admin.traiter_csv :'csv', admin.traiter_pdf :'pdf'}
+        for gen in dico.keys():
+            yield "{}<h2>Début du traitement des fichiers {}</h2>".format(meta, dico[gen]) # On envoie le sous-titre
+            flag = True # drapeau servant dans la boucle ci-après
+            for txt in gen(): # sollicitation du générateur jusqu'à épuisement
+                if flag: # 1e partie de la ligne : on affiche "<p>Fichier blabla ..."
+                    txt = '<p style="padding-left:3em;">{}'.format(txt)
+                else: # 2e partie de la ligne : on affiche "traité</p>"
+                    txt = '{}</p>'.format(txt)
+                yield '{}{}'.format(meta, txt)
+                flag ^= 1 # on change flag en son complémentaire
+        ## Fin du traitement ##
         # Faire des statistiques
-        yield '{}<h2>Décompte des candidatures</h2>'.format(page)
+        yield '{}<h2>Décompte des candidatures</h2>'.format(meta)
         list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
         admin.stat(list_fich) # combien de demande par filière, et multi-candidatures..
-        yield '{}<p style="padding-left:3em;">Décompte terminé.</p>'.format(page)
+        yield '{}<p style="padding-left:3em;">Décompte terminé.</p>'.format(meta)
         # Fin : retour au menu
         bouton = """<div style="align:center;"><form action="/affiche_menu" method = POST>
                 <input type = "submit" class ="gros_bout" value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
-        yield '{}{}'.format(page, bouton)
+        yield '{}{}'.format(meta, bouton)
 
     @cherrypy.expose
     def choix_comm(self, **kwargs):
