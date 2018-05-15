@@ -154,7 +154,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         le traitement des fichiers *.csv et *.pdf en provenance de ParcoursSup, puis un décompte des candidatures 
         (fonction stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
         admin = self.get_client_cour() # admin <-- qui est le demandeur ?
-        # page est une entête html (à envoyer avec chaque élément de la page !! sinon erreur)
+        # entete est une entête html (meta doit être envoyé avec chaque 'yield', sinon ça bloque !)
         meta = """<meta content="text/html; charset=utf-8" http-equiv="Content-type">"""
         entete = """<!DOCTYPE html><html><head>{}
             <link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
