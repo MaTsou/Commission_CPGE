@@ -99,10 +99,10 @@ class Composeur(object):
 ##### Ici, le code de la page 'barre d'avancement' #####
 ########################################################
 
-    def page_progression(self, dico):
+    def page_progression(self, action):
         """ Générateur qui renvoie une page indiquant la progression dans le traitement des méthodes (générateurs 
-        elles-aussi) présentes dans le dico """
-        # Dico est au format { méthode : 'message à afficher' }
+        elles-aussi) présentes dans la liste 'action' """
+        # 'action' est au format [ (méthode, 'message à afficher'), etc ]
         # Chaque méthode est un générateur qui renvoie des 'yield' par paires : 'je commence ...' puis 'j ai fini'
         ### On début par l'entête de page et un titre :
         # entete est une entête html (meta doit être envoyé avec chaque 'yield', sinon ça bloque !)
@@ -113,8 +113,8 @@ class Composeur(object):
         # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
         yield '{}<div style="padding-left:12%;">'.format(entete)
         # Début du traitement du contenu du dico
-        for gen in dico.keys():
-            yield "{}<h2>{}</h2>".format(meta, dico[gen]) # On envoie le sous-titre
+        for gen, title in action:
+            yield "{}<h2>{}</h2>".format(meta, title) # On envoie le sous-titre
             flag = True # drapeau servant dans le traitement de la paire de yield citée ci-dessus..
             for txt in gen(): # sollicitation du générateur jusqu'à épuisement
                 if flag: # 1e partie de la ligne : on affiche "<p>Fichier blabla ..."
