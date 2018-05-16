@@ -241,10 +241,12 @@ class Admin(Client):
                     decoup(fich, desti) # fonction de découpage du pdf : dans la toolbox
                     yield "traité.".format(parse("{}_{4s}.pdf", fich)[1])
 
-    def stat(self, list_fich):
+    def stat(self):
         """ Effectue des statistiques sur les candidats """
+        # Récupère la liste des fichiers concernés
+        list_fichiers = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
         # On ordonne la liste de fichiers transmise selon l'ordre spécifié dans filieres (parametres.py)
-        list_fich = sorted(list_fich, key = lambda f: filieres.index(f.filiere().lower()))
+        list_fich = sorted(list_fichiers, key = lambda f: filieres.index(f.filiere().lower()))
         # L'info de candidatures est stockée dans un mot binaire où 1 bit 
         # correspond à 1 filière. Un dictionnaire 'candid' admet ces mots binaires pour clés,
         # et les valeurs sont des nombres de candidats. 
@@ -259,6 +261,7 @@ class Admin(Client):
         l_dict = [ {Fichier.get(cand, 'Num ParcoursSup') : cand for cand in fich} for fich in list_fich ] # liste de dicos
         l_set = [ set(d.keys()) for d in l_dict ] # list d'ensembles (set()) d'identifiants ParcoursSup
         # Création des statistiques
+        yield 'Décompte ... '
         for (k,n) in enumerate(l_set): # k = index filière ; n = ensemble des identifiants des candidats dans la filière
             while len(n) > 0: # tant qu'il reste des identifiants dans n
                 a = n.pop() # on en prélève 1 (et il disparait de n)
@@ -280,6 +283,7 @@ class Admin(Client):
         # Écrire le fichier stat
         with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
             pickle.dump(candid, stat_fich)
+        yield 'effectué.'
 
     def generation_comm(self):
         """ Création des fichiers commission """

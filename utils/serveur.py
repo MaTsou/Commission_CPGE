@@ -152,39 +152,19 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def traiter_parcourssup(self, **kwargs):
         """ Appelée quand l'admin clique sur le bouton 'Traiter / Vérifier' qui se trouve dans son premier menu.  Lance 
         le traitement des fichiers *.csv et *.pdf en provenance de ParcoursSup, puis un décompte des candidatures 
-        (fonction stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
+        (fonction stat). Cette méthode est renvoie un générateur qui indique l'avancement de ce traitement. """
         admin = self.get_client_cour() # admin <-- qui est le demandeur ?
-        # entete est une entête html (meta doit être envoyé avec chaque 'yield', sinon ça bloque !)
-        meta = """<meta content="text/html; charset=utf-8" http-equiv="Content-type">"""
-        entete = """<!DOCTYPE html><html><head>{}
-            <link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
-            <title>Gestion Commission</title>
-            </head>""".format(meta)
-        # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
-        yield '{}<h1 align="center">Traitement des données ParcoursSup</h1><div style="padding-left:10%;">'.format(entete)
-        ## Début du traitement ##
-        # dico contient toutes les méthodes (de type générateur) a appeler
-        dico = {admin.traiter_csv :'csv', admin.traiter_pdf :'pdf'}
-        for gen in dico.keys():
-            yield "{}<h2>Début du traitement des fichiers {}</h2>".format(meta, dico[gen]) # On envoie le sous-titre
-            flag = True # drapeau servant dans la boucle ci-après
-            for txt in gen(): # sollicitation du générateur jusqu'à épuisement
-                if flag: # 1e partie de la ligne : on affiche "<p>Fichier blabla ..."
-                    txt = '<p style="padding-left:3em;">{}'.format(txt)
-                else: # 2e partie de la ligne : on affiche "traité</p>"
-                    txt = '{}</p>'.format(txt)
-                yield '{}{}'.format(meta, txt)
-                flag ^= 1 # on change flag en son complémentaire
-        ## Fin du traitement ##
-        # Faire des statistiques
-        yield '{}<h2>Décompte des candidatures</h2>'.format(meta)
-        list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-        admin.stat(list_fich) # combien de demande par filière, et multi-candidatures..
-        yield '{}<p style="padding-left:3em;">Décompte terminé.</p>'.format(meta)
-        # Fin : retour au menu
-        bouton = """<div style="align:center;"><form action="/affiche_menu" method = POST>
-                <input type = "submit" class ="gros_bout" value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
-        yield '{}{}'.format(meta, bouton)
+        # On construit le dictionnaire de tout ce qui doit être effectué
+        # dico { méthode (de type générateur) a appeler : 'chaîne à afficher sur la page d'avancement' }
+        dico = {
+                admin.traiter_csv :'Traitement des fichiers csv',
+                admin.traiter_pdf :'Traitement des fichiers pdf',
+                admin.stat : 'Décompte des candidatures',
+                }
+        # On envoie ça au Composeur de page html; celui-ci se charge de fournir une page qui affiche l'état d'avancement 
+        # du traitement..
+        for mess in self.html_compose.page_progression(dico):
+            yield mess
 
     @cherrypy.expose
     def choix_comm(self, **kwargs):

@@ -7,6 +7,7 @@
 #   un client.
 
 import os, glob, pickle
+from parse import parse
 from utils.parametres import min_correc, max_correc, nb_correc
 from config import filieres, motivations, nb_classes
 from utils.fichier import Fichier
@@ -93,6 +94,41 @@ class Composeur(object):
         page = '<!DOCTYPE html><html>'
         page += Composeur.html['Entete'].format(**{'titre' : titre})
         return page
+
+########################################################
+##### Ici, le code de la page 'barre d'avancement' #####
+########################################################
+
+    def page_progression(self, dico):
+        """ Générateur qui renvoie une page indiquant la progression dans le traitement des méthodes (générateurs 
+        elles-aussi) présentes dans le dico """
+        # Dico est au format { méthode : 'message à afficher' }
+        # Chaque méthode est un générateur qui renvoie des 'yield' par paires : 'je commence ...' puis 'j ai fini'
+        ### On début par l'entête de page et un titre :
+        # entete est une entête html (meta doit être envoyé avec chaque 'yield', sinon ça bloque !)
+        entete = self.genere_entete('Traitement des données ParcoursSup')
+        # On récupère la balise <meta> car elle doit être envoyée avec chaque yield sinon on n'a pas le fonctionnement 
+        # en 'temps réel'
+        meta = '<meta{}>'.format(parse('{}<meta{}>{}', entete)[1])
+        # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
+        yield '{}<div style="padding-left:12%;">'.format(entete)
+        # Début du traitement du contenu du dico
+        for gen in dico.keys():
+            yield "{}<h2>{}</h2>".format(meta, dico[gen]) # On envoie le sous-titre
+            flag = True # drapeau servant dans le traitement de la paire de yield citée ci-dessus..
+            for txt in gen(): # sollicitation du générateur jusqu'à épuisement
+                if flag: # 1e partie de la ligne : on affiche "<p>Fichier blabla ..."
+                    txt = '<p style="padding-left:3em;">{}'.format(txt)
+                else: # 2e partie de la ligne : on affiche "traité</p>"
+                    txt = '{}</p>'.format(txt)
+                yield '{}{}'.format(meta, txt)
+                flag ^= 1 # on change flag en son complémentaire
+        ## Fin du traitement ##
+        # Bouton retour au menu
+        bouton = """<div style="align:center;"><form action="/affiche_menu" method = POST>
+                <input type = "submit" class ="gros_bout" value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
+        yield '{}{}'.format(meta, bouton)
+
 
 ########################################################
 ##### Ici commence ce qui concerne les pages menus #####
