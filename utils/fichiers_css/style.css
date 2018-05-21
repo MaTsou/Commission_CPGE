@@ -414,8 +414,8 @@ input[type=range]::-webkit-slider-thumb {
     border: none;
     height: 16px;
     width: 8px;
-    border-radius: 50%;
-    background: Grey;
+    border-radius: 30%;
+    background: Black;
     margin-top: -4px;
 }
 input[type=range]:focus {
@@ -442,8 +442,8 @@ input[type=range]::-moz-range-thumb {
     border: none;
     height: 16px;
     width: 8px;
-    border-radius: 50%;
-    background: Grey;
+    border-radius: 30%;
+    background: Black;
 }
 
 /*hide the outline behind the border*/
@@ -485,8 +485,8 @@ input[type=range]::-ms-thumb {
     border: none;
     height: 16px;
     width: 8px;
-    border-radius: 50%;
-    background: Grey;
+    border-radius: 30%;
+    background: Black;
 }
 input[type=range]:focus::-ms-fill-lower {
     background: #888;

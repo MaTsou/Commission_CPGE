@@ -44,7 +44,7 @@ from utils.composeur import Composeur
 ########################################################################
 
 class Serveur(): # Objet lancé par cherrypy dans le __main__
-    "Classe générant les objets gestionnaires de requêtes HTTP"
+    """ Classe générant les objets gestionnaires de requêtes HTTP """
     
     def __init__(self, test, ip):
         """ constructeur des instances 'Serveur' """
