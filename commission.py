@@ -1,6 +1,43 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
+################################################
+#        Description de l'application          #
+################################################
+# Les différentes tâches de cette application sont découpées en autant d'objets, chacun étant défini dans un fichier qui 
+# porte le nom de la classe qu'il contient. Tous ces fichiers se trouvent dans le répertoire 'utils' : 
+
+# * 'Serveur' : classe instancié par le programme principal et qui a pour seule mission de gérer les interactions avec les 
+# navigateurs connectés (fournir les pages html et recevoir les formulaires). Il se charge de solliciter les autres 
+# organes du programme pour traiter les formulaires ou fabriquer les pages réponses.
+#
+# * 'Composeur' : classe dont l'unique tâche est de construire les pages html (à la demande de serveur). Elle se sert d'un 
+# fichier 'patrons.html' qui contient les différents modèles (template) de pages. 'Composeur' utilise la fonction 
+# .format() des objets de type string pour remplir ces modèles avec les données appropriées. 'composeur.py' et 
+# 'patrons.html' sont les seuls fichiers contenant du code html. L'idée est d'encapsuler la génération des pages html.
+#
+# * 'Fichier' : classe dont l'unique tâche consiste à manipuler des fichiers xml existants. Lecture, écriture. Un des 
+# attribut principal de cette classe est un dictionnaire (dont le nom est 'acces'). Ce dictionnaire se charge de 
+# traduire une requête (quel est la date de naissance de ce candidat, etc.) venant d'un autre organe de l'application 
+# (voir clients ci-dessous) en une requête xpath. L'intérêt est que toute modification de l'arborescence des fichiers 
+# xml (arborescence décidé dans la bibliothèque csv_parcourssup.py) ne nécessitera qu'une mise à jour du dictionnaire 
+# 'acces' pour que l'application fonctionne ET si jamais le format de fichier xml devait être abandonné au profit d'un 
+# autre (bdd, ...), seule la classe 'Fichier' devra être réécrite. L'idée est d'encapsuler la manipulation des fichiers.
+#
+# * 'Clients' : classe dont l'unique tâche est de contenir les méthodes des différents clients qui vont se connecter au 
+# serveur. En fait, ce qui va servir sont les deux classes filles de clients :
+#       * 'Admin' : il s'agit du client qui se trouve sur la machine exécutant le serveur. Cet administrateur du 
+#       recrutement gère tout ce qui est administratif. En amont de la commission, il prépare les dossiers (complétion 
+#       de dossiers, filtrage de dossiers non recevables), génération des fichiers que chaque jury devra traité. En aval 
+#       de la commission, il récupère et synthétise les décisions des 'jurys', produits des fiches bilan de commission 
+#       ainsi que des tableaux récapitulatifs).
+#
+#       * 'Jury' : membre de la commission de recrutement. Analyse et classe les dossiers qui lui sont présentés.
+#
+# De nombreux paramètres sont disponibles, les uns dans le fichier 'config.py' du répertoire principal, les autres dans 
+# le fichier 'parametres.py' dans le répertoire 'utils'. Ce découpage a été choisi pour qu'une personne non formée au 
+# langage python puisse avoir accès à quelques paramètres (dont la syntaxe est suffisamment simple).
+
 import os, sys, cherrypy
 from utils.serveur import Serveur
 
