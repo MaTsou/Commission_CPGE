@@ -2,6 +2,12 @@
 #-*- coding: utf-8 -*-
 
 # Ce fichier contient la classe Fichier.
+# Cette classe dispose d'un attribut important, le dictionnaire 'acces'. Il est ce qui traduit les requêtes extérieures 
+# (venant des clients) en requêtes xpath désignant le chemin dans le fichier xml.
+# Les méthodes de classe 'set' et 'get' se chargent d'écrire et de lire les infos au bon endroit.
+# Ce qui prévaut dans se choix de structure : l'encapsulation. Les clients n'ont pas besoin de savoir quel type de 
+# fichier contient l'information qu'ils désirent. C'est le travail de la classe 'Fichier'. Il sera alors aisé (si le besoin 
+# s'en fait sentir) de changer de format de données..
 ###
 #   Chaque instance Fichier est construite à partir d'un nom de fichier xml.
 #   Son attribut principal est 'dossiers' : liste de noeuds candidat.
