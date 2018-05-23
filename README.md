@@ -1,5 +1,5 @@
 ---------------------------------------
---- Gestion recrutement ParcoursSup ---
+#--- Gestion recrutement ParcoursSup ---
 ---------------------------------------
 
 # Procédure d'installation :
@@ -22,7 +22,7 @@ Il suffit de télécharger le programme qui se trouve
 choix.
 
 -------------------------------------------------
-# Principe de la procédure de recrutement proposée par cette application :
+## Principe de la procédure de recrutement proposée par cette application :
 Une fois récupérées les données proposées par ParcoursSup, 3 phases se succèdent 
 :
 1. Préparation de la commission par **L'administrateur** (nom utilisé dans 
@@ -44,7 +44,7 @@ jury1, jury2, jury3, etc.). Différents documents sont alors produits : une fich
 par candidat classé résume le traitement reçu, plusieurs tableaux 
 (configurables) qui contiennent le bilan de commission.
 
-## Différents paramètres de l'application sont modifiables.
+### Différents paramètres de l'application sont modifiables.
 1. Les uns se trouvent dans le fichier `config.py` (répertoire racine) : 
   * liste des filières, liste des nombres de jurys par filière, liste des 
     nombres de candidats à classer par filière,
@@ -59,9 +59,9 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
   * intervalle de correction proposé aux jurys (min, max, intervalle).
 
       -------------------------------------------------
-# Utilisation du programme d'aide au recrutement : 
+## Utilisation du programme d'aide au recrutement : 
 
-## Récupération des données ParcoursSUP
+### Récupération des données ParcoursSUP
 Enregistrer dans le dossier `data` les fichiers suivants en provenance de 
 ParcoursSUP :
 
@@ -75,7 +75,7 @@ ParcoursSUP :
   rapportent, nom tel que mentionné dans le fichier `config.py` (liste 
   _filieres_)
 
-## Phase 1 :
+### Phase 1 :
   L'administrateur lance l'application par un double-clic sur `commission.py`. 
   Son navigateur par défaut s'ouvre alors automatiquement et affiche la page 
   d'accueil. Sur celle-ci, sont visibles les fichiers .csv et .pdf précédemment 
@@ -135,7 +135,7 @@ ParcoursSUP :
   phase 1; le menu de l'administrateur change, il ne peut plus intervenir sur 
   les dossiers.
 
-## Phase 2 :
+### Phase 2 :
   Cette phase a lieu en réseau. Toutes les machines (1 par jury + 1 pour le 
   serveur) doivent être sur un même réseau.  La machine hébergeant le serveur 
   doit disposer de la présente application. Le lancement de l'application est 
@@ -160,10 +160,10 @@ ParcoursSUP :
   serveur.
   Lorsque suffisamment de dossiers ont été traités, la commission peut 
   s'arrêter. Les dossiers non vus (car trop loin dans le classement) seront 
-  automatiquement traités : `NC` car `dossier moins bon que le dernier classé`.
-  Fin de la phase 2.
+  automatiquement traités : `NC` au motif `dossier moins bon que le dernier 
+  classé`. Fin de la phase 2.
 
-## Phase 3 :
+### Phase 3 :
   L'administrateur, lançant l'application en local, va se voir proposer un menu 
   dans lequel (étape 4) il peut `Récolter` le travail de la commission. La 
   procédure de récolte consiste, pour chaque fichier de jury, à :
