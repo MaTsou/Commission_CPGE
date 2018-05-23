@@ -53,15 +53,14 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
     nombres de candidats à classer par filière,
     * liste de valeurs pré-définies pour les motivations des jurys,
     * Définitions des tableaux à générer en phase 3.
-2. Les autres se trouvent dans le fichier `parametres.py` (répertoire 
-    `utils`) : 
+2. Les autres se trouvent dans le fichier `parametres.py` (répertoire `utils`) : 
     * Entête personnalisée pour les pages html,
     * coefficients intervenant dans le calcul du score brut (deux cas : 
-        coefficients concernant les candidats actuellement en terminale; 
-        coefficients concernant les candidats actuellement en CPES),
+      coefficients concernant les candidats actuellement en terminale; 
+      coefficients concernant les candidats actuellement en CPES),
     * intervalle de correction proposé aux jurys (min, max, intervalle).
 
-      -------------------------------------------------
+-------------------------------------------------
 ## Utilisation du programme d'aide au recrutement : 
 
 ### Récupération des données ParcoursSUP
@@ -89,7 +88,6 @@ ParcoursSUP :
   fichiers provenant de ParcoursSup. Cette procédure est longue, une page 
   indiquant la progression est proposée. Pour chaque filière, cette exploitation 
   consiste en :
-
      * la récupération des données utiles contenues dans le fichier .csv, suivie 
        de la création d'un fichier `admin_XXXX.xml` (XXXX désignant la filière),
      * une analyse rapide de la validité de certaines candidatures (filière 
@@ -122,7 +120,7 @@ ParcoursSUP :
        `Terminale`) pour en tenir compte et que le calcul de score brut soit 
        juste.
      * vérifier la filière : l'analyse initiale n'a pas reconnue la filière 
-       d'origine du candidat comme étant 'recevable' ou 'non recevable'.  
+       d'origine du candidat comme étant 'recevable' ou 'non recevable'. 
        L'administrateur doit, en consultant le dossier, vérifier ce point.
 
   Dans tous les cas, l'administrateur doit lever l'alerte. Il lui suffit, une 
