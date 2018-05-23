@@ -62,14 +62,14 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
 # Utilisation du programme d'aide au recrutement : 
 
 ## Récupération des données ParcoursSUP
-      Enregistrer dans le dossier `data` les fichiers suivants en provenance de 
-      ParcoursSUP :
+Enregistrer dans le dossier `data` les fichiers suivants en provenance de 
+ParcoursSUP :
 
   + Fichiers .csv contenant toutes les informations des candidats
   Notamment : dans la rubrique bulletins, cocher toutes les infos d'entêtes 
   (Niveau de formation, Filière, ...)
-  + Fichiers .pdf contenant le dossier du candidat (au min. bulletins et fiche de 
-  candidature)
+  + Fichiers .pdf contenant les dossiers des candidats (au min. bulletins et 
+    fiche de candidature)
 
   Ces fichiers doivent tous contenir le nom de la filière à laquelle ils se 
   rapportent, nom tel que mentionné dans le fichier `config.py` (liste 
@@ -82,47 +82,49 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
   déposés dans le répertoire `data`.
   1. Première étape : Traiter ces fichiers. En cliquant sur le bouton 
   `Vérifier/Traiter`, l'administrateur lance une procédure d'exploitation des 
-  fichiers provenant de parcours sup. Cette procédure est longue, une page 
+  fichiers provenant de ParcoursSup. Cette procédure est longue, une page 
   indiquant la progression est proposée. Pour chaque filière, cette exploitation 
   consiste en :
     * la récupération des données utiles contenues dans le fichier .csv, suivie de 
-    la création d'un dossier `admin_XXXX.xml` (XXX désignant la filière),
+    la création d'un fichier `admin_XXXX.xml` (XXXX désignant la filière),
     * une analyse rapide de la validité de certaines candidatures (filière 
     d'origine et validation du dossier sur ParcoursSup) ainsi que le repérage 
     des dossiers incomplets,
     * le découpage du fichier .pdf en autant de fichiers que de candidats,
-    * la réalisation de décompte des candidatures.
+    * la réalisation d'un décompte des candidatures.
+
   À la fin de cette opération, un bouton propose le retour au menu.
 
   2. Le menu est alors enrichi. Les décomptes de candidatures sont affichés 
   ainsi que les fichiers `admin_XXXX.xml` créés. Cette deuxième étape va 
-  consister pour l'administrateur à préparer les dossiers récupérer pour la 
-  commission.  Derrière chaque bouton `admin_XXXX.xml`, il accède à une page qui 
-  lui permet de visualiser chacune des candidatures.  Dans la liste à droite 
-  figurent sur fond gris les candidatures éliminées par l'analyse précédante 
-  (candidature non validée ou filière inadéquate) et sur fond rouge les 
-  candidatures qui nécessitent son regard avant d'être soumise à la commission. 
-  Pour chacune des candidatures sur fond rouge, le motif de l'alerte ainsi 
-  donnée à l'administrateur peut être :
+  consister pour l'administrateur à préparer les dossiers pour la commission.  
+  Grâce à chaque bouton `admin_XXXX.xml`, il accède à une page qui lui permet 
+  de visualiser chacune des candidatures.  Dans la liste à droite figurent sur 
+  fond gris les candidatures éliminées par l'analyse précédante (candidature non 
+  validée ou filière inadéquate) et sur fond rouge les candidatures qui 
+  nécessitent son regard avant d'être soumise à la commission.  Pour chacune des 
+  candidatures sur fond rouge, le motif de l'alerte ainsi donnée à 
+  l'administrateur peut être :
     * dossier incomplet : il s'agit d'une sitation ou les données nécessaires au 
-    calcul du score brut n'ont pas pû être trouvées dans le fichier .csv. Dans 
+      calcul du score brut n'ont pas pû être trouvées dans le fichier .csv. Dans 
     ce cas, l'administrateur peut, en consultant le dossier (lien proposé 
     au-dessus du tableau de synthèse des notes), éventuellement trouver les 
     informations manquantes et renseigner directement dans la page html les 
-    champs adéquats. Remarque : un candidat noté en semestre à nécessairement 
+    champs adéquats. Remarque : un candidat noté en semestre a nécessairement 
     moins de notes qu'un candidat noté en trimestres; le dossier apparaît 
     incomplet alors qu'il ne l'est pas. Il suffit alors à l'administrateur de 
     cocher les cases (à côté du niveau `Première` ou `Terminale`) pour en tenir 
     compte et que le calcul de score brut soit juste.
     * vérifier la filière : l'analyse initiale n'a pas reconnue la filière 
     d'origine du candidat comme étant 'recevable' ou 'non recevable'. 
-    L'administrateur doit, en consultant le dossier, verifier ce point.
-  Dans tous les cas, l'administrateur doit lever l'alerte. IL lui suffit, une 
-  fois qu'il à fait tout son possible pour compléter un dossier, de supprimer 
-  les caractères `- Alerte :` du champ de motifs et de les remplacer par un 
-  message à l'intention des jurys.. Ensuite, soit il décide que le dossier n'est 
-  pas recevable (il clique alors sur le bouton `NC`), soit qu'il l'est (il 
-  clique alors sur le bouton `Classer`).
+    L'administrateur doit, en consultant le dossier, vérifier ce point.
+
+  Dans tous les cas, l'administrateur doit lever l'alerte. Il lui suffit, une 
+  fois qu'il a fait tout son possible pour compléter un dossier, de supprimer 
+  les caractères `- Alerte :` du champ de motifs et de les remplacer 
+  (éventuellement) par un message à l'intention des jurys.. Ensuite, soit il 
+  décide que le dossier n'est pas recevable (il clique alors sur le bouton 
+  `NC`), soit qu'il l'est (il clique alors sur le bouton `Classer`).  
 
   Une fois que toutes les alertes sont levées, le bouton `générer les fichiers 
   commission` (menu prinipal) devient actif. En cliquant dessus, 
@@ -144,14 +146,15 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
   choix à l'url `x.x.x.x:8080`
   Chaque jury trouve une page d'accueil sur laquelle tous les fichiers à traiter 
   sont listés. Chaque jury choisit le fichier qui lui a été attribué par 
-  l'administrateur et commencer son traitement. Les dossiers exlus par 
+  l'administrateur et commence son traitement. Les dossiers exlus par 
   l'administrateur n'apparaissent pas; les dossiers sur lesquels l'adminstrateur 
   à laissé un message apparaissent sur fond rouge. Traiter un dossier signifie :
   * soit, avoir corrigé (ou non) le score d'un dossier, avoir motivé cette 
     correction et avoir validé en cliquant sur le bouton `Classer`,
   * soit, avoir motivé un non classement et avoir cliqué sur `NC`.
+
   L'avancement de la commission peut être suivie sur la machine serveur. Sont 
-  affichés 'en temps réel' les nombres de dossiers traités par filière. La 
+  affichés _en temps réel_ les nombres de dossiers traités par filière. La 
   commission peut-être arrêtée à tout moment, chaque traitement étant 
   immédiatement suivi par une sauvegarde physique sur le disque de la machine 
   serveur.
@@ -163,13 +166,14 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
 ## Phase 3 :
   L'administrateur, lançant l'application en local, va se voir proposer un menu 
   dans lequel (étape 4) il peut `Récolter` le travail de la commission. La 
-  procédure de récolte consiste, pour chaque jury, à :
+  procédure de récolte consiste, pour chaque fichier de jury, à :
   * calculer tous les scores finals,
   * classer par ordre de score finals décroissants.
+
   Puis, pour chaque filière, à reconstituer (voir le principe exposé plus haut) 
-  une liste unique à partir des listes ordonnées des jurys. Enfin, 
-  enregistrement de ces listes dans les fichiers `class_XXXX.xml` et création 
-  des tableaux bilans (disponibles dans le répertoire `tableaux`).
+  une liste unique à partir des listes ordonnées. Enfin, enregistrement de ces 
+  listes dans les fichiers `class_XXXX.xml` et création des tableaux bilans 
+  (disponibles dans le répertoire `tableaux`).
 
   Est alors proposée à l'administrateur une 5e étape qui consiste à imprimer, 
   pour chaque candidat retenu, une fiche récapitulative de la commission.
