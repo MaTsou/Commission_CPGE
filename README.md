@@ -1,8 +1,8 @@
 ---------------------------------------
-#--- Gestion recrutement ParcoursSup ---
+# Gestion recrutement ParcoursSup
 ---------------------------------------
 
-# Procédure d'installation :
+## Procédure d'installation :
 1. Installation Python 3.6 (ou supérieur) et les bibliothèques nécessaires :
 
   + Télécharger (puis lancer) depuis le site python.org, menu donwloads, un 
