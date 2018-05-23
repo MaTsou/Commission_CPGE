@@ -15,14 +15,15 @@
 		* python -m pip install --upgrade PyPDF2
 
 2. Installation de l'application proprement dite :
-Il suffit de télécharger le programme à l'[URL](https://github.com/MaTsou/Gestion_Commission_EPA) dans le dossier de 
-son choix.
+Il suffit de télécharger le programme qui se trouve [ICI](https://github.com/MaTsou/Gestion_Commission_EPA) dans le 
+dossier de son choix.
 
-===============================================================
+-------------------------------------------------
 # Principe de la procédure de recrutement proposée par cette application :
 Une fois récupérées les données proposées par ParcoursSup, 3 phases se succèdent :
-1. Préparation de la commission par **L'administrateur** (nom utilisé par l'application) du recrutement. Cette phase 
-aboutit à un pré-classement des candidats dans l'ordre d'un _score_ dit brut.
+1. Préparation de la commission par **L'administrateur** (nom utilisé dans l'application pour désigner le reponsable du 
+   recrutement) du recrutement. Cette phase aboutit à un pré-classement des candidats dans l'ordre d'un _score_ dit 
+   brut.
 
 2. Commission de recrutement. Elle a lieu en réseau et est faite par des jurys. Chaque jury analyse les dossiers qui lui 
 sont soumis et apporte au besoin une correction (motivée) au score brut. Les candidatures obtiennent alors un _score 
@@ -30,7 +31,7 @@ final_.
 
 3. Clôture de l'opération de recrutement. Opération effectuée par l'administrateur. Récupération des scores finals et 
 classement. Pour que les différences d'appréciation entre des jurys différents n'interviennent pas, la procédure 
-consiste à classer les candidats de chaque jury puis à construire la pile final en dépilant successivement les piles 
+consiste à classer les candidats de chaque jury puis à construire la pile finale en dépilant successivement les piles 
 jury (jury1, jury2, jury3, jury1, jury2, jury3, etc.). Différents documents sont alors produits : une fiche par candidat 
 classé résume le traitement reçu, plusieurs tableaux (configurables) qui contiennent le bilan de commission.
 
@@ -45,11 +46,12 @@ classé résume le traitement reçu, plusieurs tableaux (configurables) qui cont
 	  actuellement en terminale; coefficients concernant les candidats actuellement en CPES),
 	* intervalle de correction proposé aux jurys (min, max, intervalle).
 
-===============================================================
+-------------------------------------------------
 # Utilisation du programme d'aide au recrutement : 
 
 ## Récupération des données ParcoursSUP
 --> Enregistrer dans le dossier `data` les fichiers suivants en provenance de ParcoursSUP :
+
 	+ Fichiers .csv contenant toutes les informations des candidats
 		Notamment : dans la rubrique bulletins, cocher toutes les infos d'entêtes (Niveau de formation, Filière, ...)
 	+ Fichiers .pdf contenant le dossier du candidat (au min. bulletins et fiche de candidature)
