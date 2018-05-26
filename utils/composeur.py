@@ -104,8 +104,8 @@ class Composeur(object):
         elles-aussi) présentes dans la liste 'action' """
         # 'action' est au format [ (méthode, 'message à afficher'), etc ]
         # Chaque méthode est un générateur qui renvoie des 'yield' par paires : 'je commence ...' puis 'j ai fini'
-        ### On début par l'entête de page et un titre :
-        # entete est une entête html (meta doit être envoyé avec chaque 'yield', sinon ça bloque !)
+        ### On débute par l'entête de page et un titre :
+        # entete est une entête html (meta doit être envoyé avec chaque 'yield', sinon ça bloque (yields 'bufferisés'!)
         entete = self.genere_entete('Traitement des données ParcoursSup')
         # On récupère la balise <meta> car elle doit être envoyée avec chaque yield sinon on n'a pas le fonctionnement 
         # en 'temps réel'
@@ -136,7 +136,7 @@ class Composeur(object):
 
     def menu(self, qui = None, fichiers_utilises = None, comm_en_cours = False): 
         """ compose le menu du client 'qui'
-        fichiers_utilises est une liste qui contient les fichiers déjà
+        fichiers_utilises est un dictionnaire qui contient les fichiers déjà
         choisis par un jury. Permet d'éviter que deux jurys travaillent
         sur un même fichier.
         comm_en_cours est un booléen qui permet d'adapter le menu de
@@ -165,8 +165,8 @@ class Composeur(object):
         # Chaque fichier apparaîtra sous la forme d'un bouton
         for fich in list_fich:
             txt += '<input type="submit" class = "fichier" name="fichier" value="{}"'.format(fich)
-            # Si un fichier est déjà traité par un autre jury, son bouton est disabled...
-            if fich in fichiers_utilises:
+            # Si un fichier est déjà traité par un AUTRE jury, son bouton est disabled...
+            if (fich in fichiers_utilises.values() and fich != fichiers_utilises.get(qui, 'rien')):
                 txt += ' disabled'
             txt += '/><br>'
         # On n'affiche le texte ci-dessous que s'il y a des fichiers à traiter.
@@ -178,7 +178,7 @@ class Composeur(object):
         page += '</html>'
         return page
 
-    def menu_admin(self, qui, fichiers_utilises, comm_en_cours):
+    def menu_admin(self, qui, fichiers_utilises, comm_en_cours): # fichiers_utilises ne sert pas ici TODO!
         """ Compose le menu administrateur
         contenu : selon l'état (phase 1, 2 ou 3) du traitement
         phase 1 : avant la commission, l'admin gère ce qui provient de ParcoursSup,
@@ -192,7 +192,7 @@ class Composeur(object):
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
         if comm_en_cours: # attention, n'est jamais 'True' si le serveur fonctionne en localhost
-            pass
+            pass # pas encore codée, peut-être que cela ne sera jamais le cas ?!TODO or not TODO
         else:
             list_fich_comm = glob.glob(os.path.join(os.curdir,"data","comm_*.xml"))
             patron = 'menu_admin_'

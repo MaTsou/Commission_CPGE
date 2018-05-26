@@ -14,8 +14,8 @@ l'application. """
 # Une méthode n'est 'visible' par le navigateur que si elle est précédée par @cherrypy.expose
 #
 # serveur --> navigateur :
-# en retour (par la fonction return), le code python renvoi le code --- sous la forme d'une chaine (immense) de 
-# caractères --- d'une page html.
+# en retour (par la fonction return), python renvoi le code --- sous la forme d'une chaine (immense) de # caractères --- 
+# d'une page html.
 #
 # Immmédiatement après la connection au serveur, la page affichée est celle retournée par la méthode 'index'.
 #
@@ -48,11 +48,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     
     def __init__(self, test, ip):
         """ constructeur des instances 'Serveur' """
-        self.clients =  {}  # dictionnaire contenant les clients connectés
+        self.clients =  {}  # dictionnaire contenant les clients connectés {'client n' : objet_client }
         self.test = test  # booléen : version test (avec un menu "Admin or Jury ?")
         self.rafraich = False  # booléen qui sert à activer ou nom la fonction refresh
         self.comm_en_cours = (ip != '127.0.0.1')  # booléen True pendant la commission --> menu ad hoc
-        self.fichiers_utilises = [] # Utile pour que deux jurys ne choisissent pas le même fichier..
+        self.fichiers_utilises = {} # Utile pour que deux jurys ne choisissent pas le même fichier..
         self.html_compose = Composeur(entete) # instanciation d'un objet Composeur de page html.
         navi = webbrowser.get()  # Quel est le navigateur par défaut ?
         navi.open_new('http://'+ip+':8080')  # on ouvre le navigateur internet, avec la bonne url..
@@ -69,10 +69,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def refresh(self, **kwargs):
         """ Rafraîchir un client suite à un évènement Server (SSE) """
         # Renvoie un générateur permettant de demander au client de rafraichir sa page si 'self.rafraich' == True
-        # 'retry : 5000' demande au navigateur de guetter toutes les 5 secondes si une telle demande est faite.
         cherrypy.response.headers["content-type"] = "text/event-stream"
         def msg():
-            yield "retry: 5000\n\n"
             if self.get_rafraich():
                 self.set_rafraich(False) # On ne rafraîchit qu'une fois à la fois !
                 yield "event: message\ndata: ok\n\n"
@@ -141,7 +139,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         client = self.get_client_cour() # quel client ?
         client.set_droits('') # on supprime la référence à une filière dans les droits (voir entête de page)
         if client.fichier: # le client a déjà sélectionné un fichier, mais il revient au menu
-            self.fichiers_utilises.remove(client.fichier.nom) # on fait du ménage
+            self.fichiers_utilises.pop(client) # on fait du ménage
             client.fichier = None
         # on redéfinit le type de retour (nécessaire quand on a utilisé des SSE)
         # voir la méthode 'refresh'.
@@ -152,7 +150,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def traiter_parcourssup(self, **kwargs):
         """ Appelée quand l'admin clique sur le bouton 'Traiter / Vérifier' qui se trouve dans son premier menu.  Lance 
         le traitement des fichiers *.csv et *.pdf en provenance de ParcoursSup, puis un décompte des candidatures 
-        (fonction stat). Cette méthode est renvoie un générateur qui indique l'avancement de ce traitement. """
+        (fonction stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
         admin = self.get_client_cour() # admin <-- qui est le demandeur ?
         # On construit la liste de tout ce qui doit être effectué : liste de couples
         # action [ (méthode (de type générateur) a appeler, 'chaîne à afficher sur la page d'avancement'), etc ]
@@ -175,7 +173,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # récupère le client
         client = self.get_client_cour() # quel jury ? (sur quel machine ? on le sait grâce au cookie)
         # Teste si le fichier n'a pas été choisi par un autre jury
-        if kwargs["fichier"] in self.fichiers_utilises:
+        if kwargs["fichier"] in self.fichiers_utilises.values():
             # Si oui, retour menu
             self.affiche_menu()
         else:
@@ -183,7 +181,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # objet Fichier, construit à partir du nom de fichier.
             client.set_fichier(Fichier(kwargs["fichier"]))
             # Mise à jour de la liste des fichiers utilisés
-            self.fichiers_utilises.append(client.fichier.nom)
+            self.fichiers_utilises[client] = fichier.nom
             ## Initialisation des paramètres
             # mem_scroll : cookie qui stocke la position de l'ascenseur dans la liste des dossiers
             cherrypy.session['mem_scroll'] = '0'
@@ -200,7 +198,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Mise à jour des attributs du client : l'attribut fichier du client va recevoir une instance d'un objet 
         # Fichier, construit à partir du nom de fichier.
         client.set_fichier(Fichier(kwargs["fichier"]))
-        self.fichiers_utilises.append(client.fichier.nom)
         ## Initialisation des paramètres
         # mem_scroll : cookie qui stocke la position de l'ascenseur dans la liste des dossiers
         cherrypy.session['mem_scroll'] = '0'
@@ -262,5 +259,4 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         client = self.get_client_cour() # récupère le client (c'est un admin !)
         # Mise à jour des attributs du client
         client.set_fichier(Fichier(kwargs["fichier"])) # son fichier courant devient celui qu'il vient de choisir
-        self.fichiers_utilises.append(client.fichier.nom) # peu utile !
         return self.html_compose.page_impression(client)
