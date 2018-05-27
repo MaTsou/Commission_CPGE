@@ -75,13 +75,10 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # Si option -jury ou client n'est pas sur la machine serveur,
             if self.jury or cherrypy.request.local.name != cherrypy.request.remote.ip:
                 # Le client sera Jury
-                # On créé un objet Jury associé à la clé key
-                self.clients[key] = Jury(key)
-                self.rafraichir = ['add','']
+                self.clients[key] = Jury(key) # On créé un objet Jury associé à la clé key
             else:
                 # Machine serveur et pas d'option -jury ==> c'est un Client Admin
-                # On créé un objet Admin associé à la clé key
-                self.clients[key] = Admin(key)
+                self.clients[key] = Admin(key) # On créé un objet Admin associé à la clé key
         else: # sinon,
             # on récupère la clé et le client
             key = cherrypy.session['JE']
@@ -91,6 +88,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 self.rafraichir = ['free', client.fichier.nom] # SSE qui rend le bouton actif
                 client.fichier = None # aux autres jurys
         # On affiche le menu du client
+        self.rafraichir = ['add',''] # un petit rafraichissement pour l'admin en commission
         return self.affiche_menu()
 
     @cherrypy.expose

@@ -7,20 +7,20 @@
 # Les différentes tâches de cette application sont découpées en autant d'objets, chacun étant défini dans un fichier qui 
 # porte le nom de la classe qu'il contient. Tous ces fichiers se trouvent dans le répertoire 'utils' : 
 
-# * 'Serveur' : classe instancié par le programme principal et qui a pour seule mission de gérer les interactions avec les 
+# * 'Serveur' : classe instanciée par le programme principal et qui a pour seule mission de gérer les interactions avec les 
 # navigateurs connectés (fournir les pages html et recevoir les formulaires). Il se charge de solliciter les autres 
 # organes du programme pour traiter les formulaires ou fabriquer les pages réponses.
 #
-# * 'Composeur' : classe dont l'unique tâche est de construire les pages html (à la demande de serveur). Elle se sert d'un 
-# fichier 'patrons.html' qui contient les différents modèles (template) de pages. 'Composeur' utilise la fonction 
+# * 'Composeur' : classe dont l'unique tâche est de construire les pages html (à la demande de 'Serveur'). Elle se sert 
+# d'un fichier 'patrons.html' qui contient les différents modèles (template) de pages. 'Composeur' utilise la méthode 
 # .format() des objets de type string pour remplir ces modèles avec les données appropriées. 'composeur.py' et 
-# 'patrons.html' sont les seuls fichiers contenant du code html. L'idée est d'encapsuler la génération des pages html.
-#
+# 'patrons.html' sont les seuls fichiers contenant du code html. L'idée est d'encapsuler la génération des pages html.  
+# 
 # * 'Fichier' : classe dont l'unique tâche consiste à manipuler des fichiers xml existants. Lecture, écriture. Un des 
 # attribut principal de cette classe est un dictionnaire (dont le nom est 'acces'). Ce dictionnaire se charge de 
 # traduire une requête (quel est la date de naissance de ce candidat, etc.) venant d'un autre organe de l'application 
 # (voir clients ci-dessous) en une requête xpath. L'intérêt est que toute modification de l'arborescence des fichiers 
-# xml (arborescence décidé dans la bibliothèque csv_parcourssup.py) ne nécessitera qu'une mise à jour du dictionnaire 
+# xml (arborescence décidée dans la bibliothèque csv_parcourssup.py) ne nécessitera qu'une mise à jour du dictionnaire 
 # 'acces' pour que l'application fonctionne ET si jamais le format de fichier xml devait être abandonné au profit d'un 
 # autre (bdd, ...), seule la classe 'Fichier' devra être réécrite. L'idée est d'encapsuler la manipulation des fichiers.
 #
@@ -29,7 +29,7 @@
 #       * 'Admin' : il s'agit du client qui se trouve sur la machine exécutant le serveur. Cet administrateur du 
 #       recrutement gère tout ce qui est administratif. En amont de la commission, il prépare les dossiers (complétion 
 #       de dossiers, filtrage de dossiers non recevables), génération des fichiers que chaque jury devra traité. En aval 
-#       de la commission, il récupère et synthétise les décisions des 'jurys', produits des fiches bilan de commission 
+#       de la commission, il récupère et synthétise les décisions des 'jurys', produit des fiches bilan de commission 
 #       ainsi que des tableaux récapitulatifs).
 #
 #       * 'Jury' : membre de la commission de recrutement. Analyse et classe les dossiers qui lui sont présentés.
@@ -55,7 +55,7 @@ ou en ligne de commande 'python commission.py'. Il est alors possible de précis
     tout le reste se fait en local) """
 
 # Début du code :
-# Récupération des options de lancement ('-test' pour une version test, '-ip 196.168.1.10' pour changer l'ip serveur)
+# Récupération des options de lancement ('-jury' pour une version jury, '-ip 196.168.1.10' pour changer l'ip serveur)
 jury = '-jury' in sys.argv
 
 ip = '127.0.0.1' # ip socket_host par défaut...
