@@ -146,7 +146,7 @@ class Composeur(object):
                 return self.menu_admin(qui, fichiers_utilises, comm_en_cours)
             else:
                 return self.menu_comm(qui, fichiers_utilises)
-        else: # qui = None, application lancée en mode test
+        else: # qui = None, application lancée en mode test TODO : n'est plus utile avec l'option -jury
             page = self.genere_entete('{}.'.format(self.titre))
             page += Composeur.html['PageAccueil']
             page += '</html>'
@@ -164,7 +164,7 @@ class Composeur(object):
         txt = ''
         # Chaque fichier apparaîtra sous la forme d'un bouton
         for fich in list_fich:
-            txt += '<input type="submit" class = "fichier" name="fichier" value="{}"'.format(fich)
+            txt += '<input type="submit" class = "fichier" name="fichier" id = "{}" value="{}"'.format(fich, fich)
             # Si un fichier est déjà traité par un AUTRE jury, son bouton est disabled...
             if (fich in fichiers_utilises.values() and fich != fichiers_utilises.get(qui, 'rien')):
                 txt += ' disabled'
@@ -173,12 +173,11 @@ class Composeur(object):
         if txt != '':
             txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez traiter.</h2>' + txt
         ## Fabrication de la page
-        contenu = Composeur.html["menu_comm"].format(**{'liste' : txt})
-        page += Composeur.html["MEP_MENU"].format(**{'contenu' : contenu, 'script' : qui.script_menu})
+        page += Composeur.html["menu_comm"].format(**{'liste' : txt, 'script' : qui.script_menu})
         page += '</html>'
         return page
 
-    def menu_admin(self, qui, fichiers_utilises, comm_en_cours): # fichiers_utilises ne sert pas ici TODO!
+    def menu_admin(self, qui, fichiers_utilises, comm_en_cours):
         """ Compose le menu administrateur
         contenu : selon l'état (phase 1, 2 ou 3) du traitement
         phase 1 : avant la commission, l'admin gère ce qui provient de ParcoursSup,
@@ -191,53 +190,57 @@ class Composeur(object):
         data = {}
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
-        if comm_en_cours: # attention, n'est jamais 'True' si le serveur fonctionne en localhost
-            pass # pas encore codée, peut-être que cela ne sera jamais le cas ?!TODO or not TODO
-        else:
-            list_fich_comm = glob.glob(os.path.join(os.curdir,"data","comm_*.xml"))
-            patron = 'menu_admin_'
-            if len(list_fich_comm) > 0: # phase 3 (ou entre 1 et 2, si l'admin s'amuse en localhost!)
+        list_fich_comm = glob.glob(os.path.join(os.curdir,"data","comm_*.xml"))
+        patron = 'menu_admin_'
+        if len(list_fich_comm) > 0: # phase 2 ou 3
+            data['decompt'] = self.genere_liste_decompte()
+            data['liste_stat'] = self.genere_liste_stat(qui)
+            if comm_en_cours: # phase 2
+                patron += 'pendant'
+                txt = ''
+                for fich in fichiers_utilises.values():
+                    txt += '<input type = "submit" class ="fichier" name = "fichier" value = "{}"/><br>'.format(fich)
+                data['liste_jurys'] = txt
+            else: # phase 3
                 patron += 'apres'
                 # Etape 4 bouton
                 data['bout_etap4'] = '<input type = "button" class ="fichier"'
                 data['bout_etap4'] += ' value = "Récolter les fichiers" onclick = "recolt_wait();"/>'
-                data['decompt'] = self.genere_liste_decompte()
-                data['liste_stat'] = self.genere_liste_stat(qui)
                 # Etape 5 bouton et Etape 6
                 list_fich_class = glob.glob(os.path.join(os.curdir,"data","class_*.xml"))
                 data['liste_impression'] = ''
                 if len(list_fich_class) > 0:
                     data['liste_impression'] = self.genere_liste_impression()
             
-            else: # avant commission
-                patron += 'avant'
-                # liste csv
-                data['liste_csv'] = self.genere_liste_csv()
-                # liste pdf
-                data['liste_pdf'] = self.genere_liste_pdf()
-                # liste admin
-                data['liste_admin'] = self.genere_liste_admin()
-                # liste_stat
-                data['liste_stat'] = self.genere_liste_stat(qui)
-                # Etape 3 bouton : ce bouton n'est actif que si admin a levé toutes les alertes.
-                ### Testons s'il reste encore des alertes dans les fichiers admin
-                # Récupération des fichiers admin
-                list_fich = {Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))}
-                alertes = False
-                while not(alertes) and len(list_fich) > 0: # à la première alerte détectée alertes = True
-                    fich = list_fich.pop()
-                    alertes = ( True in {'- Alerte :' in Fichier.get(cand, 'Motifs') for cand in fich} )
-                ### Suite
-                txt = ''
-                if len(data['liste_admin']) > 0: # si les fichiers admin existent :
-                    txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission"'
-                    affich = ''
-                    if (alertes):
-                        affich = 'disabled'
-                    txt += 'onclick = "genere_wait();" {}/>'.format(affich)
-                data['bout_etap3'] = txt
-            # Envoyez le menu
-            contenu = Composeur.html[patron].format(**data)
+        else: # avant commission
+            patron += 'avant'
+            # liste csv
+            data['liste_csv'] = self.genere_liste_csv()
+            # liste pdf
+            data['liste_pdf'] = self.genere_liste_pdf()
+            # liste admin
+            data['liste_admin'] = self.genere_liste_admin()
+            # liste_stat
+            data['liste_stat'] = self.genere_liste_stat(qui)
+            # Etape 3 bouton : ce bouton n'est actif que si admin a levé toutes les alertes.
+            ### Testons s'il reste encore des alertes dans les fichiers admin
+            # Récupération des fichiers admin
+            list_fich = {Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))}
+            alertes = False
+            while not(alertes) and len(list_fich) > 0: # à la première alerte détectée alertes = True
+                fich = list_fich.pop()
+                alertes = ( True in {'- Alerte :' in Fichier.get(cand, 'Motifs') for cand in fich} )
+            ### Suite
+            txt = ''
+            if len(data['liste_admin']) > 0: # si les fichiers admin existent :
+                txt = '<input type = "button" class ="fichier" value = "Générer les fichiers commission"'
+                affich = ''
+                if (alertes):
+                    affich = 'disabled'
+                txt += 'onclick = "genere_wait();" {}/>'.format(affich)
+            data['bout_etap3'] = txt
+        # Envoyez le menu
+        contenu = Composeur.html[patron].format(**data)
         # Composition de la page
         page += Composeur.html["MEP_MENU"].format(**{'contenu' : contenu, 'script' : qui.script_menu})
         page += '</html>'

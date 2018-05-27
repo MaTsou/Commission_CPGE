@@ -28,7 +28,7 @@ l'application. """
 # qui dépose telle ou telle requête.
 #
 # Les clients sont de 2 types : soit de type administrateur, soit de type jury. En fonctionnement standard 
-# (commission.py non lancée en mode test) le navigateur situé sur la machine qui exécute commission.py est 
+# (commission.py non lancé avec l'option jury) le navigateur situé sur la machine qui exécute commission.py est 
 # administrateur et les navigateurs extérieurs sont jurys.
 
 import os, cherrypy, glob, webbrowser
@@ -46,87 +46,79 @@ from utils.composeur import Composeur
 class Serveur(): # Objet lancé par cherrypy dans le __main__
     """ Classe générant les objets gestionnaires de requêtes HTTP """
     
-    def __init__(self, test, ip):
+    def __init__(self, jury, ip):
         """ constructeur des instances 'Serveur' """
         self.clients =  {}  # dictionnaire contenant les clients connectés {'client n' : objet_client }
-        self.test = test  # booléen : version test (avec un menu "Admin or Jury ?")
-        self.rafraich = False  # booléen qui sert à activer ou nom la fonction refresh
-        self.comm_en_cours = (ip != '127.0.0.1')  # booléen True pendant la commission --> menu ad hoc
+        self.jury = jury  # booléen : si True, le client "local" sera jury.
         self.fichiers_utilises = {} # Utile pour que deux jurys ne choisissent pas le même fichier..
+        self.rafraichir = ['',''] # booléen qui génère un SSE
         self.html_compose = Composeur(entete) # instanciation d'un objet Composeur de page html.
         navi = webbrowser.get()  # Quel est le navigateur par défaut ?
         navi.open_new('http://'+ip+':8080')  # on ouvre le navigateur internet, avec la bonne url..
-
-    def set_rafraich(self, bool = False):
-        """ Booléen : si un évènement qqc doit être suivi d'un rafraichissement de page, se booléen sera True """
-        self.rafraich = bool
-
-    def get_rafraich(self):
-        """ renvoie 'self.refraich' """
-        return self.rafraich
-
-    @cherrypy.expose
-    def refresh(self, **kwargs):
-        """ Rafraîchir un client suite à un évènement Server (SSE) """
-        # Renvoie un générateur permettant de demander au client de rafraichir sa page si 'self.rafraich' == True
-        cherrypy.response.headers["content-type"] = "text/event-stream"
-        def msg():
-            if self.get_rafraich():
-                self.set_rafraich(False) # On ne rafraîchit qu'une fois à la fois !
-                yield "event: message\ndata: ok\n\n"
-        return msg()
 
     def get_client_cour(self):
         """ renvoie le client courant en lisant le cookie de session """
         return self.clients[cherrypy.session["JE"]]
 
-    ########## Début des méthodes exposées au serveur ########
-    # Toutes renvoient une page html. 'index' est la méthode appelée à la connection avec le serveur
+    ########## Début des méthodes exposées au serveur ############
+    # Toutes (sauf refresh) renvoient une page html. 'index' est la méthode appelée
+    # à la connection avec le serveur
     # (adresse = ip:8080 ; ip est 127.0.0.1 par défaut. voir programme principal)
-    #
+    ###############################################################
     @cherrypy.expose
     def index(self):
         """ Retourne la page d'entrée du site web """
         # S'il n'y a pas déjà un cookie de session sur l'ordinateur client, on en créé un
         if cherrypy.session.get('JE', 'none') == 'none':
             key = 'client_{}'.format(len(self.clients) + 1) # clé d'identification du client
-        else: # sinon,
-            # on récupère la clé
-            key = cherrypy.session['JE']
-            # et on vire l'objet client associé
-            self.clients.pop(key, '') # supprime l'entrée correspondante à ce client dans self.clients
-            # Supprimer cet objet permet de libérer le fichier traité précédemment : il redevient
-            # accessible aux autres jurys... Pour qu'il reste verrouillé, il suffit de ne pas retourner
-            # sur la page d'accueil !
-        cherrypy.session['JE'] = key # Cookie de session en place; stocké sur la machine client
-        ##### suite
-        # Le client est-il sur la machine serveur ?
-        if cherrypy.request.local.name == cherrypy.request.remote.ip:
-            # Si oui, en mode TEST on affiche un menu de choix : "login Admin ou login Commission ?"
-            # Si oui, en mode "normal", ce client est Admin
-            if self.test: # Mode TEST ou pas ?
-                return self.html_compose.menu()
+            cherrypy.session['JE'] = key # Cookie de session en place; stocké sur la machine client
+            # Si option -jury ou client n'est pas sur la machine serveur,
+            if self.jury or cherrypy.request.local.name != cherrypy.request.remote.ip:
+                # Le client sera Jury
+                # On créé un objet Jury associé à la clé key
+                self.clients[key] = Jury(key)
+                self.rafraichir = ['add','']
             else:
-                # Machine serveur et Mode normal ==> c'est un Client Admin
+                # Machine serveur et pas d'option -jury ==> c'est un Client Admin
                 # On créé un objet Admin associé à la clé key
                 self.clients[key] = Admin(key)
-        else:
-            # Si non, c'est un Client Jury (peu importe qu'on soit en mode TEST)
-            # On créé un objet Jury associé à la clé key
-            self.clients[key] = Jury(key)
+        else: # sinon,
+            # on récupère la clé et le client
+            key = cherrypy.session['JE']
+            client = self.clients[key]
+            if client.fichier: # le client a déjà sélectionné un fichier, mais il revient au menu
+                self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible
+                self.rafraichir = ['free', client.fichier.nom] # SSE qui rend le bouton actif
+                client.fichier = None # aux autres jurys
         # On affiche le menu du client
         return self.affiche_menu()
 
     @cherrypy.expose
-    def identification(self, **kwargs):
-        """ Appelée quand un choix est fait dans le menu du mode test; reçoit ce choix : Admin/Jury. Retourne la page 
-        menu adéquat. """
-        key = cherrypy.session['JE'] # quel client ?
-        if kwargs.get('acces', '') == "Accès administrateur": # pourquoi 'acces' n'existe-t-il parfois pas ?!
-            self.clients[key] = Admin(key) # création d'une instance admin
-        else:
-            self.clients[key] = Jury(key) # création d'une instance jury
-        return self.affiche_menu() # Affichage du menu adéquat
+    def refresh(self, **kwargs):
+        """ Rafraîchir un client suite à un évènement Server (SSE) """
+        # Renvoie un générateur permettant de demander au client de rafraichir sa page si 'self.rafraich' == True
+        cherrypy.response.headers["content-type"] = "text/event-stream"
+        def gene():
+            if self.rafraichir[0] != '':
+                event, data, self.rafraichir = self.rafraichir[0], self.rafraichir[1], ['','']
+                yield "event: {}\ndata: {}\n\n".format(event, data)
+        return gene()
+
+    @cherrypy.expose
+    def libere_fichier(self, **kwargs):
+        """ Pendant la commission, l'administrateur peut rendre de nouveau accessible le fichier qu'un jury avait 
+        préalablement choisi. Si un ordinateur plante, cela peut éviter un redémarrage du serveur """
+        fichier = kwargs["fichier"]
+        try: 
+            # recherche du client concerné
+            client = [cli for cli in self.fichiers_utilises.keys() if self.fichiers_utilises[cli] == fichier][0]
+            self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible
+            self.rafraichir = ['free', fichier] # SSE qui rend le bouton actif
+            client.fichier = None # aux autres jurys
+        except:
+            pass
+        # Retour au menu
+        return self.affiche_menu()
   
     @cherrypy.expose
     def affiche_menu(self):
@@ -137,14 +129,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Admin revient à ce menu lorsqu'il appuie sur le bouton 'RETOUR'. Dans ce cas, on restitue des droits
         # "vierges" de toute référence à une filière (intervient dans l'entête de page html).
         client = self.get_client_cour() # quel client ?
-        client.set_droits('') # on supprime la référence à une filière dans les droits (voir entête de page)
-        if client.fichier: # le client a déjà sélectionné un fichier, mais il revient au menu
-            self.fichiers_utilises.pop(client) # on fait du ménage
-            client.fichier = None
+        client.reset_droits() # on supprime la référence à une filière dans les droits (voir entête de page)
+        # Le booléen comm_en_cours est mis-à-jour : True s'il y a des jurys connectés..
+        comm_en_cours = True in {isinstance(cli, Jury) for cli in self.clients.values()}
         # on redéfinit le type de retour (nécessaire quand on a utilisé des SSE)
         # voir la méthode 'refresh'.
         cherrypy.response.headers["content-type"] = "text/html"
-        return self.html_compose.menu(client, self.fichiers_utilises, self.comm_en_cours)
+        return self.html_compose.menu(client, self.fichiers_utilises, comm_en_cours)
 
     @cherrypy.expose
     def traiter_parcourssup(self, **kwargs):
@@ -168,22 +159,25 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def choix_comm(self, **kwargs):
         """ Appelée quand un jury sélectionne un fichier dans son menu. Retourne la page de traitement de ce dossier. 
         """
-        self.set_rafraich(True) # On rafraîchit les menus des Jurys... (ce fichier n'est plus disponible)
         cherrypy.response.headers["content-type"] = "text/html"
         # récupère le client
         client = self.get_client_cour() # quel jury ? (sur quel machine ? on le sait grâce au cookie)
         # Teste si le fichier n'a pas été choisi par un autre jury
-        if kwargs["fichier"] in self.fichiers_utilises.values():
+        fichier = kwargs.get("fichier") # nom du fichier sélectionné par le jury
+        a = fichier in self.fichiers_utilises.values()
+        b = fichier != self.fichiers_utilises.get(client, 'rien')
+        if (a and b):
             # Si oui, retour menu
-            self.affiche_menu()
+            return self.affiche_menu()
         else:
             # sinon, mise à jour des attributs du client : l'attribut fichier du client va recevoir une instance d'un 
             # objet Fichier, construit à partir du nom de fichier.
-            client.set_fichier(Fichier(kwargs["fichier"]))
+            client.set_fichier(Fichier(fichier))
             # Mise à jour de la liste des fichiers utilisés
-            self.fichiers_utilises[client] = fichier.nom
-            ## Initialisation des paramètres
-            # mem_scroll : cookie qui stocke la position de l'ascenseur dans la liste des dossiers
+            self.fichiers_utilises[client] = fichier
+            # On rafraîchit les menus des Jurys... (ce fichier n'est plus disponible)
+            self.rafraichir = ['add', fichier]
+            # mem_scroll initialisé : cookie qui stocke la position de l'ascenseur dans la liste des dossiers
             cherrypy.session['mem_scroll'] = '0'
             # Affichage de la page de gestion des dossiers
             return self.affi_dossier()

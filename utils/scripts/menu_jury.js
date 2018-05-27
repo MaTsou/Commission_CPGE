@@ -3,25 +3,20 @@ if (!!window.EventSource) {
 	var refresh = new EventSource('/refresh');
 }
 
-// Ajouter un écouteur d'évènements qui recharge la page
-refresh.addEventListener('message', function(event) {
-		window.location.reload(true);
-});
+// Affecter une fonction à exécuter à la réception d'un event 'add'
+refresh.addEventListener('add',
+	function(event) {
+		if (event.data !== '') {
+			document.getElementById(event.data).disabled = true;
+		}
+	},
+	false);
 
-function hide_loader() // Admin seulement
-{}
-
-function show_loader() // Admin seulement
-{}
-
-function verif_wait() // Admin seulement
-{}
-
-function genere_wait() // Admin seulement
-{}
-
-function recolt_wait() // Admin seulement
-{}
-
-function tableaux_wait() // Admin seulement
-{}
+// Affecter une fonction à exécuter à la réception d'un event 'free'
+refresh.addEventListener('free',
+	function(event) {
+		if (event.data !== '') {
+			document.getElementById(event.data).disabled = false;
+		}
+	},
+	false);

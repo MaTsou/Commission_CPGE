@@ -1,6 +1,6 @@
 [*Entete*]
 <head> 
-	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" cache-control="no-cache, no-store, must-revalidate"> 
 	<link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
 	<title>Gestion Commission</title>
 	<div id = "header">
@@ -16,18 +16,23 @@
   </form> 
 </div>
 ##########
+[*menu_comm*]
+<body>
+  <div id = "mep_menu">
+    <form action="/choix_comm" method=POST> 
+      <div class = "sous_menu">
+        {liste}
+      </div>
+    </form>
+  </div>
+  <script type="text/javascript" src="{script}"></script>
+</body>
+##########
 [*MEP_MENU*]
 <body onload="hide_loader();">
   <div id = "mep_menu">{contenu}</div>
   <script type="text/javascript" src="{script}"></script>
 </body>
-##########
-[*menu_comm*]
-<form action="/choix_comm" method=POST> 
-  <div class = "sous_menu">
-    {liste}
-  </div>
-</form>
 ##########
 [*menu_admin_avant*]
 <div id = "csv" class = "sous_menu">
@@ -57,6 +62,21 @@
   <h1>Traitement en cours...</h1>
   <div class = "loader"><p><img id = "gif" src = "/utils/ajax-loader.gif"></p></div>
   <h1>...Veuillez Patienter</h1>
+</div>
+##########
+[*menu_admin_pendant*]
+<div id = "admin" class = "sous_menu">
+  <div class = "etape">&nbsp;Commission en cours...</div>
+  <div class = "liste_admin">
+    <br>
+    <h2 style = "margin-top:0%;">{decompt}</h2>
+  </div>
+  <div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
+</div>
+<br>
+<div id = "imprim" class = "sous_menu">
+  <div class = "etape">&nbsp;Jurys connectés : (cliquez pour libérer le fichier)</div>
+  <form id = "impress" action = '/libere_fichier' method = POST"> {liste_jurys} </form>			
 </div>
 ##########
 [*menu_admin_apres*]

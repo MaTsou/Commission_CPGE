@@ -33,15 +33,20 @@ from utils.toolbox import decoup, restaure_virginite
 
 class Client(): 
     """ Objet client "abstrait" pour la class Serveur """
-    def __init__(self, key, droits):
+    def __init__(self, key, type_client):
         """ constructeur """
         # identifiant du client : contenu du cookie déposé sur la machine client
         self.je_suis = key  
-        self._droits = droits  # droits : admin ou jury... Attribut privé car méthode set particulière..
+        self.type = type_client # type de client (admin ou jury)
+        self._droits = type_client  # droits : (type suivi nom fichier). Attribut privé car méthode set particulière..
         self.fichier = None  # contiendra une instance 'Fichier'
         # Index (dans le fichier) du candidat suivi.
         self.num_doss = -1  # -1 signifie : le jury n'est pas en cours de traitement
     
+    def reset_droits(self):
+        """ Restitue des droits vierges au client """
+        self._droits = self.type
+
     def get_droits(self):
         """ Retourne l'attribut _droits """
         return self._droits
@@ -54,8 +59,8 @@ class Client():
         """ Renseigne l'attribut 'fichier', et mets à jour les droits pour qu'ils contiennent la filière courante """
         # fich est une instance Fichier.
         self.fichier = fich
-        r = parse('{}_{}.xml', fich.nom) # récupère nom de la filière traitée et éventuellement un numéro de jury.
-        self._droits += ' {}'.format(r[1]) # ajoutée aux droits (apparaît dans l'entête de page html)
+        r = parse('{}_{}.xml', fich.nom)
+        self._droits = '{} {}'.format(self.type, r[1])
         self.num_doss = 0 # on commence par le premier dossier !
 
 #################################################################################
@@ -70,10 +75,6 @@ class Jury(Client):
         # Fichiers javascripts. Ces attributs servent au Composeur de page html..
         self.script_menu = 'utils/scripts/menu_jury.js'
         self.script_dossiers = 'utils/scripts/dossiers_jury.js'
-
-    def set_droits(self, droits):
-        """ Renseigne l'attribut 'droits' de l'instance. """
-        self._droits = 'Jury' + droits
 
     def get_rgfinal(self, cand):
         """ Renvoie une estimation du rg final d'un candidat """
@@ -140,10 +141,6 @@ class Admin(Client):
         self.script_menu = 'utils/scripts/menu_admin.js'
         self.script_dossiers = 'utils/scripts/dossiers_admin.js'
     
-    def set_droits(self, droits):
-        """ Renseigne l'attribut 'droits' de l'instance """
-        self._droits = 'Administrateur' + droits
-
     def traiter(self, **kwargs):
         """ Traiter un dossier """
         # Fonction lancée par la fonction "traiter" du Serveur, elle même lancée par un clic sur 'Classé' ou 'NC'

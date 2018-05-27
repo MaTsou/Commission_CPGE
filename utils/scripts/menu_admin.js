@@ -3,10 +3,15 @@ if (!!window.EventSource) {
 	var refresh = new EventSource('/refresh');
 }
 
-// Ajouter un écouteur d'évènements qui recharge la page
-refresh.addEventListener('message', function(event) {
+// Ajouter un écouteur d'évènements qui recharge la page sur un event 'add'
+refresh.addEventListener('add', function(event) {
 		window.location.reload(true);
-});
+}, false);
+
+// Ajouter un écouteur d'évènements qui recharge la page sur un event 'free'
+refresh.addEventListener('free', function(event) {
+		window.location.reload(true);
+}, false);
 
 function hide_loader()
 {
