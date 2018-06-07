@@ -28,7 +28,7 @@ Une fois récupérées les données proposées par ParcoursSup, 3 phases se succ
 :
 
 1. Préparation de la commission par **L'administrateur** (nom utilisé dans 
-l'application pour désigner le reponsable du recrutement) du recrutement. Cette 
+l'application pour désigner le responsable du recrutement). Cette 
 phase aboutit à un pré-classement des candidats dans l'ordre d'un _score_ dit 
 brut.
 
@@ -58,7 +58,7 @@ par candidat classé résume le traitement reçu, plusieurs tableaux
     * coefficients intervenant dans le calcul du score brut (deux cas : 
       coefficients concernant les candidats actuellement en terminale; 
       coefficients concernant les candidats actuellement en CPES),
-    * intervalle de correction proposé aux jurys (min, max, intervalle).
+    * intervalle de correction proposé aux jurys (min, max, pas).
 
 -------------------------------------------------
 ## Utilisation du programme d'aide au recrutement : 
