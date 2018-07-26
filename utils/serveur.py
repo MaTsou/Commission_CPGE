@@ -88,7 +88,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 self.rafraichir = ['free', client.fichier.nom] # SSE qui rend le bouton actif
                 client.fichier = None # aux autres jurys
         # On affiche le menu du client
-        self.rafraichir = ['add',''] # un petit rafraichissement pour l'admin en commission
         return self.affiche_menu()
 
     @cherrypy.expose
@@ -96,11 +95,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         """ Rafraîchir un client suite à un évènement Server (SSE) """
         # Renvoie un générateur permettant de demander au client de rafraichir sa page si 'self.rafraich' == True
         cherrypy.response.headers["content-type"] = "text/event-stream"
-        def gene():
-            if self.rafraichir[0] != '':
-                event, data, self.rafraichir = self.rafraichir[0], self.rafraichir[1], ['','']
-                yield "event: {}\ndata: {}\n\n".format(event, data)
-        return gene()
+        if self.rafraichir[0] != '':
+            event, data, self.rafraichir = self.rafraichir[0], self.rafraichir[1], ['','']
+        else:
+            event, data = '', ''
+        return "event: {}\ndata: {}\n\n".format(event, data)
 
     @cherrypy.expose
     def libere_fichier(self, **kwargs):
@@ -129,7 +128,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         client = self.get_client_cour() # quel client ?
         client.reset_droits() # on supprime la référence à une filière dans les droits (voir entête de page)
         # Le booléen comm_en_cours est mis-à-jour : True s'il y a des jurys connectés..
-        comm_en_cours = True in {isinstance(cli, Jury) for cli in self.clients.values()}
+        comm_en_cours = self.fichiers_utilises != {}
         # on redéfinit le type de retour (nécessaire quand on a utilisé des SSE)
         # voir la méthode 'refresh'.
         cherrypy.response.headers["content-type"] = "text/html"
@@ -211,7 +210,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.get_client_cour().traiter(**kwargs)    # chaque client traite à sa manière !!
         # Si Jury, on rafraîchit la page menu de l'admin (mise à jour du décompte des traitements)
         if isinstance(self.get_client_cour(), Jury):
-            self.set_rafraich(True)
+            self.rafraichir = ['refresh', None]
         # Et on retourne à la page dossier
         return self.affi_dossier()
         

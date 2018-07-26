@@ -28,7 +28,7 @@
 # serveur. En fait, ce qui va servir sont les deux classes filles de clients :
 #       * 'Admin' : il s'agit du client qui se trouve sur la machine exécutant le serveur. Cet administrateur du 
 #       recrutement gère tout ce qui est administratif. En amont de la commission, il prépare les dossiers (complétion 
-#       de dossiers, filtrage de dossiers non recevables), génération des fichiers que chaque jury devra traité. En aval 
+#       de dossiers, filtrage de dossiers non recevables), génération des fichiers que chaque jury devra traiter. En aval 
 #       de la commission, il récupère et synthétise les décisions des 'jurys', produit des fiches bilan de commission 
 #       ainsi que des tableaux récapitulatifs).
 #

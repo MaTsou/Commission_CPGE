@@ -13,6 +13,11 @@ refresh.addEventListener('free', function(event) {
 		window.location.reload(true);
 }, false);
 
+// Ajouter un écouteur d'évènements qui recharge la page sur un event 'refresh'
+refresh.addEventListener('refresh', function(event) {
+		window.location.reload(true);
+}, false);
+
 function hide_loader()
 {
 	document.getElementById("patience").style.visibility = "hidden";

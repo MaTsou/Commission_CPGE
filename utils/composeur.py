@@ -47,7 +47,7 @@ class Composeur(object):
                     txt += ligne
 
     # corrections proposées aux jurys (faire attention que 0 soit dans la liste !!)
-    # Cette liste sert ) fabriquer la barre de correction proposée aux jurys.
+    # Cette liste sert à fabriquer la barre de correction proposée aux jurys.
     corrections = [(n+min_correc*nb_correc)/float(nb_correc) for n in range(0, (max_correc-min_correc)*nb_correc+1)]
 
     # Barre de correction :
@@ -254,7 +254,7 @@ class Composeur(object):
         return txt
     
     def genere_liste_pdf(self):
-        """ Sous-fonction pour le menu admin : list des .pdf trouvés """
+        """ Sous-fonction pour le menu admin : liste des .pdf trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
             txt += '{}<br>'.format(fich)
