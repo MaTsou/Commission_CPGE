@@ -63,8 +63,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
 
     def add_sse_message(self, event, data):
         """ ajoute un message dans l'ensemble des messages SSE à envoyer """
-        self.sse_message_id += 1
-        self.sse_messages.add("id: {}\nevent: {}\ndata: {}\n\n".format(self.sse_message_id, event, data))
+        # L'usage d'un ensemble évite les doublons..
+        self.sse_messages.add("event: {}\ndata: {}\n\n".format(event, data))
 
     ########## Début des méthodes exposées au serveur ############
     # Toutes (sauf refresh) renvoient une page html. 'index' est la méthode appelée
@@ -103,8 +103,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         cherrypy.response.headers["content-type"] = "text/event-stream"
         cherrypy.response.headers["cache-control"] = "no-cache"
         cherrypy.response.headers["connection"] = "keep-alive"
-        if len(self.sse_messages) > 0:
-            return self.sse_messages.pop()
+        nb = len(self.sse_messages)
+        if nb > 0:
+            txt = ""
+            for n in range(nb):
+                self.sse_message_id += 1
+                txt += "id: {}\n{}".format(self.sse_message_id, self.sse_messages.pop())
+            return txt
 
     @cherrypy.expose
     def libere_fichier(self, **kwargs):
