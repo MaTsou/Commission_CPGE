@@ -1,20 +1,23 @@
-// Mettre en place un gestionnaire d'évènements lié à la function python refresh
+// Mettre en place un gestionnaire d'évènements lié à la function python send_sse_message
 if (!!window.EventSource) {
-	var refresh = new EventSource('/refresh');
+	var source = new EventSource('/send_sse_message');
 }
 
+// si message non typé (contenant event), ne rien faire
+source.onMessage = function(event) {}
+
 // Ajouter un écouteur d'évènements qui recharge la page sur un event 'add'
-refresh.addEventListener('add', function(event) {
+source.addEventListener('add', function(event) {
 		window.location.reload(true);
 }, false);
 
 // Ajouter un écouteur d'évènements qui recharge la page sur un event 'free'
-refresh.addEventListener('free', function(event) {
+source.addEventListener('free', function(event) {
 		window.location.reload(true);
 }, false);
 
 // Ajouter un écouteur d'évènements qui recharge la page sur un event 'refresh'
-refresh.addEventListener('refresh', function(event) {
+source.addEventListener('refresh', function(event) {
 		window.location.reload(true);
 }, false);
 

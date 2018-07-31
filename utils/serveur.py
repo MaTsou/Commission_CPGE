@@ -51,7 +51,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.clients =  {}  # dictionnaire contenant les clients connectés {'client n' : objet_client }
         self.jury = jury  # booléen : si True, le client "local" sera jury.
         self.fichiers_utilises = {} # Utile pour que deux jurys ne choisissent pas le même fichier..
-        self.rafraichir = ['',''] # booléen qui génère un SSE
+        self.sse_messages = set() # ensemble des messages SSE à envoyer
+        self.sse_message_id = 0 # identifiant des messages SSE (sert à éviter les messages perdus entre 2 reconnections)
         self.html_compose = Composeur(entete) # instanciation d'un objet Composeur de page html.
         navi = webbrowser.get()  # Quel est le navigateur par défaut ?
         navi.open_new('http://'+ip+':8080')  # on ouvre le navigateur internet, avec la bonne url..
@@ -59,6 +60,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def get_client_cour(self):
         """ renvoie le client courant en lisant le cookie de session """
         return self.clients[cherrypy.session["JE"]]
+
+    def add_sse_message(self, event, data):
+        """ ajoute un message dans l'ensemble des messages SSE à envoyer """
+        self.sse_message_id += 1
+        self.sse_messages.add("id: {}\nevent: {}\ndata: {}\n\n".format(self.sse_message_id, event, data))
 
     ########## Début des méthodes exposées au serveur ############
     # Toutes (sauf refresh) renvoient une page html. 'index' est la méthode appelée
@@ -85,21 +91,20 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             client = self.clients[key]
             if client.fichier: # le client a déjà sélectionné un fichier, mais il revient au menu
                 self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible
-                self.rafraichir = ['free', client.fichier.nom] # SSE qui rend le bouton actif
+                self.add_sse_message('free', client.fichier.nom) # SSE qui rend le bouton actif
                 client.fichier = None # aux autres jurys
         # On affiche le menu du client
         return self.affiche_menu()
 
     @cherrypy.expose
-    def refresh(self, **kwargs):
+    def send_sse_message(self, **kwargs):
         """ Rafraîchir un client suite à un évènement Server (SSE) """
-        # Renvoie un générateur permettant de demander au client de rafraichir sa page si 'self.rafraich' == True
+        # Renvoie un générateur permettant de demander au client de rafraichir sa page 
         cherrypy.response.headers["content-type"] = "text/event-stream"
-        if self.rafraichir[0] != '':
-            event, data, self.rafraichir = self.rafraichir[0], self.rafraichir[1], ['','']
-        else:
-            event, data = '', ''
-        return "event: {}\ndata: {}\n\n".format(event, data)
+        cherrypy.response.headers["cache-control"] = "no-cache"
+        cherrypy.response.headers["connection"] = "keep-alive"
+        if len(self.sse_messages) > 0:
+            return self.sse_messages.pop()
 
     @cherrypy.expose
     def libere_fichier(self, **kwargs):
@@ -110,7 +115,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # recherche du client concerné
             client = [cli for cli in self.fichiers_utilises.keys() if self.fichiers_utilises[cli] == fichier][0]
             self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible
-            self.rafraichir = ['free', fichier] # SSE qui rend le bouton actif
+            self.add_sse_message('free', fichier) # SSE qui rend le bouton actif
             client.fichier = None # aux autres jurys
         except:
             pass
@@ -130,7 +135,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Le booléen comm_en_cours est mis-à-jour : True s'il y a des jurys connectés..
         comm_en_cours = self.fichiers_utilises != {}
         # on redéfinit le type de retour (nécessaire quand on a utilisé des SSE)
-        # voir la méthode 'refresh'.
+        # voir la méthode 'send_sse_message'.
         cherrypy.response.headers["content-type"] = "text/html"
         return self.html_compose.menu(client, self.fichiers_utilises, comm_en_cours)
 
@@ -156,7 +161,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def choix_comm(self, **kwargs):
         """ Appelée quand un jury sélectionne un fichier dans son menu. Retourne la page de traitement de ce dossier. 
         """
-        cherrypy.response.headers["content-type"] = "text/html"
         # récupère le client
         client = self.get_client_cour() # quel jury ? (sur quel machine ? on le sait grâce au cookie)
         # Teste si le fichier n'a pas été choisi par un autre jury
@@ -173,7 +177,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # Mise à jour de la liste des fichiers utilisés
             self.fichiers_utilises[client] = fichier
             # On rafraîchit les menus des Jurys... (ce fichier n'est plus disponible)
-            self.rafraichir = ['add', fichier]
+            self.add_sse_message('add', fichier)
             # mem_scroll initialisé : cookie qui stocke la position de l'ascenseur dans la liste des dossiers
             cherrypy.session['mem_scroll'] = '0'
             # Affichage de la page de gestion des dossiers
@@ -200,6 +204,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         """ Retourne la page de traitement d'un dossier. Page maîtresse de toute l'application. """
         # On transmets le client et le cookie de mémorisation de position d'ascenseur à l'instance Composeur qui se 
         # charge de tout..
+        cherrypy.response.headers["content-type"] = "text/html" # rétablir l'entête après SSE (voir send_sse_message)
         return self.html_compose.page_dossier(self.get_client_cour(), cherrypy.session['mem_scroll'])
     
     @cherrypy.expose
@@ -210,7 +215,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.get_client_cour().traiter(**kwargs)    # chaque client traite à sa manière !!
         # Si Jury, on rafraîchit la page menu de l'admin (mise à jour du décompte des traitements)
         if isinstance(self.get_client_cour(), Jury):
-            self.rafraichir = ['refresh', None]
+            self.add_sse_message('refresh', None)
         # Et on retourne à la page dossier
         return self.affi_dossier()
         
