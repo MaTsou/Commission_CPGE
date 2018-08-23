@@ -7,11 +7,6 @@ entete = 'EPA - Recrutement CPGE/CPES'
 
 ############################################################################
 # Coefficients pour le calcul des scores bruts                             #
-# Les coefficients ci-dessous sont cumulés. La répartition est faite dans  #
-# la fonction de calcul qui se trouve dans le module "interface_xml.py"    #
-# Première : tous les trimestres (ou semestres) équivalents                #
-# EAF : prop_ecrit_EAF pour l'écrit et le complément pour l'oral           #
-# Terminale : tous équiv si CPES sinon prop_prem_trim pour 1er trim, ...   #
 ############################################################################
 # Étudiant en terminale
 coef_term = {\
@@ -29,6 +24,7 @@ coef_term = {\
         'Oral EAF' : 1
 }
 
+# Étudiant en CPES
 coef_cpes= {\
         'Mathématiques Première trimestre 1' : 1,
         'Mathématiques Première trimestre 2' : 1,

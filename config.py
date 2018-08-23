@@ -11,6 +11,7 @@ nombre_de_candidats_classes  = ['120', '140', '1000']
 
 ############################################################################
 # Liste des motivations de la commission ...                               #
+# Sous la forme d'un tableau à 2 colones.                                  #
 # Ne pas dépasser 7 lignes pour que l'affichage sur navigateur soit beau   # 
 ############################################################################
 motivations = [
