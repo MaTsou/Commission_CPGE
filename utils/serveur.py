@@ -14,10 +14,10 @@ l'application. """
 # Une méthode n'est 'visible' par le navigateur que si elle est précédée par @cherrypy.expose
 #
 # serveur --> navigateur :
-# en retour (par la fonction return), python renvoi le code --- sous la forme d'une chaine (immense) de # caractères --- 
+# en retour (par la fonction return), python renvoi le code --- sous la forme d'une chaine (immense) de caractères --- 
 # d'une page html.
 #
-# Immmédiatement après la connection au serveur, la page affichée est celle retournée par la méthode 'index'.
+# Immmédiatement après la première connection au serveur, la page affichée est celle retournée par la méthode 'index'.
 #
 
 # L'objet serveur dispose :
@@ -67,7 +67,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.sse_messages.add("event: {}\ndata: {}\n\n".format(event, data))
 
     ########## Début des méthodes exposées au serveur ############
-    # Toutes (sauf refresh) renvoient une page html. 'index' est la méthode appelée
+    # Toutes (sauf send_sse_message) renvoient une page html. 'index' est la méthode appelée
     # à la connection avec le serveur
     # (adresse = ip:8080 ; ip est 127.0.0.1 par défaut. voir programme principal)
     ###############################################################
@@ -90,9 +90,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             key = cherrypy.session['JE']
             client = self.clients[key]
             if client.fichier: # le client a déjà sélectionné un fichier, mais il revient au menu
-                self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible
-                self.add_sse_message('free', client.fichier.nom) # SSE qui rend le bouton actif
-                client.fichier = None # aux autres jurys
+                self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible aux autres jurys
+                self.add_sse_message('free', client.fichier.nom) # émission d'un SSE : un fichier se libère
+                client.fichier = None
         # On affiche le menu du client
         return self.affiche_menu()
 
@@ -119,9 +119,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         try: 
             # recherche du client concerné
             client = [cli for cli in self.fichiers_utilises.keys() if self.fichiers_utilises[cli] == fichier][0]
-            self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible
-            self.add_sse_message('free', fichier) # SSE qui rend le bouton actif
-            client.fichier = None # aux autres jurys
+            self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible aux autres jurys
+            self.add_sse_message('free', fichier) # émission d'un SSE : un fichier se libère
+            client.fichier = None
         except:
             pass
         # Retour au menu
@@ -181,7 +181,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             client.set_fichier(Fichier(fichier))
             # Mise à jour de la liste des fichiers utilisés
             self.fichiers_utilises[client] = fichier
-            # On rafraîchit les menus des Jurys... (ce fichier n'est plus disponible)
+            # On émet un message SSE : ajout d'un fichier à la liste des fichiers en cours de traitement
             self.add_sse_message('add', fichier)
             # mem_scroll initialisé : cookie qui stocke la position de l'ascenseur dans la liste des dossiers
             cherrypy.session['mem_scroll'] = '0'
@@ -218,7 +218,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Cette méthode sert à mettre à jour le dossier du candidat...
         # C'est le travail du client courant à qui on passe tous les paramètres du formulaire html : dictionnaire kwargs
         self.get_client_cour().traiter(**kwargs)    # chaque client traite à sa manière !!
-        # Si Jury, on rafraîchit la page menu de l'admin (mise à jour du décompte des traitements)
+        # Si Jury, on émet un SSE (à destination de l'admin pour mise à jour du décompte des traitements)
         if isinstance(self.get_client_cour(), Jury):
             self.add_sse_message('refresh', None)
         # Et on retourne à la page dossier
