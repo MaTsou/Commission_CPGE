@@ -2,11 +2,11 @@
 #-*- coding: utf-8 -*-
 
 # Ce fichier contient la classe Fichier.
-# Cette classe dispose d'un attribut important, le dictionnaire 'acces'. Il est ce qui traduit les requêtes extérieures 
+# Cette classe dispose d'un attribut important, le dictionnaire 'acces'. Il est ce qui traduit les requêtes extérieures
 # (venant des clients) en requêtes xpath désignant le chemin dans le fichier xml.
 # Les méthodes de classe 'set' et 'get' se chargent d'écrire et de lire les infos au bon endroit.
-# Ce qui prévaut dans se choix de structure : l'encapsulation. Les clients n'ont pas besoin de savoir quel type de 
-# fichier contient l'information qu'ils désirent. C'est le travail de la classe 'Fichier'. Il sera alors aisé (si le besoin 
+# Ce qui prévaut dans se choix de structure : l'encapsulation. Les clients n'ont pas besoin de savoir quel type de
+# fichier contient l'information qu'ils désirent. C'est le travail de la classe 'Fichier'. Il sera alors aisé (si le besoin
 # s'en fait sentir) de changer de format de données..
 ###
 #   Chaque instance Fichier est construite à partir d'un nom de fichier xml.
@@ -36,9 +36,9 @@ class Fichier(object):
         """ accesseur : récupère le contenu d'un noeud xml
         cand est un etree.Element pointant un candidat
         attr est une clé du dictionnaire 'acces' défini ci-dessous """
-        # Le dictionnaire 'acces' contient le chemin xpath relatif à l'attribut attr et éventuellement le nom d'une 
-        # fonction de post-traitement. Celle-ci sert à mettre en 'forme' la valeur lue (nécessairement de type string) 
-        # pour l'usage auquel elle est destinée. 'acces' contient également la valeur à renvoyer dans le cas où le noeud 
+        # Le dictionnaire 'acces' contient le chemin xpath relatif à l'attribut attr et éventuellement le nom d'une
+        # fonction de post-traitement. Celle-ci sert à mettre en 'forme' la valeur lue (nécessairement de type string)
+        # pour l'usage auquel elle est destinée. 'acces' contient également la valeur à renvoyer dans le cas où le noeud
         # n'existe pas (valeur par défaut).
         try:
             result = cand.xpath(Fichier.acces[attr]['query'])[0].text
@@ -56,7 +56,7 @@ class Fichier(object):
          attr est une clé du dictionnaire 'acces' défini ci-dessus
          value est la valeur à écrire dans le noeud choisi.
          Si le noeud n'existe pas, la fonction accro_branch (ci-après) reconstituera l'arborescence manquante. """
-         # 'acces' contient éventuellement une le nom d'une fonction de pré-traitement. Celle-ci sert à préparer la 
+         # 'acces' contient éventuellement une le nom d'une fonction de pré-traitement. Celle-ci sert à préparer la
          # valeur à être stockée dans le fichier xml.
         query = Fichier.acces[attr]['query']
         if 'pre' in Fichier.acces[attr].keys():
@@ -101,7 +101,7 @@ class Fichier(object):
     @classmethod
     def is_complet(cls, cand):
         """ Renvoie True si tous les éléments nécessaires à un calcul correct du score brut sont présents """
-        # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin 
+        # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin
         # doit faire tout ce qu'il peut pour la lever..
         #
         # Construction de l'ensemble des champs à vérifier
@@ -139,42 +139,50 @@ class Fichier(object):
     @classmethod
     def calcul_scoreb(cls, cand):
         """ Calcul du score brut et renseignement du noeud xml """
-        # Si correction = 'NC', cela signifie que l'admin rejette le dossier : scoreb = 0
-        scoreb = 0 # valeur si correction = 'NC'
-        if cls.get(cand, 'Correction') != 'NC': # l'admin n'a pas rejeté
-            # Récupération des coef
-            if 'cpes' in cls.get(cand, 'Classe actuelle').lower(): 
-                coef = dict(coef_cpes) # attention, il faut travailler sur une copie de coef_cpes
-            else:
-                coef = dict(coef_term) # idem !
-            # Pré-traitement pour un candidat noté en semestres
-            # Report de coefficient pour maintien du poids relatif
-            if cls.get(cand, 'sem_prem') == 'on':
+        # Si correction = 'NC', cela signifie que l'admin rejette le
+        # dossier ; score nul d'office!
+        if cls.get(cand, 'Correction') == 'NC': # candidat rejeté
+            cls.set(cand, 'Score brut', vers_str(0))
+            return
+
+        # Récupération des coefficients, en les copiant car si
+        # l'organisation est semestrielle, on va vouloir faire des
+        # reports pour maintenir les poids relatifs
+        if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
+            coef = dict(coef_cpes)
+        else:
+            coef = dict(coef_term)
+
+        # Report des coefficients si on travaille en semestre
+        if cls.get(cand, 'sem_prem') == 'on':
+            for mat in ['Mathématiques', 'Physique/Chimie']:
+                for trim in ['1', '2']:
+                    coef['{} Première trimestre {}'.format(mat, trim)] +=\
+                        coef['{} Première trimestre 3'.format(mat)]/2
+        if cls.get(cand, 'sem_term') == 'on':
+            if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
                 for mat in ['Mathématiques', 'Physique/Chimie']:
                     for trim in ['1', '2']:
-                        coef['{} Première trimestre {}'.format(mat, trim)] +=\
-                                coef['{} Première trimestre 3'.format(mat)]/2
-            if cls.get(cand, 'sem_term') == 'on':
-                if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
-                    for mat in ['Mathématiques', 'Physique/Chimie']:
-                        for trim in ['1', '2']:
-                            coef['{} Terminale trimestre {}'.format(mat, trim)] +=\
-                                    coef['{} Terminale trimestre 3'.format(mat)]/2
-                else:
-                    for mat in ['Mathématiques', 'Physique/Chimie']:
-                        coef['{} Terminale trimestre 1'.format(mat)] +=\
-                                coef['{} Terminale trimestre 2'.format(mat)]
-            # Initialisation :
-            somme, poids = 0, 0
-            for key in coef.keys():
-                note = cls.get(cand, key)
-                if note != '-':
-                    somme += vers_num(note)*coef[key]
-                    poids += coef[key]
-            if poids != 0:
-                scoreb = somme/poids
+                        coef['{} Terminale trimestre {}'.format(mat, trim)] +=\
+                            coef['{} Terminale trimestre 3'.format(mat)]/2
+            else:
+                for mat in ['Mathématiques', 'Physique/Chimie']:
+                    coef['{} Terminale trimestre 1'.format(mat)] +=\
+                        coef['{} Terminale trimestre 2'.format(mat)]
+
+        # On a maintenant tout ce qu'il faut pour lancer le calcul
+        somme, poids = 0, 0
+        for key in coef.keys():
+            note = cls.get(cand, key)
+            if note != '-':
+                somme += vers_num(note)*coef[key]
+                poids += coef[key]
+        if poids != 0:
+            scoreb = somme/poids
+        else: # ne devrait pas arriver
+            scoreb = 0
         cls.set(cand, 'Score brut', vers_str(scoreb))
-            
+
     @classmethod
     def rang(cls, cand, dossiers, critere):
         """ Trouver le rang d'un candidat dans une liste de dossiers, selon un critère donné """
@@ -223,9 +231,9 @@ class Fichier(object):
             'Commune'           : {'query' : 'synoptique/établissement/ville', 'defaut' : '?'},
             'Département'       : {'query' : 'synoptique/établissement/département', 'defaut' : '?'},
             'Pays'              : {'query' : 'synoptique/établissement/pays', 'defaut' : '?'},
-            'Écrit EAF'         : {'query' : 'synoptique/français.écrit', 'defaut' : '-', 'pre' : not_note, 'post' : 
+            'Écrit EAF'         : {'query' : 'synoptique/français.écrit', 'defaut' : '-', 'pre' : not_note, 'post' :
                 convert},
-            'Oral EAF'          : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' : 
+            'Oral EAF'          : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' :
                 convert},
             'Candidatures'      : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'pre' : formate_candid},
             'Candidatures impr' : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'post' : formate_impr_candid},
@@ -287,7 +295,7 @@ class Fichier(object):
         Elle retourne un booléen. Utile pour l'admin qui traite un
         candidat et reporte dans toutes les filières demandées. """
         return Fichier.get(cand, 'Num ParcoursSup') in self._identif
-    
+
     def __len__(self):
         """ Cette méthode confère un sens à l'opération len(fichier) """
         return len(self._dossiers)
@@ -329,5 +337,3 @@ class Fichier(object):
         """ Sauvegarde le fichier : mise à jour (par écrasement) du fichier xml """
         with open(self.nom, 'wb') as fich:
             fich.write(etree.tostring(self._dossiers, pretty_print=True, encoding='utf-8'))
-
-
