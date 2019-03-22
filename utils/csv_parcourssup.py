@@ -213,6 +213,22 @@ def lecteur_synoptique(etat, ligne, colonne, champ):
         fils.text = ligne[colonne]
     return etat
 
+def lecteur_type_scolarite(etat, ligne, colonne):
+    if etat['test']:
+        print('lecteur_type_scolarite[{0:s}] ({1:s})'.format(n2c(colonne+1),
+                                                             ligne[colonne]))
+
+    sem = etat['bulletin'].xpath('semestriel')
+    if sem == []:
+        sem = etree.SubElement(etat['bulletin'], 'semestriel')
+    else: # ne devrait pas arriver
+        sem = sem[0]
+    if ligne[colonne] == 'Trimestrielle':
+        sem.text = '0'
+    else:
+        sem.text = '1'
+    return etat
+
 #
 # fonctions de création des objets
 #
@@ -492,6 +508,12 @@ def prepare_lecteurs(champs, test = False):
                             lecteur_direct(e, l, a, 'bulletin', b))
             colonne = colonne + 1
             matiere = ''
+            continue
+
+        if champs[colonne] == 'Type de scolarité':
+            lecteurs.append(lambda e,l, a=colonne:
+                            lecteur_type_scolarite(e, l, a))
+            colonne = colonne + 1
             continue
 
         res = parse('Moyenne {} en {} Trimestre {}', champs[colonne])
