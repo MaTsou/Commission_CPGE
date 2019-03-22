@@ -154,12 +154,12 @@ class Fichier(object):
             coef = dict(coef_term)
 
         # Report des coefficients si on travaille en semestre
-        if cls.get(cand, 'sem_prem') == 'on':
+        if cls.get(cand, 'Première semestrielle') == '1':
             for mat in ['Mathématiques', 'Physique/Chimie']:
                 for trim in ['1', '2']:
                     coef['{} Première trimestre {}'.format(mat, trim)] +=\
                         coef['{} Première trimestre 3'.format(mat)]/2
-        if cls.get(cand, 'sem_term') == 'on':
+        if cls.get(cand, 'Terminale semestrielle') == '1':
             if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
                 for mat in ['Mathématiques', 'Physique/Chimie']:
                     for trim in ['1', '2']:
@@ -216,38 +216,36 @@ class Fichier(object):
     # et il PEUT contenir :
     #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
     #       une clé 'post' donnant une fonction de post-traitement (après get).
-    acces = {\
-            'Nom'               : {'query' : 'nom', 'defaut' : '?'},
-            'Prénom'            : {'query' : 'prénom', 'defaut' : '?'},
-            'Sexe'              : {'query' : 'sexe', 'defaut' : '?'},
-            'Date de naissance' : {'query' : 'naissance', 'defaut' : '?'},
-            'Classe actuelle'   : {'query' : 'synoptique/classe', 'defaut' : '?'},
-            'Num ParcoursSup'   : {'query' : 'id_apb', 'defaut' : '?'},
-            'INE'               : {'query' : 'INE', 'defaut' : '?'},
-            'Nationalité'       : {'query' : 'nationalité', 'defaut' : '?'},
-            'Boursier'          : {'query' : 'boursier', 'defaut' : '?'},
-            'Boursier certifié' : {'query' : 'boursier_certifie', 'defaut' :'?'},
-            'Établissement'     : {'query' : 'synoptique/établissement/nom', 'defaut' : '?'},
-            'Commune'           : {'query' : 'synoptique/établissement/ville', 'defaut' : '?'},
-            'Département'       : {'query' : 'synoptique/établissement/département', 'defaut' : '?'},
-            'Pays'              : {'query' : 'synoptique/établissement/pays', 'defaut' : '?'},
-            'Écrit EAF'         : {'query' : 'synoptique/français.écrit', 'defaut' : '-', 'pre' : not_note, 'post' :
-                convert},
-            'Oral EAF'          : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' :
-                convert},
-            'Candidatures'      : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'pre' : formate_candid},
-            'Candidatures impr' : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'post' : formate_impr_candid},
-            'sem_prem'          : {'query' : 'diagnostic/sem_prem', 'defaut' : 'off'},
-            'sem_term'          : {'query' : 'diagnostic/sem_term', 'defaut' : 'off'},
-            'traité'            : {'query' : 'diagnostic/traité', 'defaut' : False},
-            'Jury'              : {'query' : 'diagnostic/jury', 'defaut' : 'Auto', 'pre' : formate_jury},
-            'Motifs'            : {'query' : 'diagnostic/motifs', 'defaut' : ''},
-            'Score brut'        : {'query' : 'diagnostic/score', 'defaut' : ''},
-            'Correction'        : {'query' : 'diagnostic/correc', 'defaut' : '0'},
-            'Score final'       : {'query' : 'diagnostic/scoref', 'defaut' : ''},
-            'Rang brut'         : {'query' : 'diagnostic/rangb', 'defaut' : '?'},
-            'Rang final'        : {'query' : 'diagnostic/rangf', 'defaut' : '?'}
-            }
+    acces = {
+        'Nom'                   : {'query' : 'nom', 'defaut' : '?'},
+        'Prénom'                : {'query' : 'prénom', 'defaut' : '?'},
+        'Sexe'                  : {'query' : 'sexe', 'defaut' : '?'},
+        'Date de naissance'     : {'query' : 'naissance', 'defaut' : '?'},
+        'Classe actuelle'       : {'query' : 'synoptique/classe', 'defaut' : '?'},
+        'Num ParcoursSup'       : {'query' : 'id_apb', 'defaut' : '?'},
+        'INE'                   : {'query' : 'INE', 'defaut' : '?'},
+        'Nationalité'           : {'query' : 'nationalité', 'defaut' : '?'},
+        'Boursier'              : {'query' : 'boursier', 'defaut' : '?'},
+        'Boursier certifié'     : {'query' : 'boursier_certifie', 'defaut' :'?'},
+        'Établissement'         : {'query' : 'synoptique/établissement/nom', 'defaut' : '?'},
+        'Commune'               : {'query' : 'synoptique/établissement/ville', 'defaut' : '?'},
+        'Département'           : {'query' : 'synoptique/établissement/département', 'defaut' : '?'},
+        'Pays'                  : {'query' : 'synoptique/établissement/pays', 'defaut' : '?'},
+        'Écrit EAF'             : {'query' : 'synoptique/français.écrit', 'defaut' : '-', 'pre' : not_note, 'post' : convert},
+        'Oral EAF'              : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' : convert},
+        'Candidatures'          : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'pre' : formate_candid},
+        'Candidatures impr'     : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'post' : formate_impr_candid},
+        'Première semestrielle' : {'query': 'bulletins/bulletin[classe="Première"]/semestriel', 'default' : '0'},
+        'Terminale semestrielle': {'query': 'bulletins/bulletin[classe="Terminale"]/semestriel', 'default' : '0'},
+        'traité'                : {'query' : 'diagnostic/traité', 'defaut' : False},
+        'Jury'                  : {'query' : 'diagnostic/jury', 'defaut' : 'Auto', 'pre' : formate_jury},
+        'Motifs'                : {'query' : 'diagnostic/motifs', 'defaut' : ''},
+        'Score brut'            : {'query' : 'diagnostic/score', 'defaut' : ''},
+        'Correction'            : {'query' : 'diagnostic/correc', 'defaut' : '0'},
+        'Score final'           : {'query' : 'diagnostic/scoref', 'defaut' : ''},
+        'Rang brut'             : {'query' : 'diagnostic/rangb', 'defaut' : '?'},
+        'Rang final'            : {'query' : 'diagnostic/rangf', 'defaut' : '?'}
+    }
     # Pour les notes du lycée :
     matiere = ['Mathématiques', 'Physique/Chimie']
     date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
