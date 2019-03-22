@@ -1,11 +1,12 @@
-# Pour lire le csv d'APB, il faut commencer par regarder la première
-# ligne et identifier dans l'ordre les différents champs. L'ordre est
-# important, car on retrouve les mêmes noms au fur et à mesure de la
-# lecture (il y a des doublons : on ne peut pas considérer le tableau
-# comme un dictionnaire!). C'est aussi à ce moment que l'on pourra
-# détecter d'une année sur l'autre si quelque chose d'important a
-# changé. Une fois cela fait, on peut se lancer dans la lecture des
-# autres lignes pour obtenir une liste de candidats.
+# Pour lire le csv de parcourssup, il faut commencer par regarder la
+# première ligne et identifier dans l'ordre les différents
+# champs. L'ordre est important, car on retrouve les mêmes noms au fur
+# et à mesure de la lecture (il y a des doublons : on ne peut pas
+# considérer le tableau comme un dictionnaire!). C'est aussi à ce
+# moment que l'on pourra détecter d'une année sur l'autre si quelque
+# chose d'important a changé. Une fois cela fait, on peut se lancer
+# dans la lecture des autres lignes pour obtenir une liste de
+# candidats.
 
 # Les premiers groupes de colonnes donnent les généralités, puis on
 # trouve la fiche synoptique, puis les bulletins, donc la
