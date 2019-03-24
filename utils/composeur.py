@@ -383,7 +383,7 @@ class Composeur(object):
         data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()),
                 'docs_{}'.format(Fichier.get(cand, 'Num ParcoursSup')))
         # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
-        # et formatage des cases à cocher semestres (actives ou non).
+        # et formatage des cases à cocher semestres (actives ou non).TODO (à enlever avec le TODO ci-dessous)
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
         formateur_clas_actu = '{}'
         formateur_note = '{note}'
@@ -396,13 +396,14 @@ class Composeur(object):
         ### Suite de la création du dictionnaire
         # classe actuelle
         data['Classe actuelle'] = formateur_clas_actu.format(Fichier.get(cand, 'Classe actuelle'))
-        # cases à cocher semestres
-        txt = ''
-        if Fichier.get(cand, 'sem_prem') == 'on': txt = 'checked'
-        data['sem_prem'] = '{} {}'.format(activ, txt)
-        txt = ''
-        if Fichier.get(cand, 'sem_term') == 'on': txt = 'checked'
-        data['sem_term'] = '{} {}'.format(activ, txt)
+        # cases à cocher semestres TODO 6 lignes suivantes à supprimer si tout se passe bien cette année. variable 
+        # 'activ' à supprimer également...<!--<input type = "checkbox" name = "sem_term" {sem_term}></td>-->
+        #txt = ''
+        #if Fichier.get(cand, 'sem_prem') == 'on': txt = 'checked'
+        #data['sem_prem'] = '{} {}'.format(activ, txt)
+        #txt = ''
+        #if Fichier.get(cand, 'sem_term') == 'on': txt = 'checked'
+        #data['sem_term'] = '{} {}'.format(activ, txt)
         # Notes
         matiere = ['Mathématiques', 'Physique/Chimie']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']

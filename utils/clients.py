@@ -162,11 +162,11 @@ class Admin(Client):
         # Classe actuelle ?
         if Fichier.get(cand, 'Classe actuelle') != kwargs['Classe actuelle']:
             for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'Classe actuelle', kwargs['Classe actuelle'])
-        # semestres ?
-        txt = kwargs.get('sem_prem','off')  # kwargs ne contient 'sem_prem' que si la case est cochée !
-        for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'sem_prem', txt)
-        txt = kwargs.get('sem_term','off')  # kwargs ne contient 'sem_term' que si la case est cochée !
-        for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'sem_term', txt)
+        # semestres ? TODO 4 lignes suivantes à supprimer si tout fonctionne bien cette année...
+        #txt = kwargs.get('sem_prem','off')  # kwargs ne contient 'sem_prem' que si la case est cochée !
+        #for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'sem_prem', txt)
+        #txt = kwargs.get('sem_term','off')  # kwargs ne contient 'sem_term' que si la case est cochée !
+        #for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'sem_term', txt)
         # Cas des notes
         matiere = ['Mathématiques', 'Physique/Chimie']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
