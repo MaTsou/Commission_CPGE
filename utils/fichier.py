@@ -5,7 +5,7 @@
 # Cette classe dispose d'un attribut important, le dictionnaire 'acces'. Il est ce qui traduit les requêtes extérieures
 # (venant des clients) en requêtes xpath désignant le chemin dans le fichier xml.
 # Les méthodes de classe 'set' et 'get' se chargent d'écrire et de lire les infos au bon endroit.
-# Ce qui prévaut dans se choix de structure : l'encapsulation. Les clients n'ont pas besoin de savoir quel type de
+# Ce qui prévaut dans ce choix de structure : l'encapsulation. Les clients n'ont pas besoin de savoir quel type de
 # fichier contient l'information qu'ils désirent. C'est le travail de la classe 'Fichier'. Il sera alors aisé (si le besoin
 # s'en fait sentir) de changer de format de données..
 ###
@@ -109,15 +109,21 @@ class Fichier(object):
         matiere = ['Mathématiques', 'Physique/Chimie']
         # Première
         classe = 'Première'
-        date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+        date = ['trimestre 1', 'trimestre 2']
+        if cls.get(cand, 'Première semestrielle') != '1':
+            date.append('trimestre 3')
         for mat in matiere:
             for da in date:
                 champs.add('{} Première {}'.format(mat , da))
         # Terminale
         classe = 'Terminale'
-        date = ['trimestre 1', 'trimestre 2']
+        date = ['trimestre 1']
+        n='2'
         if 'cpes' in Fichier.get(cand, 'Classe actuelle').lower():
-            date.append('trimestre 3')
+            date.append('trimestre 2')
+            n='3'
+        if cls.get(cand, 'Terminale semestrielle') != '1':
+            date.append('trimestre {}'.format(n))
         for mat in matiere:
             for da in date:
                 champs.add('{} Terminale {}'.format(mat , da))
@@ -235,8 +241,8 @@ class Fichier(object):
         'Oral EAF'              : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' : convert},
         'Candidatures'          : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'pre' : formate_candid},
         'Candidatures impr'     : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'post' : formate_impr_candid},
-        'Première semestrielle' : {'query': 'bulletins/bulletin[classe="Première"]/semestriel', 'default' : '0'},
-        'Terminale semestrielle': {'query': 'bulletins/bulletin[classe="Terminale"]/semestriel', 'default' : '0'},
+        'Première semestrielle' : {'query': 'bulletins/bulletin[classe="Première"]/semestriel', 'defaut' : '0'},
+        'Terminale semestrielle': {'query': 'bulletins/bulletin[classe="Terminale"]/semestriel', 'defaut' : '0'},
         'traité'                : {'query' : 'diagnostic/traité', 'defaut' : False},
         'Jury'                  : {'query' : 'diagnostic/jury', 'defaut' : 'Auto', 'pre' : formate_jury},
         'Motifs'                : {'query' : 'diagnostic/motifs', 'defaut' : ''},

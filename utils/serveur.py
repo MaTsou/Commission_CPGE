@@ -154,7 +154,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # action [ (méthode (de type générateur) a appeler, 'chaîne à afficher sur la page d'avancement'), etc ]
         action = [
                 (admin.traiter_csv, 'Traitement des fichiers csv'),
-                (admin.traiter_pdf, 'Traitement des fichiers pdf'),
+                #(admin.traiter_pdf, 'Traitement des fichiers pdf'),
                 (admin.stat , 'Décompte des candidatures'),
                 ]
         # On envoie ça au Composeur de page html; celui-ci se charge de fournir une page qui affiche l'état d'avancement 
