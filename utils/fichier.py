@@ -104,6 +104,7 @@ class Fichier(object):
         # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin
         # doit faire tout ce qu'il peut pour la lever..
         #
+        complet = True
         # Construction de l'ensemble des champs à vérifier
         champs = set([])
         matiere = ['Mathématiques', 'Physique/Chimie']
@@ -134,8 +135,13 @@ class Fichier(object):
         # EAF
         champs.add('Écrit EAF')
         champs.add('Oral EAF')
-        # Test :
-        complet = not(cls.get(cand, 'Classe actuelle') == '?') # une initialisation astucieuse..
+        # Tests :
+        if cls.get(cand, 'Classe actuelle') == '?':
+            complet = False
+        if cls.get(cand, 'Première semestrielle') == '-1':
+            complet = False
+        if cls.get(cand, 'Terminale semestrielle') == '-1':
+            complet = False
         while (complet and len(champs) > 0): # Dès qu'un champ manque à l'appel on arrête et renvoie False
             ch = champs.pop()
             if cls.get(cand, ch) == '-': # '-' est la valeur par défaut d'une note..

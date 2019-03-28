@@ -225,8 +225,10 @@ def lecteur_type_scolarite(etat, ligne, colonne):
         sem = sem[0]
     if ligne[colonne] == 'Trimestrielle':
         sem.text = '0'
-    else:
+    elif ligne[colonne] == 'Semestrielle':
         sem.text = '1'
+    else:
+        sem.text = '-1'
     return etat
 
 #
