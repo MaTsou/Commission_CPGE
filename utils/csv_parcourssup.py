@@ -513,6 +513,8 @@ def prepare_lecteurs(champs, test = False):
             continue
 
         if champs[colonne] == 'Type de scolarité':
+            if test:
+                print('La colonne {0:s} est une information de bulletin: {1:s}'.format(n2c(colonne+1), champs[colonne]))
             lecteurs.append(lambda e,l, a=colonne:
                             lecteur_type_scolarite(e, l, a))
             colonne = colonne + 1
