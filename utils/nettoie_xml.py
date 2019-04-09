@@ -13,25 +13,14 @@ series_non_valides = ["Sciences et Technologies de l'Industrie et du Développem
         "Economique et social", "Littéraire", "Sciences et technologie de laboratoire",
         "Professionnelle"]
 
-# certains bulletins contiennent toutes les notes et l'année, la
-# plupart tout le bulletin sauf les notes ; il faut donc trouver les
-# notes et les déplacer où on veut.
+# certains bulletins sont très vides : on nettoie.
 
-def fusionne_bulletins(candidat, test = False):
+def elague_bulletins_triviaux(candidat, test = False):
 
     # on trouve la liste des bulletins sans note:
     probs = candidat.xpath('bulletins/bulletin[matières[not(matière)]]')
     for prob in probs:
-        # là, normalement, c'est une fausse boucle : on ne devrait avoir
-        # qu'une année!
-        for node in prob.xpath('année'):
-            annee = node.text
-            autres = candidat.xpath('bulletins/bulletin[année = "{0:s}"]'.format(annee))
-            autres.remove(prob)
-            # ok, on a tous les doublons maintenant (normalement: 0 ou 1)
-            for doublon in autres:
-                prob.xpath('matières')[0].extend(doublon.xpath('matières/matière'))
-                candidat.xpath('bulletins')[0].remove(doublon)
+        candidat.xpath('bulletins')[0].remove(prob)
 
     return candidat
 
@@ -75,7 +64,7 @@ def filtre(candidat, test = False):
 #
 
 def nettoie(candidats, test = False):
-    res = [fusionne_bulletins(candidat, test)
+    res = [elague_bulletins_triviaux(candidat, test)
            for candidat in candidats]
     res = [filtre(candidat, test) for candidat in candidats]
     return candidats
