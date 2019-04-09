@@ -3,7 +3,7 @@
 ############################################################################
 
 ############################################################################
-# Filières, nombre de jurys par filière	et nombre de classés par filière   #
+# Filières, nombre de jurys par filière et nombre de classés par filière   #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
 nombre_de_jurys = ['3','3','2']
@@ -29,10 +29,12 @@ motivations = [
 tableaux_candidats_classes = {\
     'classes' :
         ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance',
-            'Score brut', 'Correction', 'Score final', 'Jury', 'Motifs'
+            'Num ParcoursSup', 'Boursier', 'Boursier certifié', 'Score brut',
+            'Correction', 'Score final', 'Jury', 'Motifs'
         ],\
     'classes_BdE' :
-        ['Rang final', 'Nom', 'Prénom', 'Date de naissance']\
+        ['Rang final', 'Nom', 'Prénom', 'Date de naissance', 'Num ParcoursSup'
+        ]\
 }
 
 tableaux_tous_candidats = {\
