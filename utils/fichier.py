@@ -229,7 +229,7 @@ class Fichier(object):
     #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
     #       une clé 'post' donnant une fonction de post-traitement (après get).
     acces = {
-        'Nom'                   : {'query' : 'nom', 'defaut' : '?'},
+        'Nom'                      : {'query' : 'nom', 'defaut' : '?'},
         'Prénom'                : {'query' : 'prénom', 'defaut' : '?'},
         'Sexe'                  : {'query' : 'sexe', 'defaut' : '?'},
         'Date de naissance'     : {'query' : 'naissance', 'defaut' : '?'},
@@ -332,14 +332,16 @@ class Fichier(object):
 
     def convert(self, naiss):
         """ Convertit une date de naissance en un nombre pour le classement """
-        dic = parse('{j:d}/{m:d}/{a:d}', naiss)
+        dic = {'a':2099, 'm':12, 'j':31}# cas où la date de naissance n'est pas renseignée
+        if naiss != Fichier.acces['Date de naissance']['defaut']
+            dic = parse('{j:d}/{m:d}/{a:d}', naiss)
         return dic['a']*10**4 + dic['m']*10**2 + dic['j']
 
     def ordonne(self, critere):
         """ renvoie une liste des candidatures ordonnées selon le critère demandé
         (critère appartenant à l'attribut de classe _critere_tri) """
         # Classement par age
-        doss = sorted(self._dossiers, key = lambda cand: self.convert(cand.xpath('naissance')[0].text))
+        doss = sorted(self._dossiers, key = lambda cand: self.convert(Fichier.get(cand, 'Date de naissance')))
         # puis par critere
         return sorted(doss, key = Fichier._criteres_tri[critere])
 
