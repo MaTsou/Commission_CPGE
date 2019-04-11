@@ -229,7 +229,8 @@ class Composeur(object):
             alertes = False
             while not(alertes) and len(list_fich) > 0: # à la première alerte détectée alertes = True
                 fich = list_fich.pop()
-                alertes = ( True in {'- Alerte :' in Fichier.get(cand, 'Motifs') for cand in fich} )
+                alertes = ( True in {'- Alerte :' in Fichier.get(cand, 'Motifs') for cand in fich if Fichier.get(cand, 
+                'Correction') != 'NC'} )
             ### Suite
             txt = ''
             if len(data['liste_admin']) > 0: # si les fichiers admin existent :
