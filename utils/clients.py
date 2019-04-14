@@ -193,7 +193,7 @@ class Admin(Client):
         # verra sur fond rouge dans la liste de ses dossiers.
         # Par ailleurs, dossiers_jury.js exclut qu'un tel commentaire soit considéré comme une motivation de jury.
         motif = kwargs['motif']
-        if not('- Admin :' in motif or motif == ''):
+        if not('- Admin :' in motif or motif == '' or '- Alerte :' in motif):
             motif = '- Admin : {}'.format(motif)
         if kwargs['nc'] == 'NC':
             # L'admin a validé le formulaire avec le bouton NC (le candidat ne passera pas en commission)
