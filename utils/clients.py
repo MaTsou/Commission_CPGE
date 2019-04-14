@@ -26,6 +26,7 @@ from utils.csv_parcourssup import lire
 from utils.nettoie_xml import nettoie
 from config import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
 from utils.toolbox import decoup, restaure_virginite
+from utils.parametres import min_correc
 
 #################################################################################
 #                               Class Client                                    #
@@ -98,10 +99,10 @@ class Jury(Client):
         cand  = self.get_cand() # on récupère le candidat
         ## On met à jour le contenu de ce dossier :
         # 1/ correction apportée par le jury et score final
-        if kwargs['nc'] == 'NC': # cas d'un clic sur 'NC'
+        cor = kwargs['correc'] # récupération de la correction et calcul du score final
+        if float(cor) == float(min_correc): # cas d'un choix 'NC'
             cor, scoref = 'NC', '0'
-        else: # cas d'un clic sur 'Classé'
-            cor = kwargs['correc'] # récupération de la correction et calcul du score final
+        else:
             note = float(Fichier.get(cand, 'Score brut').replace(',','.')) + float(cor)
             scoref = '{:.2f}'.format(note).replace('.',',')
         Fichier.set(cand, 'Correction', cor) # écriture de la correction dans le noeud xml du candidat
@@ -162,11 +163,6 @@ class Admin(Client):
         # Classe actuelle ?
         if Fichier.get(cand, 'Classe actuelle') != kwargs['Classe actuelle']:
             for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'Classe actuelle', kwargs['Classe actuelle'])
-        # semestres ? TODO 4 lignes suivantes à supprimer si tout fonctionne bien cette année...
-        #txt = kwargs.get('sem_prem','off')  # kwargs ne contient 'sem_prem' que si la case est cochée !
-        #for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'sem_prem', txt)
-        #txt = kwargs.get('sem_term','off')  # kwargs ne contient 'sem_term' que si la case est cochée !
-        #for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'sem_term', txt)
         # Cas des notes
         matiere = ['Mathématiques', 'Physique/Chimie']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
@@ -195,14 +191,18 @@ class Admin(Client):
         motif = kwargs['motif']
         if not('- Admin :' in motif or motif == '' or '- Alerte :' in motif):
             motif = '- Admin : {}'.format(motif)
-        if kwargs['nc'] == 'NC':
-            # L'admin a validé le formulaire avec le bouton NC (le candidat ne passera pas en commission)
+        # Récupération de la correction. On en fait qqc seulement si elle est minimale (NC)
+        cor = kwargs['correc'] # récupération de la correction et calcul du score final
+        if float(cor) == float(min_correc):
+            # L'admin a validé le formulaire avec la correction NC (le candidat ne passera pas en commission)
             # Pour ce cas là, on ne recopie pas dans toutes les filières. Admin peut exclure une candidature
             # dans une filière sans l'exclure des autres. Sécurité !
             Fichier.set(cand, 'Correction', 'NC') # la fonction calcul_scoreb renverra 0 !
             Fichier.set(cand, 'Jury', 'Admin') # Cette exclusion est un choix de l'admin (apparaît dans les tableaux)
             Fichier.set(cand, 'Motifs', motif)
         else:
+            Fichier.set(cand, 'Correction', '0') # 2 lignes nécessaires si l'admin l'a NC, puis a changé d'avis.
+            Fichier.set(cand, 'Jury', '')
             for fich in list_fich_cand:
                 Fichier.set(fich.get_cand(cand), 'Motifs', motif)
 

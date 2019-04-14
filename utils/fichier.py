@@ -332,7 +332,7 @@ class Fichier(object):
 
     def convert(self, naiss):
         """ Convertit une date de naissance en un nombre pour le classement """
-        dic = {'a':2099, 'm':12, 'j':31}# cas où la date de naissance n'est pas renseignée
+        dic = {'a':1900, 'm':12, 'j':31}# cas où la date de naissance n'est pas renseignée
         if naiss != Fichier.acces['Date de naissance']['defaut']:
             dic = parse('{j:d}/{m:d}/{a:d}', naiss)
         return dic['a']*10**4 + dic['m']*10**2 + dic['j']

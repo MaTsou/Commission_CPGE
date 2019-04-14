@@ -7,27 +7,18 @@ function toFloat(str)
 function maj_note()
 {
     // mise à jour du score final (en live)
-    var nc = document.getElementById('nc');
-    if (nc.value == 'NC')
+	var correc = document.getElementById('correc');
+	var cor = toFloat(correc.value);
+	var min = toFloat(correc.min);
+    if (cor == min) // Clic sur NC
     {
     	document.getElementById('scoref').innerHTML = 'NC';
     } else
 	{
-    	var correc = document.getElementById('correc');
-		var cor = toFloat(correc.value);
     	var scorb = toFloat(document.getElementById('scoreb').innerHTML);
 		var scorf = (scorb + cor).toFixed(2).replace('.',',');
     	document.getElementById('scoref').innerHTML = scorf;
     }
-}
-
-function click_nc()
-{
-	// mise à jour du input hidden nc et soumission formulaire
-	var nc = document.getElementById('nc');
-	nc.value = 'NC';
-	var valid = test_valid();
-	if (valid) {document.forms['formulaire'].submit();}
 }
 
 function maj_motif(id)
@@ -35,16 +26,14 @@ function maj_motif(id)
     // lancée par les boutons (+) relatifs aux motivations du jury
     // le paramètre name est le nom du bouton et du label associé !
     // On va mettre à jour la zone de texte motif...
-    // Admin : rien en se passe
+    // Admin : rien ne se passe
 	{}
 }
 
 function click_range()
 {
-    // permet de sortir d'un cas NC par clic sur les notes
-	var nc = document.getElementById('nc');
-    nc.value = '';
-    maj_note();
+	// Mise à jour de la note
+	maj_note();
 }
 
 function verif_saisie()
@@ -75,15 +64,19 @@ function test_valid()
     // et false sinon...
     // Mémorise le scroll de liste
     get_scroll();
-	// vérifie qu'il y a un motif si bouton NC
-	var nc = document.getElementById('nc');
-	// Si NC, on teste l'existence d'une motivation
+	// Récupération de la correction
+	var correc = document.getElementById('correc');
+	var cor = toFloat(correc.value);
+	var min = toFloat(correc.min);
+	// Récupération du motif
 	var motif = document.getElementById('motif');
-	var test = false; // test sera vrai si une motivation est saisie ou si non NC
-	if (nc.value!=='NC'){test = true;} // !== test d'inégalité stricte (interdit une conversion)
-	if (motif.value != ''){test = true;}
-	if (!test){alert('Veuillez renseigner le champ motivation');}
-    return test
+	// test
+	if (cor == min && motif.value == '') // NC non motivé ??
+	{
+		alert('Veuillez renseigner le champ motivation');
+		return false
+	}
+    return true
 }
 
 function get_scroll()

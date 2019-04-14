@@ -60,7 +60,9 @@ class Composeur(object):
     barre += '<td width = "2.5%"></td></tr>' # on termine par un peu d'espace
     txt = '' # on construit maintenant la liste des valeurs...
     for index, valeur in enumerate(corrections):
-        if (index % 2 == 0):
+        if index == 0: # on remplace la valeur min par NC.
+            txt += '<td width = "7%">NC</td>'
+        elif (index % 2 == 0):
             txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
     barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
     "correc_notimpr">{}</tr></table>'.format(txt)
@@ -384,7 +386,6 @@ class Composeur(object):
         data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()),
                 'docs_{}'.format(Fichier.get(cand, 'Num ParcoursSup')))
         # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
-        # et formatage des cases à cocher semestres (actives ou non).TODO (à enlever avec le TODO ci-dessous)
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
         formateur_clas_actu = '{}'
         formateur_note = '{note}'
@@ -397,14 +398,6 @@ class Composeur(object):
         ### Suite de la création du dictionnaire
         # classe actuelle
         data['Classe actuelle'] = formateur_clas_actu.format(Fichier.get(cand, 'Classe actuelle'))
-        # cases à cocher semestres TODO 6 lignes suivantes à supprimer si tout se passe bien cette année. variable 
-        # 'activ' à supprimer également...<!--<input type = "checkbox" name = "sem_term" {sem_term}></td>-->
-        #txt = ''
-        #if Fichier.get(cand, 'sem_prem') == 'on': txt = 'checked'
-        #data['sem_prem'] = '{} {}'.format(activ, txt)
-        #txt = ''
-        #if Fichier.get(cand, 'sem_term') == 'on': txt = 'checked'
-        #data['sem_term'] = '{} {}'.format(activ, txt)
         # Notes
         matiere = ['Mathématiques', 'Physique/Chimie']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
@@ -438,25 +431,17 @@ class Composeur(object):
         ### Partie correction :
         # récupération correction
         correc = str(Fichier.get(cand, 'Correction'))
-        ncval = ''
         if correc == 'NC':
-            correc = 0
-            ncval = 'NC'
+            correc = min_correc # NC correspond à la correction minimale
             rg_fin = 'NC'
         # Construction de la barre de correction qu'on alimente avec les infos courantes..
         barre = Composeur.barre.format(correc, Fichier.get(cand, 'Jury'), float(correc))
         ### Partie motivations :
         motifs = Composeur.motifs.format(Fichier.get(cand, 'Motifs'))
-        ### input hidden nc
-        # Un champ caché qui sert à stocker le choix 'NC'; champ nécessaire au script.js qui surveille
-        # que le jury motive bien ce genre de choix. Pourrait être remplacé par une case à cocher. On
-        # supprimerait alors le bouton NC...
-        nc = '<input type="hidden" id = "nc" name = "nc" value = "{}"/>'.format(ncval)
         # On met tout ça dans un dico data pour passage en argument à html['contenu_action']
         data = {'barre' : barre,
                 'scoreb' : Fichier.get(cand, 'Score brut'),
                 'scoref' : Fichier.get(cand, 'Score final'),
-                'nc' : nc,
                 'rg_fin' : rang_final,
                 'motifs' : motifs
                 }

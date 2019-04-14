@@ -7,27 +7,17 @@ function toFloat(str)
 function maj_note()
 {
     // mise à jour du score final (en live)
-    var nc = document.getElementById('nc');
-    if (nc.value == 'NC')
+	var correc = document.getElementById('correc');
+	var cor = toFloat(correc.value);
+	var min = toFloat(correc.min);
+    if (cor == min) // Clic sur NC
     {
     	document.getElementById('scoref').innerHTML = 'NC';
     } else {
-    	var correc = document.getElementById('correc');
-		var cor = toFloat(correc.value);
     	var scorb = toFloat(document.getElementById('scoreb').innerHTML);
 		var scorf = (scorb + cor).toFixed(2).replace('.',',');
     	document.getElementById('scoref').innerHTML = scorf;
     }
-}
-
-function click_nc()
-{
-	// mise à jour du input hidden nc et soumission formulaire
-	var nc = document.getElementById('nc');
-	nc.value = 'NC';
-	maj_note();
-	var valid = test_valid();
-	if (valid) {document.forms['formulaire'].submit();}
 }
 
 function maj_motif(id)
@@ -44,14 +34,8 @@ function maj_motif(id)
 
 function click_range()
 {
-    // permet de sortir d'un cas NC par clic sur les notes
-	var nc = document.getElementById('nc');
-    nc.value = '';
     maj_note();
 }
-
-function verif_saisie() // Admin seulement
-{}
 
 function test_valid()
 {
@@ -64,18 +48,17 @@ function test_valid()
 	// Récupération de la correction
 	var correc = document.getElementById('correc');
 	var cor = toFloat(correc.value);
-	var nc = document.getElementById('nc');
 	// Si elle est non nulle ou NC, on teste l'existence d'une motivation
 	var motif = document.getElementById('motif');
 	var test = false; // test sera vrai si au moins une motivation est saisie ou si correction = 0
-	if (cor == 0 && nc.value!=='NC'){test = true;}
+	if (cor == 0){test = true;}
 	if (motif.value != ''){
 		if (motif.value.substring(0,9)!='- Admin :') {
 		test = true;}
 	}
 	// --> message et formulaire non soumis
 	if (!test)
-		{alert('Toute correction apportée au score (et aussi NC !) doit être motivée...');}
+		{alert('Toute correction apportée au score doit être motivée...');}
     return test
 }
 

@@ -57,7 +57,7 @@ def formate_impr_candid(cc):
 
 def formate_jury(jury):
     """ formate le contenu du champ 'jury' (pour affichage dans les tableaux) """
-    if not('Admin' in jury):
+    if ('Jury' in jury):
         jury = parse('Jury {}', jury)[0]
     return jury
 
