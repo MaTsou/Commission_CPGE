@@ -51,15 +51,23 @@ function test_valid()
 	// Si elle est non nulle ou NC, on teste l'existence d'une motivation
 	var motif = document.getElementById('motif');
 	var test = false; // test sera vrai si au moins une motivation est saisie ou si correction = 0
-	if (cor == 0){test = true;}
-	if (motif.value != ''){
-		if (motif.value.substring(0,9)!='- Admin :') {
-		test = true;}
+	var txt = 'Toute correction apportée au score doit être motivée...';
+	if (motif.value.substring(0,9)=='- Admin :')
+	{
+		if (cor == 0){txt = "La remarque de l'Administrateur doit être supprimée...";}
+	}
+	else if (motif.value == '')
+	{
+		if (cor == 0){test = true;}
+	}
+	else
+	{
+		test = true
 	}
 	// --> message et formulaire non soumis
 	if (!test)
-		{alert('Toute correction apportée au score doit être motivée...');}
-    return test
+	{alert(txt);}
+	return test
 }
 
 function get_scroll()

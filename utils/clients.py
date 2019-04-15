@@ -302,9 +302,9 @@ class Admin(Client):
             # Récupération de la filière et du nombre de jurys 
             nbjury = int(nb_jurys[fich.filiere().lower()])
             # Découpage en n listes de dossiers
-            for j in range(0, nbjury):
+            for j in range(nbjury):
                 dossier = []    # deepcopy ligne suivante sinon les candidats sont retirés de doss à chaque append
-                [dossier.append(copy.deepcopy(doss[i])) for i in range(0, len(doss)) if i%nbjury == j]
+                [dossier.append(copy.deepcopy(doss[i])) for i in range(len(doss)) if i%nbjury == j]
                 # Sauvegarde dans un fichier comm_XXXX.xml
                 res = etree.Element('candidats')
                 [res.append(cand) for cand in dossier]
@@ -327,6 +327,7 @@ class Admin(Client):
         for fil in filieres: # pour chaque filière
             path = os.path.join(os.curdir, "data", "comm_{}*.xml".format(fil.upper()))
             list_fich = [Fichier(fich) for fich in glob.glob(path)] # récupération des fichiers comm de la filière
+            list_fich = sorted(list_fich, key = lambda fich: fich.nom) # l'ordre est important pour la suite
             list_doss = [] # contiendra les dossiers de chaque sous-comm
             # Pour chaque sous-commission
             for fich in list_fich:
@@ -336,7 +337,7 @@ class Admin(Client):
                     if Fichier.get(c, 'traité') != 'oui':
                         Fichier.set(c, 'Correction', 'NC')
                         Fichier.set(c, 'Score final', '0')
-                        if Fichier.get(c, 'Motifs') == '':
+                        if Fichier.get(c, 'Jury') == 'Auto':
                             Fichier.set(c, 'Motifs', 'Dossier moins bon que le dernier classé.')
                 # list_doss récupère la liste des dossiers classée selon score_final + age
                 list_doss.append(fich.ordonne('score_f'))
@@ -345,7 +346,7 @@ class Admin(Client):
             if list_doss: # Y a-t-il des dossiers dans cette liste ?
                 nb = len(list_doss[0]) # (taille du fichier du 1er jury de cette filière)
                 num = 0
-                for i in range(0, nb): # list_doss[0] est le plus grand !!
+                for i in range(nb): # list_doss[0] est le plus grand !!
                     doss_fin.append(list_doss[0][i])
                     for k in range(1, len(list_doss)): # reste-t-il des candidats classés dans les listes suivantes ?
                         if i < len(list_doss[k]): doss_fin.append(list_doss[k][i])
