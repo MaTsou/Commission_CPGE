@@ -46,12 +46,14 @@ function verif_saisie()
 	{
 		alert("Une valeur numérique (ou '-') est attendue...");
 		event.target.focus();
+		event.target.value = '-';
 		ok = false;
 	}
 	if (!isNaN(toFloat(val)) && (toFloat(val) <0 || toFloat(val) >20))
 	{
 		alert("La valeur saisie n'est pas comprise entre 0 et 20");
 		event.target.focus();
+		event.target.value = '-';
 		ok = false;
 	}
 	return ok

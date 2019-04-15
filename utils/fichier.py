@@ -229,7 +229,7 @@ class Fichier(object):
     #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
     #       une clé 'post' donnant une fonction de post-traitement (après get).
     acces = {
-        'Nom'                      : {'query' : 'nom', 'defaut' : '?'},
+        'Nom'                   : {'query' : 'nom', 'defaut' : '?'},
         'Prénom'                : {'query' : 'prénom', 'defaut' : '?'},
         'Sexe'                  : {'query' : 'sexe', 'defaut' : '?'},
         'Date de naissance'     : {'query' : 'naissance', 'defaut' : '?'},
@@ -247,8 +247,8 @@ class Fichier(object):
         'Oral EAF'              : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' : convert},
         'Candidatures'          : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'pre' : formate_candid},
         'Candidatures impr'     : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'post' : formate_impr_candid},
-        'Première semestrielle' : {'query': 'bulletins/bulletin[classe="Première"]/semestriel', 'defaut' : '0'},
-        'Terminale semestrielle': {'query': 'bulletins/bulletin[classe="Terminale"]/semestriel', 'defaut' : '0'},
+        'Première semestrielle' : {'query' : 'bulletins/bulletin[classe="Première"]/semestriel', 'defaut' : '0'},
+        'Terminale semestrielle': {'query' : 'bulletins/bulletin[classe="Terminale"]/semestriel', 'defaut' : '0'},
         'traité'                : {'query' : 'diagnostic/traité', 'defaut' : False},
         'Jury'                  : {'query' : 'diagnostic/jury', 'defaut' : 'Auto', 'pre' : formate_jury},
         'Motifs'                : {'query' : 'diagnostic/motifs', 'defaut' : ''},

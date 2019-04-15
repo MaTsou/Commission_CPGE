@@ -150,7 +150,7 @@ class Admin(Client):
         # Ici, on va répercuter les complétions de l'administrateur dans tous les dossiers que le candidat a déposé.
         # Attention ! le traitement du fichier en cours est fait à part car deux objets 'Fichier' qui
         # auraient le même nom sont malgré tout différents !! On rajoute la bonne instance Fichier juste après.
-        # Recherche de tous les fichiers existants :
+        # Recherche de tous les fichiers existants (sauf fichier en cours) :
         list_fich_admin = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))\
                 if fich != self.fichier.nom]
         # On restreint la liste aux fichiers contenant le candidat en cours
@@ -182,8 +182,6 @@ class Admin(Client):
             else:
                 if Fichier.get(cand, li) != kwargs[li]:
                     for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), li, kwargs[li])
-        # On (re)calcule le score brut !
-        Fichier.calcul_scoreb(cand)
         # Commentaire éventuel admin + gestion des 'NC'
         # Les commentaires admin sont précédés de '- Admin :' c'est à cela qu'on les reconnaît. Et le jury les
         # verra sur fond rouge dans la liste de ses dossiers.
@@ -201,11 +199,13 @@ class Admin(Client):
             Fichier.set(cand, 'Jury', 'Admin') # Cette exclusion est un choix de l'admin (apparaît dans les tableaux)
             Fichier.set(cand, 'Motifs', motif)
         else:
-            Fichier.set(cand, 'Correction', '0') # 2 lignes nécessaires si l'admin l'a NC, puis a changé d'avis.
+            Fichier.set(cand, 'Correction', '0') # 2 lignes nécessaires si l'admin a NC un candidat, puis a changé d'avis.
             Fichier.set(cand, 'Jury', '')
             for fich in list_fich_cand:
                 Fichier.set(fich.get_cand(cand), 'Motifs', motif)
 
+        # On (re)calcule le score brut !
+        Fichier.calcul_scoreb(cand)
         # On sauvegarde tous les fichiers retouchés
         for fich in list_fich_cand:
             fich.sauvegarde()

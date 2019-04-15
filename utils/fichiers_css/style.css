@@ -362,7 +362,7 @@ caption
 
 .valid /* div du bouton valider */
 	{
-		width : 14vw; /* 40% de 70% de vw */
+		width : 18vw; /* 40% de 70% de vw */
 		text-align : center;
 		vertical-align : center;
 	}
@@ -371,8 +371,8 @@ caption
 	{
 		padding-top : .7ex;
 		padding-bottom: .7ex;
-		padding-left : .3em;
-		padding-right: .3em;
+		padding-left : .8em;
+		padding-right: .8em;
 		margin-right : 0em;
 	
 		border-radius: .2em .2em .2em .2em;
