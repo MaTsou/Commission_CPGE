@@ -97,28 +97,38 @@ class Jury(Client):
         """ Traiter un dossier """
         # Fonction lancée par la fonction "traiter" du Serveur, elle même lancée par un clic sur 'Classé' ou 'NC'
         cand  = self.get_cand() # on récupère le candidat
-        ## On met à jour le contenu de ce dossier :
-        # 1/ correction apportée par le jury et score final
-        cor = kwargs['correc'] # récupération de la correction et calcul du score final
-        if float(cor) == float(min_correc): # cas d'un choix 'NC'
-            cor, scoref = 'NC', '0'
-        else:
-            note = float(Fichier.get(cand, 'Score brut').replace(',','.')) + float(cor)
-            scoref = '{:.2f}'.format(note).replace('.',',')
-        Fichier.set(cand, 'Correction', cor) # écriture de la correction dans le noeud xml du candidat
-        Fichier.set(cand, 'Score final', scoref) # écriture du score final dans le noeud xml du candidat
-        # 2/ Qui a traité le dossier : écriture du noeud xml adéquat
-        Fichier.set(cand, 'Jury', self._droits)
-        # 2bis/ mise à jour du fichier décomptes : ce fichier a été créé par admin, dans la méthode generation_comm
-        if (not(Fichier.get(cand, 'traité')) and cor != 'NC'): # seulement si le candidat n'a pas déjà été vu et si classé!
+        # On récupère la correction apportée par le jury
+        cor = kwargs['correc']
+        cor_prec = Fichier.get(cand, 'Correction') # précédente correction si le jury revient sur un candidat
+        # Mise à jour du fichier décomptes 
+        # ce fichier a été créé par admin, dans la méthode generation_comm
+        a = (Fichier.get(cand, 'traité') == 'oui')
+        b = (cor_prec == 'NC')
+        c = (float(cor) == float(min_correc))
+        if (not(a ^ b ^ c) and not(b and c)): # doit-on changer le nb de candidats classés
+            change_decompte = 1
+            if c: change_decompte = -1 # -1 si candidat classé qui devient non classé
             with open(os.path.join(os.curdir,"data","decomptes"), 'br') as fich:
                 decompt = pickle.load(fich)
             qui = self._droits
             for key in decompt.keys():
                 if key in qui:
-                    decompt[key] += 1
+                    decompt[key] += change_decompte
             with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') as stat_fich:
                 pickle.dump(decompt, stat_fich)
+        # On met à jour le contenu de ce dossier :
+        # tout d'abord, calcul du score final
+        if float(cor) == float(min_correc): # cas d'un choix 'NC'
+            cor, scoref = 'NC', '0'
+        else:
+            note = float(Fichier.get(cand, 'Score brut').replace(',','.')) + float(cor)
+            scoref = '{:.2f}'.format(note).replace('.',',')
+        # Écriture des différents champs
+        # 1/ correction et score final
+        Fichier.set(cand, 'Correction', cor) # écriture de la correction dans le noeud xml du candidat
+        Fichier.set(cand, 'Score final', scoref) # écriture du score final dans le noeud xml du candidat
+        # 2/ Qui a traité le dossier : écriture du noeud xml adéquat
+        Fichier.set(cand, 'Jury', self._droits)
         # 3/ noeud 'traité' : le dossier a été traité (classé ou non)
         Fichier.set(cand, 'traité', 'oui')
         # 4/ motivation du jury
