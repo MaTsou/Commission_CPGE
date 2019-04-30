@@ -23,9 +23,9 @@ class Composeur(object):
 
     ### Attributs de classe
     # Cet premier attribut nommé 'html' est un dictionnaire, contenant des patrons
-    # de page # ou de morceaux de page (entête, dossier, liste des dossiers, etc.).
-    # Chacun de # ces patrons (contenus dans le fichier 'patrons.html') se présente
-    # sous la forme # d'une chaîne de caractères prête à être 'formatée'.
+    # de page ou de morceaux de page (entête, dossier, liste des dossiers, etc.).
+    # Chacun de ces patrons (contenus dans le fichier 'patrons.html') se présente
+    # sous la forme d'une chaîne de caractères prête à être 'formatée'.
     # Par exemple, la chaîne :
     # ch = "Demain je {action} la cuisine"
     # pourra être formatée par la syntaxe :
@@ -283,12 +283,13 @@ class Composeur(object):
             if not(os.path.exists(chem)): # le fichier stat n'existe pas (cela ne devrait pas arriver)
                 # on le créé
                 list_fich = [Fichier(fich) for fich in glob.glob(os.path.join(os.curdir, "data", "admin_*.xml"))]
-                qui.stat(list_fich)
+                qui.stat()
             # maintenant on peut effectivement lire le fichier stat
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
-            liste_stat = '<h4>Statistiques :</h4>'
+            liste_stat = '<h4>Statistiques : {} candidats dont {} ayant validé.</h4>'.format(stat['nb_cand'], 
+                    stat['nb_cand_valid'])
             # Pour commencer les sommes par filières
             liste_stat += '<ul style = "margin-top:-5%">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()

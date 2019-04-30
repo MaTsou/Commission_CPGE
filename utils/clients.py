@@ -248,6 +248,13 @@ class Admin(Client):
                     decoup(fich, desti) # fonction de découpage du pdf : dans la toolbox
                     yield "traité.".format(parse("{}_{4s}.pdf", fich)[1])
 
+    def appel_stat(self):
+        """ Appelée par le serveur après que l'Admin ait appuyé sur le bouton 'Traiter / Valider. Lancer la fonction 
+        stat ci-dessous, en renvoyant un état de la progression, pour le rafraichissement de la page html. """
+        yield 'Décompte ... '
+        self.stat()
+        yield 'effectué.'
+
     def stat(self):
         """ Effectue des statistiques sur les candidats """
         # Récupère la liste des fichiers concernés
@@ -262,16 +269,18 @@ class Admin(Client):
 
         # Initialisation du dictionnaire stockant toutes les candidatures
         candid = {i : 0 for i in range(2**len(filieres))}
-
+        # Variables de décompte des candidats (et pas candidatures !)
+        candidats = 0
+        candidats_ayant_valide = 0
         # Recherche des candidatures # je suis très fier de cet algorithme !!
         # Construction des éléments de recherche
         l_dict = [ {Fichier.get(cand, 'Num ParcoursSup') : cand for cand in fich} for fich in list_fich ] # liste de dicos
         l_set = [ set(d.keys()) for d in l_dict ] # list d'ensembles (set()) d'identifiants ParcoursSup
         # Création des statistiques
-        yield 'Décompte ... '
         for (k,n) in enumerate(l_set): # k = index filière ; n = ensemble des identifiants des candidats dans la filière
             while len(n) > 0: # tant qu'il reste des identifiants dans n
                 a = n.pop() # on en prélève 1 (et il disparait de n)
+                candidats += 1
                 cc, liste = 2**k, [k] # filière k : bit de poids 2**k au niveau haut.
                 for i in range(k+1, len(list_fich)): # on cherche cet identifiant dans les autres filières.
                     if a in l_set[i]: # s'il y est :
@@ -279,18 +288,24 @@ class Admin(Client):
                         l_set[i].remove(a) # on supprime cet identifiant de l'ensemble des identifiants de la filière i
                         liste.append(i) # on ajoute la filière i à la liste des filières demandées par le candidat
                 [Fichier.set(l_dict[j][a], 'Candidatures', cc) for j in liste] # On écrit le noeud 'Candidatures'
+                flag = True # pour ne compter qu'une validation par candidat !
                 for j in liste: # le test ci-dessous pourrait exclure les filières inadéquates (bien ou pas ?)..
                     if not('non validée' in Fichier.get(l_dict[j][a], 'Motifs')):
                         candid[2**j]+= 1 # ne sont comptés que les candidatures validées
+                        if flag:
+                            candidats_ayant_valide += 1
+                            flag = False
                 if len(liste) > 1: # si candidat dans plus d'une filière
                     candid[cc] += 1 # incrémentation du compteur correspondant
         # Sauvegarder
         [fich.sauvegarde() for fich in list_fich]
-        
+        # Ajouter deux éléments dans le dictionnaire candid
+        candid['nb_cand'] = candidats
+        candid['nb_cand_valid'] = candidats_ayant_valide
         # Écrire le fichier stat
         with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
             pickle.dump(candid, stat_fich)
-        yield 'effectué.'
+        return
 
     def generation_comm(self):
         """ Création des fichiers commission """

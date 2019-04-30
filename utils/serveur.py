@@ -148,14 +148,14 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def traiter_parcourssup(self, **kwargs):
         """ Appelée quand l'admin clique sur le bouton 'Traiter / Vérifier' qui se trouve dans son premier menu.  Lance 
         le traitement des fichiers *.csv et *.pdf en provenance de ParcoursSup, puis un décompte des candidatures 
-        (fonction stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
+        (fonction appel_stat). Cette méthode renvoie un générateur qui indique l'avancement de ce traitement. """
         admin = self.get_client_cour() # admin <-- qui est le demandeur ?
         # On construit la liste de tout ce qui doit être effectué : liste de couples
         # action [ (méthode (de type générateur) a appeler, 'chaîne à afficher sur la page d'avancement'), etc ]
         action = [
                 (admin.traiter_csv, 'Traitement des fichiers csv'),
                 (admin.traiter_pdf, 'Traitement des fichiers pdf'),
-                (admin.stat , 'Décompte des candidatures'),
+                (admin.appel_stat , 'Décompte des candidatures'),
                 ]
         # On envoie ça au Composeur de page html; celui-ci se charge de fournir une page qui affiche l'état d'avancement 
         # du traitement..
