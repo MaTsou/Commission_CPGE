@@ -473,9 +473,12 @@ class Composeur(object):
                 # client Admin ET alerte déposée par nettoie.py
                 if isinstance(client, Admin) and '- Alerte' in Fichier.get(cand, 'Motifs'):
                     clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
-                # ou client Jury et admin a laissé un commentaire
-                if isinstance(client, Jury) and '- Admin' in Fichier.get(cand, 'Motifs'):
-                    clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
+                # Si Admin a écrit un commentaire :
+                if '- Admin' in Fichier.get(cand, 'Motifs'):
+                    if isinstance(client, Admin): # si admin
+                        clas += ' doss_commente'
+                    if isinstance(client, Jury): # si jury
+                        clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
                 ### fin dossiers à mettre en évidence
                 lis += 'class = "{}"'.format(clas)
                 nom = '{}, {}'.format(Fichier.get(cand, 'Nom'), Fichier.get(cand, 'Prénom'))
