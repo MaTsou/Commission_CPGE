@@ -208,7 +208,7 @@ div.breakafter
 	
 .doss_traite{background-color:LimeGreen;} /* a été traité --> vert */
 
-.doss_courant{border: 2px solid Blue;} /* est sélectionné : bordure bleue */
+.doss_courant{border: 2px solid Blue; color : red;} /* est sélectionné : bordure bleue */
 
 .doss_incomplet{background-color:LightCoral;} /* admin seulement : incomplet */
 
