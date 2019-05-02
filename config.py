@@ -4,10 +4,11 @@
 
 ############################################################################
 # Filières, nombre de jurys par filière et nombre de classés par filière   #
+# Pour classer tous les candidats traités, il suffit d'indiquer 'tous' .   #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
 nombre_de_jurys = ['3','3','2']
-nombre_de_candidats_classes  = ['120', '140', '1000']
+nombre_de_candidats_classes  = ['200', '240', 'tous']
 
 ############################################################################
 # Liste des motivations de la commission ...                               #

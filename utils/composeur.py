@@ -499,9 +499,16 @@ class Composeur(object):
         txt = ''
         saut = '<div style = "page-break-after: always;"></div>' # on saute une page entre chaque candidat
         for cand in fich:
+            nb = nb_classes[fich.filiere().lower()] # récupération du contenu du fichier config.py
+            # Si nb n'est pas convertible en un entier positif alors on classe tous les candidats
+            try:
+                nb_max = int(nb)
+                if nb_max < 0: nb_max = len(fich)
+            except:
+                nb_max = len(fich)
             a = (Fichier.get(cand, 'traité') == 'oui')
             b = (Fichier.get(cand, 'Correction') != 'NC')
-            c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
+            c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= nb_max)
             if a and b and c: # seulement les classés dont le rang est inférieur à la limite fixée
                 txt += entete
                 txt += '<div class = encadre>Candidat classé : {}</div>'.format(Fichier.get(cand, 'Rang final'))

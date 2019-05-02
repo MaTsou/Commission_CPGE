@@ -411,9 +411,16 @@ class Admin(Client):
                 for cand in fich:
                     # On ne met dans ces tableaux que les candidats traités, classés et dont le rang est inférieur à la 
                     # limite prévue dans config.py.
+                    nb = nb_classes[fich.filiere().lower()] # récupération du contenu du fichier config.py
+                    # Si nb n'est pas convertible en un entier positif alors on classe tous les candidats
+                    try:
+                        nb_max = int(nb)
+                        if nb_max < 0: nb_max = len(fich)
+                    except:
+                        nb_max = len(fich)
                     a = (Fichier.get(cand, 'traité') == 'oui')
                     b = (Fichier.get(cand, 'Correction') != 'NC')
-                    c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= int(nb_classes[fich.filiere().lower()]))
+                    c = not(b) or (int(Fichier.get(cand, 'Rang final')) <= nb_max)
                     if a and b and c:
                         data = [Fichier.get(cand, champ) for champ in entetes]
                         cw.writerow(data)
