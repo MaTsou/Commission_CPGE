@@ -122,7 +122,8 @@ class Jury(Client):
             cor, scoref = 'NC', '0'
         else:
             note = float(Fichier.get(cand, 'Score brut').replace(',','.')) + float(cor)
-            scoref = '{:.2f}'.format(note).replace('.',',')
+            scoref = '{:.2f}'.format(note).replace('.',',') # mise en forme pour que les tableaux bilan
+            cor = '{:.2f}'.format(float(cor)).replace('.',',') # de commission soient jolis !
         # Écriture des différents champs
         # 1/ correction et score final
         Fichier.set(cand, 'Correction', cor) # écriture de la correction dans le noeud xml du candidat
@@ -362,7 +363,7 @@ class Admin(Client):
                     if Fichier.get(c, 'traité') != 'oui':
                         Fichier.set(c, 'Correction', 'NC')
                         Fichier.set(c, 'Score final', '0')
-                        if Fichier.get(c, 'Jury') == 'Auto':
+                        if Fichier.get(c, 'Jury') == 'Auto': # 'Auto' est la valeur par défaut du champ-xml 'Jury' 
                             Fichier.set(c, 'Motifs', 'Dossier moins bon que le dernier classé.')
                 # list_doss récupère la liste des dossiers classée selon score_final + age
                 list_doss.append(fich.ordonne('score_f'))

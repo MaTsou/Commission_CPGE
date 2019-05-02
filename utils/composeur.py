@@ -66,7 +66,7 @@ class Composeur(object):
             txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
     barre += '<tr><td align = "center" colspan = "3"><table width = "100%"><tr class =\
     "correc_notimpr">{}</tr></table>'.format(txt)
-    barre += '<span class = "correc_impr">{} : {:+.2f}</span>' # champs remplis dans la fonction 'genere_action'
+    barre += '<span class = "correc_impr">{} : {}</span>' # champs remplis dans la fonction 'genere_action'
     barre += '</td></tr>'
 
     # Liste des motivations
@@ -431,12 +431,14 @@ class Composeur(object):
         rang_final = '<td style = "display:{};">Estimation du rang final : {}</td>'.format(visib, rg_fin)
         ### Partie correction :
         # récupération correction
-        correc = str(Fichier.get(cand, 'Correction'))
-        if correc == 'NC':
+        cor = Fichier.get(cand, 'Correction') # Sous forme de chaîne de caractère !
+        if cor == 'NC':
             correc = min_correc # NC correspond à la correction minimale
             rg_fin = 'NC'
+        else:
+            correc = float(cor.replace(',','.')) # valeur numérique de la correction -> placement du curseur.
         # Construction de la barre de correction qu'on alimente avec les infos courantes..
-        barre = Composeur.barre.format(correc, Fichier.get(cand, 'Jury'), float(correc))
+        barre = Composeur.barre.format(correc, Fichier.get(cand, 'Jury'), cor)
         ### Partie motivations :
         motifs = Composeur.motifs.format(Fichier.get(cand, 'Motifs'))
         # On met tout ça dans un dico data pour passage en argument à html['contenu_action']
