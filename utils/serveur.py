@@ -120,7 +120,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # recherche du client concerné
             client = [cli for cli in self.fichiers_utilises.keys() if self.fichiers_utilises[cli] == fichier][0]
             self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible aux autres jurys
-            self.add_sse_message('free', fichier) # émission d'un SSE : un fichier se libère
             client.fichier = None
         except:
             pass

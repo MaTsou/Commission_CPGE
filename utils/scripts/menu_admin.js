@@ -11,11 +11,6 @@ source.addEventListener('add', function(event) {
 		window.location.reload(true);
 }, false);
 
-// Ajouter un écouteur d'évènements qui recharge la page sur un event 'free'
-source.addEventListener('free', function(event) {
-		window.location.reload(true);
-}, false);
-
 // Ajouter un écouteur d'évènements qui recharge la page sur un event 'refresh'
 source.addEventListener('refresh', function(event) {
 		window.location.reload(true);
