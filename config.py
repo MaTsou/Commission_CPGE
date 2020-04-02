@@ -7,8 +7,8 @@
 # Pour classer tous les candidats traités, il suffit d'indiquer 'tous' .   #
 ############################################################################
 filieres = ['mpsi','pcsi','cpes']
-nombre_de_jurys = ['3','3','2']
-nombre_de_candidats_classes  = ['200', '240', 'tous']
+nombre_de_jurys = ['3','3','1']
+nombre_de_candidats_classes  = ['140', '180', 'tous']
 
 ############################################################################
 # Liste des motivations de la commission ...                               #
