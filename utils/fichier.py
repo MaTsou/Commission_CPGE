@@ -96,7 +96,7 @@ class Fichier(object):
                     el.text = dico['val']
                     pere.append(el)
             pere.append(fils)
-            _accro_branche(cand, grand_pere, pere)
+            cls._accro_branche(cand, grand_pere, pere)
 
     @classmethod
     def is_complet(cls, cand):
@@ -128,10 +128,11 @@ class Fichier(object):
         for mat in matiere:
             for da in date:
                 champs.add('{} Terminale {}'.format(mat , da))
-        # CPES
-        if 'cpes' in Fichier.get(cand, 'Classe actuelle').lower():
-            champs.add('Mathématiques CPES')
-            champs.add('Physique/Chimie CPES')
+        # CPES : depuis la commission 2020, ces notes ne servent plus dans le 
+        # score brut...
+        #if 'cpes' in Fichier.get(cand, 'Classe actuelle').lower():
+        #    champs.add('Mathématiques CPES')
+        #    champs.add('Physique/Chimie CPES')
         # EAF
         champs.add('Écrit EAF')
         champs.add('Oral EAF')

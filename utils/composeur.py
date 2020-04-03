@@ -455,6 +455,18 @@ class Composeur(object):
         # Construction de la chaine lis : code html de la liste des dossiers.
         lis = '<form id = "form_liste" action = "click_list" method=POST>'
         lis += '<input type="hidden" name = "scroll_mem" value = "{}"/>'.format(mem_scroll)
+        ## Gestion des ex-aequo (score final seulement). On va construire une 
+        ## liste des scores finals concernés. Puis, dans la boucle suivante, on
+        ## mettra en évidence les dossiers pour le jury...
+        doublons_sf = set()
+        ensemble_sf = set()
+        for index, cand in enumerate(client.fichier):
+            if Fichier.get(cand, 'traité') and Fichier.get(cand, 'Correction') != 'NC':
+                sf = Fichier.get(cand, 'Score final')
+                if sf in ensemble_sf:
+                    doublons_sf.add(sf)
+                else:
+                    ensemble_sf.add(sf)
         for index, cand in enumerate(client.fichier):
             # Les candidats rejetés par admin n'apparaissent pas aux jurys
             a = isinstance(client, Jury)
@@ -467,6 +479,8 @@ class Composeur(object):
                         clas += ' doss_courant' # candidat sélectionné entouré d'un cadre coloré
                 if Fichier.get(cand, 'traité'): # affecte la classe css "doss_traite" aux dossiers qui le sont
                         clas += ' doss_traite' # candidat traité = background vert.
+                if Fichier.get(cand, 'Score final') in doublons_sf:
+                    clas += ' doss_doublon_sf' # gestion ex-aequo
                 if Fichier.get(cand, 'Correction') == 'NC': # affecte la classe css "doss_rejete" aux dossiers NC
                     clas += ' doss_rejete' # candidat NC = background gris.
                 ### dossiers à mettre en évidence (fond rouge) :

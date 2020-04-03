@@ -216,6 +216,8 @@ div.breakafter
 
 .doss_rejete{background-color:DimGray;} /* admin seulement : rejeté */
 
+.doss_doublon_sf{background-color:Purple;} /* ex-aequo score final */
+
 /***********************************
 			PAGE DOSSIERS
 ************************************/
