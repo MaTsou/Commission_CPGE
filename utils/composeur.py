@@ -341,12 +341,6 @@ class Composeur(object):
 ########################################################
     def page_dossier(self, qui, mem_scroll):
         """ construction du code html constitutif de la page dossier """
-        # format_comm = True lorsque la demande est destinée à concevoir les fiches bilan de commission.
-        # En effet, cette demande est lancée par Admin, mais l'impression se fait avec un dossier formaté
-        # comme pour Jury : les notes de sont pas des <input type="text" .../>. C'est ensuite le code css
-        # qui se charge d'adapter l'aspect de la page pour l'impression (fond blanc, barre de correction
-        # invisible, remplacée par une indication du jury qui a traité le dossier et la correction faite,
-        # liste des dossiers également invisible; vive le css !)
         ## entête
         page = self.genere_entete('{} - Accès {}.'.format(self.titre, qui.get_droits()))
         # construire ensuite les parties dossier, action de client puis liste des dossiers;
@@ -375,6 +369,12 @@ class Composeur(object):
 
     def genere_dossier(self, qui, cand, format_admin = False):
         """ Renvoie le dictionnaire contenant les infos du dossier en cours"""
+        # format_admin = False lorsque la demande est destinée à concevoir les fiches bilan de commission.
+        # En effet, cette demande est lancée par Admin, mais l'impression se fait avec un dossier formaté
+        # comme pour Jury : les notes de sont pas des <input type="text" .../>. C'est ensuite le code css
+        # qui se charge d'adapter l'aspect de la page pour l'impression (fond blanc, barre de correction
+        # invisible, remplacée par une indication du jury qui a traité le dossier et la correction faite,
+        # liste des dossiers également invisible; vive le css !)
         #### Début
         data = {}
         # Pédigré
@@ -386,7 +386,7 @@ class Composeur(object):
         fil = qui.fichier.filiere()
         data['ref_fich'] = os.path.join('docs_candidats', '{}'.format(fil.lower()),
                 'docs_{}'.format(Fichier.get(cand, 'Num ParcoursSup')))
-        # Formatage des champs de notes et de classe actuelle en fonction du client (ou de format_comm)
+        # Formatage des champs de notes et de classe actuelle en fonction de format_admin
         # En effet, Admin a la possibilité d'écrire dans ces champs alors que Jury est en lecture seule.
         formateur_clas_actu = '{}'
         formateur_note = '{note}'
