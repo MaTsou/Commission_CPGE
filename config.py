@@ -31,7 +31,7 @@ tableaux_candidats_classes = {\
     'classes' :
         ['Rang brut', 'Rang final', 'Nom', 'Prénom', 'Date de naissance',
             'Num ParcoursSup', 'Boursier', 'Boursier certifié', 'Score brut',
-            'Correction', 'Score final', 'Jury', 'Motifs'
+            'Correction', 'Score final', 'Jury'
         ],\
     'classes_BdE' :
         ['Rang final', 'Nom', 'Prénom', 'Date de naissance', 'Num ParcoursSup'
@@ -50,7 +50,7 @@ tableaux_tous_candidats = {\
             'Mathématiques Première trimestre 2', 'Physique/Chimie Première trimestre 2',
             'Mathématiques Première trimestre 3', 'Physique/Chimie Première trimestre 3',
             'Écrit EAF', 'Oral EAF', 'Mathématiques CPES', 'Physique/Chimie CPES',
-            'Score brut', 'Correction', 'Score final', 'Jury', 'Motifs'
+            'Score brut', 'Correction', 'Score final', 'Jury'
         ]\
 }
 
