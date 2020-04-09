@@ -185,7 +185,9 @@ class Admin(Client):
                     if Fichier.get(cand, key) != kwargs[key]: # la note a-t-elle été modifiée ?
                         for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), key, kwargs[key])
         # CPES et EAF
-        liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
+        #liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
+        # Seulement EAF depuis 2020
+        liste = ['Écrit EAF', 'Oral EAF']
         for li in liste:
             if 'cpes' in li.lower():
                 if ('cpes' in Fichier.get(cand, 'Classe actuelle').lower()) and Fichier.get(cand, li) != kwargs[li]:
