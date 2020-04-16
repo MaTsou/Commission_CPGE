@@ -16,10 +16,10 @@ coef_term = {\
         'Physique/Chimie Première trimestre 1' : 1,
         'Physique/Chimie Première trimestre 2' : 1,
         'Physique/Chimie Première trimestre 3' : 1,
-        'Mathématiques Terminale trimestre 1' : 1.8,
-        'Mathématiques Terminale trimestre 2' : 2.2,
-        'Physique/Chimie Terminale trimestre 1' : 1.8,
-        'Physique/Chimie Terminale trimestre 2' : 2.2,
+        'Mathématiques Terminale trimestre 1' : 2.5,
+        'Mathématiques Terminale trimestre 2' : 1.5,
+        'Physique/Chimie Terminale trimestre 1' : 2.5,
+        'Physique/Chimie Terminale trimestre 2' : 1.5,
         'Écrit EAF' : 2,
         'Oral EAF' : 1
 }
