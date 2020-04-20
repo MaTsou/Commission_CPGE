@@ -116,15 +116,29 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         """ Pendant la commission, l'administrateur peut rendre de nouveau accessible le fichier qu'un jury avait 
         préalablement choisi. Si un ordinateur plante, cela peut éviter un redémarrage du serveur """
         fichier = kwargs["fichier"]
+        page = """<div style='align:center;'>"""
         try: 
             # recherche du client concerné
-            client = [cli for cli in self.fichiers_utilises.keys() if self.fichiers_utilises[cli] == fichier][0]
-            self.fichiers_utilises.pop(client) # on fait du ménage, le fichier redevient disponible aux autres jurys
+            client = [cli for cli in self.fichiers_utilises.keys() if 
+                    self.fichiers_utilises[cli] == fichier][0]
+            # on fait du ménage, le fichier redevient disponible aux autres jurys
+            self.fichiers_utilises.pop(client)
             client.fichier = None
+            page += """<div style='align:center;padding-top:2cm;'><h2>Le fichier {} 
+            est maintenant libre.</h2></div> """.format(fichier)
+
         except:
-            pass
-        # Retour au menu
-        return self.affiche_menu()
+            page = """ <div style='align:center;padding-top:2cm;'><h2>Une erreur 
+            est survenue. Le fichier {} n'est pas reconnu.</h2></div> 
+            """.format(fichier)
+        page += """
+        <div style='align:center;'><form action='/affiche_menu' 
+        method = POST> <input type = 'submit' class ='gros_bout' value = 
+        'CLIQUER POUR RETOURNER AU MENU'></form></div></div>
+        """
+        # On retourne une page informative avec un bouton de retour à la 
+        # commission.
+        return page
   
     @cherrypy.expose
     def affiche_menu(self):
@@ -213,7 +227,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     
     @cherrypy.expose
     def traiter(self, **kwargs):
-        """ Appelée quand un client valide un dossier un cliquant sur 'Classer' ou 'NC'. Retourne une page dossier. """
+        """ Appelée quand un client valide un dossier un cliquant sur 'Valider'. Retourne une page dossier. """
         # Cette méthode sert à mettre à jour le dossier du candidat...
         # C'est le travail du client courant à qui on passe tous les paramètres du formulaire html : dictionnaire kwargs
         self.get_client_cour().traiter(**kwargs)    # chaque client traite à sa manière !!
