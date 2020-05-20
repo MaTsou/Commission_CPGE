@@ -50,7 +50,11 @@ def filtre(candidat, test = False):
                 commentaire += ' | Vérifier la série |'
             # 2/ Le dossier est-il complet (toutes les notes présentes + classe actuelle)
             if not(Fichier.is_complet(candidat)):
-                commentaire += ' Dossier incomplet |'
+                commentaire += ' | Dossier incomplet |'
+            # 3/ Classe actuelle n'est pas Terminale
+            classe = Fichier.get(candidat, 'Classe actuelle').lower()
+            if not('terminale' in classe or 'cpes' in classe):
+                commentaire += ' | Vérifier la classe actuelle |'
     if commentaire != '':
         Fichier.set(candidat, 'Motifs', '{} {}'.format(prefixe, commentaire))
     else: # si aucune remarque, on calcule le score brut
