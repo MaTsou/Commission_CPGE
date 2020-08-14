@@ -493,6 +493,10 @@ class Composeur(object):
                         clas += ' doss_commente'
                     if isinstance(client, Jury): # si jury
                         clas += ' doss_incomplet' # LE TERME INCOMPLET N'EST PLUS ADÉQUAT
+                # Si en terminale à l'EPA : un cadre de couleur pour garder la 
+                # lisibilité 'traité, non-traité, rejeté'...
+                if "Pupilles de l'Air" in Fichier.get(cand, 'Établissement'):
+                    clas += ' doss_epa'
                 ### fin dossiers à mettre en évidence
                 lis += 'class = "{}"'.format(clas)
                 nom = '{}, {}'.format(Fichier.get(cand, 'Nom'), Fichier.get(cand, 'Prénom'))

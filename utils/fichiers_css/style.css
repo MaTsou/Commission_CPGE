@@ -210,6 +210,8 @@ div.breakafter
 
 .doss_courant{border: 2px solid Blue; color : red;} /* est sélectionné : bordure bleue */
 
+.doss_epa{border: 3px dashed Blue;} /* est de l'epa : bordure bleue */
+
 .doss_incomplet{background-color:LightCoral;} /* admin : alerte / jury : commentaire admin */
 
 .doss_commente{background-color:Yellow;} /* admin : déposé un commentaire mais classable */
