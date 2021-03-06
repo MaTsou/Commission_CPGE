@@ -332,8 +332,13 @@ def prepare_lecteurs(champs, test = False):
         "Type de formation": 'classe',
         'Série/Domaine/Filière': 'filière',
         'Spécialité/Mention/Voie': 'spécialité',
+        'Méthode de travail': 'methode_travail',
+        'Autonomie': 'autonomie',
+        'Engagement citoyen': 'engagement_citoyen',
+        "Capacité à s'investir": 'capacite_investissement',
+        "Autres éléments d'appréciation": 'appreciation_subsidiaire',
         'Niveau de la classe': 'niveau_classe',
-        'Avis du CE': 'avis',
+        'Avis sur la capacité à réussir': 'capacite_reussite',
     }
 
     # même organisation avec une boucle et un drapeau encore, pour les
