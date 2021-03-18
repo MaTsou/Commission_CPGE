@@ -75,22 +75,22 @@ def decoup(sourc, dest):
         # pour le candidat -1, au lieu de faire un cas particulier
     pdfWriter = PyPDF2.PdfFileWriter()
     for page in range(pdfReader.numPages):
-                # récupération de la page courante
+        # récupération de la page courante
         pageObj = pdfReader.getPage(page)
-                # puis de son texte brut
+        # puis de son texte brut
         txt = pageObj.extractText()
-                # et enfin, numéro de dossier et page
+        # et enfin, numéro de dossier et page
         res = regex.parse(txt)
         if res or page == pdfReader.numPages-1:
-                        # est-ce un changement de candidat?
+            # est-ce un changement de candidat?
             if (id_cand != res['id']
-                            or page == pdfReader.numPages-1):
+                    or page == pdfReader.numPages-1):
                 nom = os.path.join (dest, 'docs_{}.pdf'.format(id_cand))
                 pdfOutputFile = open(nom, 'wb')
-                                # sinon il en manque un bout
+                # sinon il en manque un bout
                 if page == pdfReader.numPages-1:
-                                        pdfWriter.addPage(pageObj)
-                                # écrasement de tout fichier existant!!
+                    pdfWriter.addPage(pageObj)
+                # écrasement de tout fichier existant!!
                 pdfWriter.write(pdfOutputFile)
                 pdfOutputFile.close()
                 # réinitialisations
