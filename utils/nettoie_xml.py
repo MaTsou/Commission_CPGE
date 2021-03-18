@@ -8,7 +8,7 @@ from utils.fichier import Fichier
 # FONCTIONS DE POST-TRAITEMENT
 #
 # Variables globales
-series_valides = ["Scientifique", "Préparation au bac Européen"]
+series_valides = ["Générale", "Scientifique", "Préparation au bac Européen"]
 series_non_valides = ["Sciences et Technologies de l'Industrie et du Développement Durable",
         "Economique et social", "Littéraire", "Sciences et technologie de laboratoire",
         "Professionnelle"]
@@ -62,6 +62,17 @@ def filtre(candidat, test = False):
     # Fin des filtres; on retourne un candidat mis à jour
     return candidat
 
+# Fonction utile en 2021 seulement : si candidat en cpes, je reporte ses notes
+# de math et de phys dans les champs math spécialité et phys spécialité
+def repeche(candidat, test):
+    if Fichier.get(candidat, 'Classe actuelle').lower() == 'cpes':
+        for cl in ['Première', 'Terminale']:
+            for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
+                Fichier.set(candidat, 'Mathématiques Spécialité {} {}'.format(cl, date),\
+                Fichier.get(candidat, 'Mathématiques {} {}'.format(cl, date)))
+                Fichier.set(candidat, 'Physique-Chimie Spécialité {} {}'.format(cl, date),\
+                Fichier.get(candidat, 'Physique/Chimie {} {}'.format(cl, date)))
+    return candidat
 
 #
 # FONCTION PRINCIPALE
@@ -71,4 +82,5 @@ def nettoie(candidats, test = False):
     res = [elague_bulletins_triviaux(candidat, test)
            for candidat in candidats]
     res = [filtre(candidat, test) for candidat in candidats]
+    res = [repeche(candidat, test) for candidat in candidats]
     return candidats

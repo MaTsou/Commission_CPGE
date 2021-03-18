@@ -46,7 +46,10 @@ class Fichier(object):
                 result = Fichier.acces[attr]['post'](result)
             if not(result): result = Fichier.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
         except:
-            result = Fichier.acces[attr]['defaut']
+            try:
+                result = Fichier.acces[attr]['defaut']
+            except:
+                result = '-' # ne devrait pas arriver
         return result
 
     @classmethod
@@ -80,8 +83,8 @@ class Fichier(object):
             cand.xpath(pere)[0].append(fils) # si oui, on accroche le fils
         else: # sinon on créé le père et on va voir le grand-père
             node = pere.split('/')[-1] # récupération du dernier champ du chemin
-            if 'Chimie' in node: node=pere.split('/')[-2]+'/'+node # un traitement
-            # particulier du fait que le champ contient '/' (Physique/Chimie)
+            if 'Chimie' == node[0:6]: node=pere.split('/')[-2]+'/'+node # un traitement
+            # particulier quand le champ contient (Physique/Chimie)
             grand_pere = parse('{}/' + node, pere)[0] # le reste du chemin est le grand-pere
             # analyse et création du père avec tous ses champs...
             noeuds = parse('{}[{}]', node)
@@ -260,7 +263,8 @@ class Fichier(object):
         'Rang final'            : {'query' : 'diagnostic/rangf', 'defaut' : '?'}
     }
     # Pour les notes du lycée :
-    matiere = ['Mathématiques', 'Physique/Chimie']
+    matiere = ['Mathématiques', 'Mathématiques Spécialité', 'Mathématiques Expertes',\
+                    'Physique/Chimie', 'Physique-Chimie Spécialité']
     date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
     classe = ['Première', 'Terminale']
     for cl in classe:

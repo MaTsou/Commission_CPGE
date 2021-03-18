@@ -400,7 +400,7 @@ class Composeur(object):
         # classe actuelle
         data['Classe actuelle'] = formateur_clas_actu.format(Fichier.get(cand, 'Classe actuelle'))
         # Notes
-        matiere = ['Mathématiques', 'Physique/Chimie']
+        matiere = ['Mathématiques Spécialité', 'Mathématiques Expertes', 'Physique-Chimie Spécialité']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
         classe = ['Première', 'Terminale']
         for cl in classe:
