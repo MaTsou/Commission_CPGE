@@ -12,7 +12,7 @@ nombre_de_candidats_classes  = ['160', '300', 'tous']
 
 ############################################################################
 # Liste des motivations de la commission ...                               #
-# Sous la forme d'un tableau à 2 colones.                                  #
+# Sous la forme d'un tableau à 2 colonnes.                                 #
 # Ne pas dépasser 7 lignes pour que l'affichage sur navigateur soit beau   # 
 ############################################################################
 motivations = [
@@ -43,12 +43,21 @@ tableaux_tous_candidats = {\
         ['Rang brut', 'Rang final', 'Candidatures', 'Nom', 'Prénom',
             'Date de naissance', 'Sexe', 'Nationalité', 'Num ParcoursSup',
             'Boursier', 'Boursier certifié', 'Classe actuelle', 'Établissement', 'Commune',
-            'Mathématiques Terminale trimestre 1', 'Physique/Chimie Terminale trimestre 1',
-            'Mathématiques Terminale trimestre 2', 'Physique/Chimie Terminale trimestre 2',
-            'Mathématiques Terminale trimestre 3', 'Physique/Chimie Terminale trimestre 3',
-            'Mathématiques Première trimestre 1', 'Physique/Chimie Première trimestre 1',
-            'Mathématiques Première trimestre 2', 'Physique/Chimie Première trimestre 2',
-            'Mathématiques Première trimestre 3', 'Physique/Chimie Première trimestre 3',
+            'Mathématiques Spécialité Terminale trimestre 1', 
+            'Mathématiques Expertes Terminale trimestre 1', 
+            'Physique-Chimie Spécialité Terminale trimestre 1',
+            'Mathématiques Spécialité Terminale trimestre 2', 
+            'Mathématiques Expertes Terminale trimestre 2', 
+            'Physique-Chimie Spécialité Terminale trimestre 2',
+            'Mathématiques Spécialité Terminale trimestre 3', 
+            'Mathématiques Expertes Terminale trimestre 3', 
+            'Physique-Chimie Spécialité Terminale trimestre 3',
+            'Mathématiques Spécialité Première trimestre 1', 
+            'Physique-Chimie Spécialité Première trimestre 1',
+            'Mathématiques Spécialité Première trimestre 2', 
+            'Physique-Chimie Spécialité Première trimestre 2',
+            'Mathématiques Spécialité Première trimestre 3', 
+            'Physique-Chimie Spécialité Première trimestre 3',
             'Écrit EAF', 'Oral EAF', 'Mathématiques CPES', 'Physique/Chimie CPES',
             'Score brut', 'Correction', 'Score final', 'Jury', 'Motifs'
         ]\
