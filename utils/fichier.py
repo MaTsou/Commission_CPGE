@@ -102,6 +102,21 @@ class Fichier(object):
             cls._accro_branche(cand, grand_pere, pere)
 
     @classmethod
+    def is_math_expertes(cls, cand):
+        """ Renvoie True si le candidat a au moins une note d'option math experte """
+        expert = False # initialisation
+        # Construction de l'ensemble des champs à vérifier
+        champs = set([])
+        date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+        for da in date:
+            champs.add('Mathématiques Expertes Terminale {}'.format(da))
+        while (expert and len(champs) > 0): # Dès qu'un champ est renseigné on arrête et renvoie True
+            ch = champs.pop()
+            if cls.get(cand, ch) != '-': # '-' est la valeur par défaut d'une note..
+                expert = True
+        return expert
+
+    @classmethod
     def is_complet(cls, cand):
         """ Renvoie True si tous les éléments nécessaires à un calcul correct du score brut sont présents """
         # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin
