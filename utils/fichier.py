@@ -110,12 +110,13 @@ class Fichier(object):
         complet = True
         # Construction de l'ensemble des champs à vérifier
         champs = set([])
-        matiere = ['Mathématiques', 'Physique/Chimie']
+        matiere = ['Mathématiques Spécialité', 'Physique-Chimie Spécialité']
         # Première
         classe = 'Première'
         date = ['trimestre 1', 'trimestre 2']
-        if cls.get(cand, 'Première semestrielle') != '1':
-            date.append('trimestre 3')
+        # 2 lignes commentées car pas de notes cause confinement
+        #if cls.get(cand, 'Première semestrielle') != '1':
+        #    date.append('trimestre 3')
         for mat in matiere:
             for da in date:
                 champs.add('{} Première {}'.format(mat , da))
@@ -137,8 +138,9 @@ class Fichier(object):
         #    champs.add('Mathématiques CPES')
         #    champs.add('Physique/Chimie CPES')
         # EAF
-        champs.add('Écrit EAF')
-        champs.add('Oral EAF')
+        # 2 lignes commentées cause confinement
+        #champs.add('Écrit EAF')
+        #champs.add('Oral EAF')
         # Tests :
         if cls.get(cand, 'Classe actuelle') == '?':
             complet = False
