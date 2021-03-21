@@ -174,23 +174,29 @@ class Admin(Client):
         # Classe actuelle ?
         if Fichier.get(cand, 'Classe actuelle') != kwargs['Classe actuelle']:
             for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), 'Classe actuelle', kwargs['Classe actuelle'])
-        # Cas des notes
-        matiere = ['Mathématiques', 'Physique/Chimie']
+        # Cas des notes de première
+        matiere = ['Mathématiques Spécialité', 'Physique-Chimie Spécialité']
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
-        classe = ['Première', 'Terminale']
-        for cl in classe:
-            for mat in matiere:
-                for da in date:
-                    key = '{} {} {}'.format(mat, cl, da)
-                    if Fichier.get(cand, key) != kwargs[key]: # la note a-t-elle été modifiée ?
-                        for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), key, kwargs[key])
+        for mat in matiere:
+            for da in date:
+                key = '{} Première {}'.format(mat, da)
+                if Fichier.get(cand, key) != kwargs[key]: # la note a-t-elle été modifiée ?
+                    for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), key, kwargs[key])
+        # Cas des notes de terminale
+        matiere = ['Mathématiques Spécialité', 'Mathématiques Expertes', 'Physique-Chimie Spécialité']
+        date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+        for mat in matiere:
+            for da in date:
+                key = '{} Terminale {}'.format(mat, da)
+                if Fichier.get(cand, key) != kwargs[key]: # la note a-t-elle été modifiée ?
+                    for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), key, kwargs[key])
         # CPES et EAF
         #liste = ['Mathématiques CPES', 'Physique/Chimie CPES', 'Écrit EAF', 'Oral EAF']
         # Seulement EAF depuis 2020
         liste = ['Écrit EAF', 'Oral EAF']
         for li in liste:
             if 'cpes' in li.lower():
-                if ('cpes' in Fichier.get(cand, 'Classe actuelle').lower()) and Fichier.get(cand, li) != kwargs[li]:
+                if (Fichier.is_cpes(cand) and Fichier.get(cand, li) != kwargs[li]):
                     for fich in list_fich_cand: Fichier.set(fich.get_cand(cand), li, kwargs[li])
             else:
                 if Fichier.get(cand, li) != kwargs[li]:

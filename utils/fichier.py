@@ -102,6 +102,11 @@ class Fichier(object):
             cls._accro_branche(cand, grand_pere, pere)
 
     @classmethod
+    def is_cpes(cls, cand):
+        """ Renvoie True si le candidat est en CPES """
+        return ('cpes' in cls.get(cand, 'Classe actuelle').lower())
+
+    @classmethod
     def is_math_expertes(cls, cand):
         """ Renvoie True si le candidat a au moins une note d'option math experte """
         expert = False # initialisation
@@ -110,7 +115,7 @@ class Fichier(object):
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
         for da in date:
             champs.add('Mathématiques Expertes Terminale {}'.format(da))
-        while (expert and len(champs) > 0): # Dès qu'un champ est renseigné on arrête et renvoie True
+        while (not(expert) and len(champs) > 0): # Dès qu'un champ est renseigné on arrête et renvoie True
             ch = champs.pop()
             if cls.get(cand, ch) != '-': # '-' est la valeur par défaut d'une note..
                 expert = True
@@ -139,7 +144,7 @@ class Fichier(object):
         classe = 'Terminale'
         date = ['trimestre 1']
         n='2'
-        if 'cpes' in Fichier.get(cand, 'Classe actuelle').lower():
+        if Fichier.is_cpes(cand):
             date.append('trimestre 2')
             n='3'
         if cls.get(cand, 'Terminale semestrielle') != '1':
@@ -149,7 +154,7 @@ class Fichier(object):
                 champs.add('{} Terminale {}'.format(mat , da))
         # CPES : depuis la commission 2020, ces notes ne servent plus dans le 
         # score brut...
-        #if 'cpes' in Fichier.get(cand, 'Classe actuelle').lower():
+        #if Fichier.is_cpes(cand):
         #    champs.add('Mathématiques CPES')
         #    champs.add('Physique/Chimie CPES')
         # EAF
@@ -181,25 +186,29 @@ class Fichier(object):
         # Récupération des coefficients, en les copiant car si
         # l'organisation est semestrielle, on va vouloir faire des
         # reports pour maintenir les poids relatifs
-        if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
+        if Fichier.is_cpes(cand):
             coef = dict(coef_cpes)
         else:
             coef = dict(coef_term)
 
         # Report des coefficients si on travaille en semestre
+        matieres_premiere = ['Mathématiques Spécialité',\
+                    'Physique-Chimie Spécialité']
+        matieres_terminale = ['Mathématiques Spécialité',\
+                'Mathématiques Expertes', 'Physique-Chimie Spécialité']
         if cls.get(cand, 'Première semestrielle') == '1':
-            for mat in ['Mathématiques', 'Physique/Chimie']:
+            for mat in matieres_premiere:
                 for trim in ['1', '2']:
                     coef['{} Première trimestre {}'.format(mat, trim)] +=\
                         coef['{} Première trimestre 3'.format(mat)]/2
         if cls.get(cand, 'Terminale semestrielle') == '1':
-            if 'cpes' in cls.get(cand, 'Classe actuelle').lower():
-                for mat in ['Mathématiques', 'Physique/Chimie']:
+            if Fichier.is_cpes(cand):
+                for mat in matieres_terminale:
                     for trim in ['1', '2']:
                         coef['{} Terminale trimestre {}'.format(mat, trim)] +=\
                             coef['{} Terminale trimestre 3'.format(mat)]/2
             else:
-                for mat in ['Mathématiques', 'Physique/Chimie']:
+                for mat in matieres_terminale:
                     coef['{} Terminale trimestre 1'.format(mat)] +=\
                         coef['{} Terminale trimestre 2'.format(mat)]
 
@@ -214,6 +223,9 @@ class Fichier(object):
             scoreb = somme/poids
         else: # ne devrait pas arriver
             scoreb = 0
+        # Bonus pour les cpes ou les math expertes...
+        if (cls.is_cpes(cand) or cls.is_math_expertes(cand)):
+            scoreb += 5
         cls.set(cand, 'Score brut', vers_str(scoreb))
 
     @classmethod
