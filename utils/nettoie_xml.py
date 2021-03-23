@@ -8,7 +8,7 @@ from utils.fichier import Fichier
 # FONCTIONS DE POST-TRAITEMENT
 #
 # Variables globales
-series_valides = ["Générale", "Scientifique", "Préparation au bac Européen"]
+series_valides = ["Série Générale", "Scientifique", "Préparation au bac Européen"]
 series_non_valides = ["Sciences et Technologies de l'Industrie et du Développement Durable",
         "Economique et social", "Littéraire", "Sciences et technologie de laboratoire",
         "Professionnelle"]

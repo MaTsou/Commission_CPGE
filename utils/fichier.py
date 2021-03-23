@@ -121,51 +121,58 @@ class Fichier(object):
         return expert
 
     @classmethod
+    def is_premiere_semestrielle(cls, cand):
+        """ Renvoie True si le candidat est noté en 
+        semestres en première """
+        return (cls.get(cand, 'Première semestrielle') == '1')
+
+    @classmethod
+    def is_terminale_semestrielle(cls, cand):
+        """ Renvoie True si le candidat est noté en 
+        semestres en terminale """
+        return (cls.get(cand, 'Terminale semestrielle') == '1')
+
+    @classmethod
     def is_complet(cls, cand):
         """ Renvoie True si tous les éléments nécessaires à un calcul correct du score brut sont présents """
         # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin
         # doit faire tout ce qu'il peut pour la lever..
-        # TODO les éléments à vérifier sont lus dans parametres.py (coef...)
-        complet = True
+        # Les éléments à vérifier sont lus dans parametres.py (coef...)
         # Construction de l'ensemble des champs à vérifier
-        champs = set([])
-        matiere = ['Mathématiques Spécialité', 'Physique-Chimie Spécialité']
-        # Première
-        classe = 'Première'
-        date = ['trimestre 1', 'trimestre 2']
-        # 2 lignes commentées car pas de notes cause confinement
-        #if cls.get(cand, 'Première semestrielle') != '1':
-        #    date.append('trimestre 3')
-        for mat in matiere:
-            for da in date:
-                champs.add('{} Première {}'.format(mat , da))
-        # Terminale
-        classe = 'Terminale'
-        date = ['trimestre 1']
-        n='2'
+        champs = set()
         if cls.is_cpes(cand):
-            date.append('trimestre 2')
-            n='3'
-        if cls.get(cand, 'Terminale semestrielle') != '1':
-            date.append('trimestre {}'.format(n))
-        for mat in matiere:
-            for da in date:
-                champs.add('{} Terminale {}'.format(mat , da))
-        # CPES : depuis la commission 2020, ces notes ne servent plus dans le 
-        # score brut...
-        #if cls.is_cpes(cand):
-        #    champs.add('Mathématiques CPES')
-        #    champs.add('Physique/Chimie CPES')
-        # EAF
-        # 2 lignes commentées cause confinement
-        #champs.add('Écrit EAF')
-        #champs.add('Oral EAF')
+            coefs = coef_cpes 
+            term = False
+        else:
+            coefs = coef_term 
+            term = True
+        for key, coef in coefs.items():
+            ajout = True
+            # on ajoute à champ si coef non nul, si
+            # math_expertes et option du candidat et si
+            # les trimestres 'ne sont pas' des semestres
+            if coef == 0: 
+                ajout = False
+            else:
+                if ('expertes' in key.lower() and \
+                        not(cls.is_math_expertes(cand))):
+                    ajout = False
+                else:
+                    if ('première trimestre 3' in key.lower() and \
+                        cls.is_premiere_semestrielle(cand)):
+                        ajout = False
+                    else:
+                        if ('terminale trimestre 3' in key.lower() and \
+                            cls.is_terminale_semestrielle(cand)):
+                            ajout = False
+                        else:
+                            if (term and cls.is_terminale_semestrielle(cand) and \
+                                'terminale trimestre 2' in key.lower()):
+                                ajout = False
+            if ajout: champs.add(key)
         # Tests :
-        if cls.get(cand, 'Classe actuelle') == '?':
-            complet = False
-        if cls.get(cand, 'Première semestrielle') == '-1':
-            complet = False
-        if cls.get(cand, 'Terminale semestrielle') == '-1':
+        complet = True # initialisation
+        if cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['defaut']:
             complet = False
         while (complet and len(champs) > 0): # Dès qu'un champ manque à l'appel on arrête et renvoie False
             ch = champs.pop()
@@ -188,7 +195,7 @@ class Fichier(object):
         if cls.is_cpes(cand):
             coef = dict(coef_cpes)
             # report coef de terminale si notation semestrielle
-            if cls.get(cand, 'Terminale semestrielle') == '1':
+            if cls.is_terminale_semestrielle(cand):
                 for key in coef.keys():
                     if 'Terminale trimestre 3' in key:
                         coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
@@ -196,13 +203,13 @@ class Fichier(object):
         else:
             coef = dict(coef_term)
             # report coef de terminale si notation semestrielle
-            if cls.get(cand, 'Terminale semestrielle') == '1':
+            if cls.is_terminale_semestrielle(cand):
                 for key in coef.keys():
                     if 'Terminale trimestre 2' in key:
                         coef[key.replace('trimestre 2', 'trimestre 1')] += coef[key]
 
         # Report des coef de première si notation semestrielle
-        if cls.get(cand, 'Première semestrielle') == '1':
+        if cls.is_premiere_semestrielle(cand) == '1':
             for key in coef.keys():
                 if 'Première trimestre 3' in key:
                     coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
