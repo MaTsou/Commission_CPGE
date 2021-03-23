@@ -41,15 +41,15 @@ class Fichier(object):
         # pour l'usage auquel elle est destinée. 'acces' contient également la valeur à renvoyer dans le cas où le noeud
         # n'existe pas (valeur par défaut).
         try:
-            result = cand.xpath(Fichier.acces[attr]['query'])[0].text
-            if 'post' in Fichier.acces[attr].keys():
-                result = Fichier.acces[attr]['post'](result)
-            if not(result): result = Fichier.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
+            result = cand.xpath(cls.acces[attr]['query'])[0].text
+            if 'post' in cls.acces[attr].keys():
+                result = cls.acces[attr]['post'](result)
+            if not(result): result = cls.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
         except:
             try:
-                result = Fichier.acces[attr]['defaut']
+                result = cls.acces[attr]['defaut']
             except:
-                result = '-' # ne devrait pas arriver
+                result = 'ND' # ne devrait pas arriver 'NOT DEFINED'
         return result
 
     @classmethod
@@ -61,9 +61,9 @@ class Fichier(object):
          Si le noeud n'existe pas, la fonction accro_branch (ci-après) reconstituera l'arborescence manquante. """
          # 'acces' contient éventuellement une le nom d'une fonction de pré-traitement. Celle-ci sert à préparer la
          # valeur à être stockée dans le fichier xml.
-        query = Fichier.acces[attr]['query']
-        if 'pre' in Fichier.acces[attr].keys():
-            value = Fichier.acces[attr]['pre'](value)
+        query = cls.acces[attr]['query']
+        if 'pre' in cls.acces[attr].keys():
+            value = cls.acces[attr]['pre'](value)
         try:
             cand.xpath(query)[0].text = value
         except:
@@ -111,13 +111,12 @@ class Fichier(object):
         """ Renvoie True si le candidat a au moins une note d'option math experte """
         expert = False # initialisation
         # Construction de l'ensemble des champs à vérifier
-        champs = set([])
-        date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
-        for da in date:
-            champs.add('Mathématiques Expertes Terminale {}'.format(da))
+        champs = set(['Mathématiques Expertes Terminale {}'.format(da) \
+                for da in ['trimestre 1', 'trimestre 2', 'trimestre 3']\
+                ])
         while (not(expert) and len(champs) > 0): # Dès qu'un champ est renseigné on arrête et renvoie True
             ch = champs.pop()
-            if cls.get(cand, ch) != '-': # '-' est la valeur par défaut d'une note..
+            if cls.get(cand, ch) != cls.acces[ch]['defaut']: # champ renseigné ?
                 expert = True
         return expert
 
@@ -144,7 +143,7 @@ class Fichier(object):
         classe = 'Terminale'
         date = ['trimestre 1']
         n='2'
-        if Fichier.is_cpes(cand):
+        if cls.is_cpes(cand):
             date.append('trimestre 2')
             n='3'
         if cls.get(cand, 'Terminale semestrielle') != '1':
@@ -154,7 +153,7 @@ class Fichier(object):
                 champs.add('{} Terminale {}'.format(mat , da))
         # CPES : depuis la commission 2020, ces notes ne servent plus dans le 
         # score brut...
-        #if Fichier.is_cpes(cand):
+        #if cls.is_cpes(cand):
         #    champs.add('Mathématiques CPES')
         #    champs.add('Physique/Chimie CPES')
         # EAF
@@ -170,7 +169,7 @@ class Fichier(object):
             complet = False
         while (complet and len(champs) > 0): # Dès qu'un champ manque à l'appel on arrête et renvoie False
             ch = champs.pop()
-            if cls.get(cand, ch) == '-': # '-' est la valeur par défaut d'une note..
+            if cls.get(cand, ch) == cls.acces[ch]['defaut']: # note non renseignée ?
                 complet = False
         return complet
 
@@ -186,37 +185,34 @@ class Fichier(object):
         # Récupération des coefficients, en les copiant car si
         # l'organisation est semestrielle, on va vouloir faire des
         # reports pour maintenir les poids relatifs
-        if Fichier.is_cpes(cand):
+        if cls.is_cpes(cand):
             coef = dict(coef_cpes)
+            # report coef de terminale si notation semestrielle
+            if cls.get(cand, 'Terminale semestrielle') == '1':
+                for key in coef.keys():
+                    if 'Terminale trimestre 3' in key:
+                        coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
+                        coef[key.replace('trimestre 3', 'trimestre 2')] += coef[key]/2
         else:
             coef = dict(coef_term)
+            # report coef de terminale si notation semestrielle
+            if cls.get(cand, 'Terminale semestrielle') == '1':
+                for key in coef.keys():
+                    if 'Terminale trimestre 2' in key:
+                        coef[key.replace('trimestre 2', 'trimestre 1')] += coef[key]
 
-        # Report des coefficients si on travaille en semestre
-        matieres_premiere = ['Mathématiques Spécialité',\
-                    'Physique-Chimie Spécialité']
-        matieres_terminale = ['Mathématiques Spécialité',\
-                'Mathématiques Expertes', 'Physique-Chimie Spécialité']
+        # Report des coef de première si notation semestrielle
         if cls.get(cand, 'Première semestrielle') == '1':
-            for mat in matieres_premiere:
-                for trim in ['1', '2']:
-                    coef['{} Première trimestre {}'.format(mat, trim)] +=\
-                        coef['{} Première trimestre 3'.format(mat)]/2
-        if cls.get(cand, 'Terminale semestrielle') == '1':
-            if Fichier.is_cpes(cand):
-                for mat in matieres_terminale:
-                    for trim in ['1', '2']:
-                        coef['{} Terminale trimestre {}'.format(mat, trim)] +=\
-                            coef['{} Terminale trimestre 3'.format(mat)]/2
-            else:
-                for mat in matieres_terminale:
-                    coef['{} Terminale trimestre 1'.format(mat)] +=\
-                        coef['{} Terminale trimestre 2'.format(mat)]
+            for key in coef.keys():
+                if 'Première trimestre 3' in key:
+                    coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
+                    coef[key.replace('trimestre 3', 'trimestre 2')] += coef[key]/2
 
         # On a maintenant tout ce qu'il faut pour lancer le calcul
         somme, poids = 0, 0
         for key in coef.keys():
             note = cls.get(cand, key)
-            if note != '-':
+            if note != cls.acces[key]['defaut']:
                 somme += vers_num(note)*coef[key]
                 poids += coef[key]
         if poids != 0:
@@ -248,9 +244,9 @@ class Fichier(object):
     ## _criteres_tri : contient les fonctions qui sont les clés de tri de la méthode
     # 'ordonne' définie plus bas..
     _criteres_tri = {
-            'score_b' : lambda cand: -float(Fichier.get(cand, 'Score brut').replace(',','.')),
-            'score_f' : lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')),
-            'alpha' : lambda cand: Fichier.get(cand, 'Nom')
+            'score_b' : lambda cand: -float(cls.get(cand, 'Score brut').replace(',','.')),
+            'score_f' : lambda cand: -float(cls.get(cand, 'Score final').replace(',','.')),
+            'alpha' : lambda cand: cls.get(cand, 'Nom')
             }
 
     ## acces : dictionnaire contenant les clés d'accès aux informations candidat
