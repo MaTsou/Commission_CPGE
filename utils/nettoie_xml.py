@@ -81,6 +81,6 @@ def repeche(candidat, test):
 def nettoie(candidats, test = False):
     res = [elague_bulletins_triviaux(candidat, test)
            for candidat in candidats]
-    res = [filtre(candidat, test) for candidat in candidats]
     res = [repeche(candidat, test) for candidat in candidats]
+    res = [filtre(candidat, test) for candidat in candidats]
     return candidats

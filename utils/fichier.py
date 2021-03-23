@@ -125,7 +125,7 @@ class Fichier(object):
         """ Renvoie True si tous les éléments nécessaires à un calcul correct du score brut sont présents """
         # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin
         # doit faire tout ce qu'il peut pour la lever..
-        #
+        # TODO les éléments à vérifier sont lus dans parametres.py (coef...)
         complet = True
         # Construction de l'ensemble des champs à vérifier
         champs = set([])
