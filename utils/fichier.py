@@ -151,35 +151,36 @@ class Fichier(object):
         else:
             coefs = coef_term 
             term = True
+
         for key, coef in coefs.items():
             ajout = True
+
             # on ajoute à champ si coef non nul, si
             # math_expertes et option du candidat et si
             # les trimestres 'ne sont pas' des semestres
             if coef == 0: 
                 ajout = False
-            else:
-                if ('expertes' in key.lower() and \
-                        not(cls.is_math_expertes(cand))):
-                    ajout = False
-                else:
-                    if ('première trimestre 3' in key.lower() and \
-                        cls.is_premiere_semestrielle(cand)):
-                        ajout = False
-                    else:
-                        if ('terminale trimestre 3' in key.lower() and \
-                            cls.is_terminale_semestrielle(cand)):
-                            ajout = False
-                        else:
-                            if (term and cls.is_terminale_semestrielle(cand) and \
-                                'terminale trimestre 2' in key.lower()):
-                                ajout = False
-            if ajout: champs.add(key)
+
+            if 'expertes' in key.lower() and  not cls.is_math_expertes(cand):
+                ajout = False
+
+            if 'première trimestre 3' in key.lower() and cls.is_premiere_semestrielle(cand):
+                ajout = False
+
+            if 'terminale trimestre 3' in key.lower() and cls.is_terminale_semestrielle(cand):
+                ajout = False
+
+            if term and cls.is_terminale_semestrielle(cand) and 'terminale trimestre 2' in key.lower():
+                ajout = False
+
+            if ajout:
+                champs.add(key)
+
         # Tests :
         complet = True # initialisation
         if cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['defaut']:
             complet = False
-        while (complet and len(champs) > 0): # Dès qu'un champ manque à l'appel on arrête et renvoie False
+        while complet and len(champs) > 0: # Dès qu'un champ manque à l'appel on arrête et renvoie False
             ch = champs.pop()
             if cls.get(cand, ch) == cls.acces[ch]['defaut']: # note non renseignée ?
                 complet = False
