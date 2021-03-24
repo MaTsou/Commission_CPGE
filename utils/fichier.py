@@ -11,12 +11,13 @@
 ###
 #   Chaque instance Fichier est construite à partir d'un nom de fichier xml.
 #   Son attribut principal est 'dossiers' : liste de noeuds candidat.
-#   Cet objet réuni toutes les méthodes agissant sur ces dossiers et celles
+#   Cet objet réunit toutes les méthodes agissant sur ces dossiers et celles
 #   qui agissent sur le contenu des dossiers : les candidatures.
 ###
 
 from parse import parse
 from lxml import etree
+
 from config import filieres
 from utils.parametres import coef_cpes
 from utils.parametres import coef_term
@@ -44,7 +45,8 @@ class Fichier(object):
             result = cand.xpath(cls.acces[attr]['query'])[0].text
             if 'post' in cls.acces[attr].keys():
                 result = cls.acces[attr]['post'](result)
-            if not(result): result = cls.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
+            if not(result):
+                result = cls.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
         except:
             try:
                 result = cls.acces[attr]['defaut']
