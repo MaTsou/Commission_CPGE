@@ -302,9 +302,9 @@ class Fichier:
     ## _criteres_tri : contient les fonctions qui sont les clés de tri de la méthode
     # 'ordonne' définie plus bas..
     _criteres_tri = {
-            'score_b' : lambda cand: -float(cls.get(cand, 'Score brut').replace(',','.')),
-            'score_f' : lambda cand: -float(cls.get(cand, 'Score final').replace(',','.')),
-            'alpha' : lambda cand: cls.get(cand, 'Nom')
+            'score_b' : lambda cand: -float(Fichier.get(cand, 'Score brut').replace(',','.')),
+            'score_f' : lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')),
+            'alpha' : lambda cand: Fichier.get(cand, 'Nom')
             }
 
     ## acces : dictionnaire contenant les clés d'accès aux informations candidat
