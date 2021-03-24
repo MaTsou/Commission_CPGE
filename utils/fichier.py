@@ -43,7 +43,7 @@ class Fichier(object):
         # n'existe pas (valeur par défaut).
         try:
             result = cand.xpath(cls.acces[attr]['query'])[0].text
-            if 'post' in cls.acces[attr].keys():
+            if 'post' in cls.acces[attr]:
                 result = cls.acces[attr]['post'](result)
             if not(result):
                 result = cls.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
@@ -64,7 +64,7 @@ class Fichier(object):
          # 'acces' contient éventuellement une le nom d'une fonction de pré-traitement. Celle-ci sert à préparer la
          # valeur à être stockée dans le fichier xml.
         query = cls.acces[attr]['query']
-        if 'pre' in cls.acces[attr].keys():
+        if 'pre' in cls.acces[attr]:
             value = cls.acces[attr]['pre'](value)
         try:
             cand.xpath(query)[0].text = value
@@ -189,6 +189,7 @@ class Fichier(object):
     @classmethod
     def calcul_scoreb(cls, cand):
         """ Calcul du score brut et renseignement du noeud xml """
+
         # Si correction = 'NC', cela signifie que l'admin rejette le
         # dossier ; score nul d'office!
         if cls.get(cand, 'Correction') == 'NC': # candidat rejeté
@@ -202,38 +203,38 @@ class Fichier(object):
             coef = dict(coef_cpes)
             # report coef de terminale si notation semestrielle
             if cls.is_terminale_semestrielle(cand):
-                for key in coef.keys():
+                for key, val in coef.items():
                     if 'Terminale trimestre 3' in key:
-                        coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
-                        coef[key.replace('trimestre 3', 'trimestre 2')] += coef[key]/2
+                        coef[key.replace('trimestre 3', 'trimestre 1')] += val/2
+                        coef[key.replace('trimestre 3', 'trimestre 2')] += val/2
         else:
             coef = dict(coef_term)
             # report coef de terminale si notation semestrielle
             if cls.is_terminale_semestrielle(cand):
-                for key in coef.keys():
+                for key, val in coef.items():
                     if 'Terminale trimestre 2' in key:
-                        coef[key.replace('trimestre 2', 'trimestre 1')] += coef[key]
+                        coef[key.replace('trimestre 2', 'trimestre 1')] += val
 
         # Report des coef de première si notation semestrielle
         if cls.is_premiere_semestrielle(cand) == '1':
-            for key in coef.keys():
+            for key, val in coef.items():
                 if 'Première trimestre 3' in key:
-                    coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
-                    coef[key.replace('trimestre 3', 'trimestre 2')] += coef[key]/2
+                    coef[key.replace('trimestre 3', 'trimestre 1')] += val/2
+                    coef[key.replace('trimestre 3', 'trimestre 2')] += val/2
 
         # Il y a aussi des reports si le candidat ne suit pas l'option math expertes
         if not(cls.is_math_expertes(cand)):
-            for key in coef.keys():
+            for key,val in coef.items():
                 if 'Expertes' in key:
-                    coef[key.replace('Expertes', 'Spécialité')] += coef[key]
+                    coef[key.replace('Expertes', 'Spécialité')] += val
 
         # On a maintenant tout ce qu'il faut pour lancer le calcul
         somme, poids = 0, 0
-        for key in coef.keys():
+        for key, val in coef.items():
             note = cls.get(cand, key)
             if note != cls.acces[key]['defaut']:
-                somme += vers_num(note)*coef[key]
-                poids += coef[key]
+                somme += vers_num(note)*val
+                poids += val
         if poids != 0:
             scoreb = somme/poids
         else: # ne devrait pas arriver
