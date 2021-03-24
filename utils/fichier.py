@@ -108,7 +108,7 @@ class Fichier(object):
 
     @classmethod
     def is_math_expertes(cls, cand):
-        """ Renvoie True si le candidat a au moins une note d'option math experte """
+        """ Renvoie True si le candidat a au moins une note d'option math expertes """
         expert = False # initialisation
         # Construction de l'ensemble des champs à vérifier
         champs = set(['Mathématiques Expertes Terminale {}'.format(da) \
@@ -214,6 +214,12 @@ class Fichier(object):
                 if 'Première trimestre 3' in key:
                     coef[key.replace('trimestre 3', 'trimestre 1')] += coef[key]/2
                     coef[key.replace('trimestre 3', 'trimestre 2')] += coef[key]/2
+
+        # Il y a aussi des reports si le candidat ne suit pas l'option math expertes
+        if not(cls.is_math_expertes(cand)):
+            for key in coef.keys():
+                if 'Expertes' in key:
+                    coef[key.replace('Expertes', 'Spécialité')] += coef[key]
 
         # On a maintenant tout ce qu'il faut pour lancer le calcul
         somme, poids = 0, 0
