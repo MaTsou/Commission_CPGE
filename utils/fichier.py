@@ -116,10 +116,13 @@ class Fichier(object):
         champs = set(['Mathématiques Expertes Terminale {}'.format(da) \
                 for da in ['trimestre 1', 'trimestre 2', 'trimestre 3']\
                 ])
-        while (not(expert) and len(champs) > 0): # Dès qu'un champ est renseigné on arrête et renvoie True
+
+        # Dès qu'un champ est renseigné on arrête et renvoie True
+        while len(champs) > 0:
             ch = champs.pop()
             if cls.get(cand, ch) != cls.acces[ch]['defaut']: # champ renseigné ?
                 expert = True
+                break
         return expert
 
     @classmethod
