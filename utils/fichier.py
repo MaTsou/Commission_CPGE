@@ -2,12 +2,19 @@
 #-*- coding: utf-8 -*-
 
 # Ce fichier contient la classe Fichier.
-# Cette classe dispose d'un attribut important, le dictionnaire 'acces'. Il est ce qui traduit les requêtes extérieures
-# (venant des clients) en requêtes xpath désignant le chemin dans le fichier xml.
-# Les méthodes de classe 'set' et 'get' se chargent d'écrire et de lire les infos au bon endroit.
-# Ce qui prévaut dans ce choix de structure : l'encapsulation. Les clients n'ont pas besoin de savoir quel type de
-# fichier contient l'information qu'ils désirent. C'est le travail de la classe 'Fichier'. Il sera alors aisé (si le besoin
-# s'en fait sentir) de changer de format de données..
+
+# Cette classe dispose d'un attribut important, le dictionnaire
+# 'acces'. Il est ce qui traduit les requêtes extérieures (venant des
+# clients) en requêtes xpath désignant le chemin dans le fichier xml.
+# Les méthodes de classe 'set' et 'get' se chargent d'écrire et de
+# lire les infos au bon endroit.
+
+# Ce qui prévaut dans ce choix de structure : l'encapsulation. Les
+# clients n'ont pas besoin de savoir quel type de fichier contient
+# l'information qu'ils désirent. C'est le travail de la classe
+# 'Fichier'. Il sera alors aisé (si le besoin s'en fait sentir) de
+# changer de format de données..
+
 ###
 #   Chaque instance Fichier est construite à partir d'un nom de fichier xml.
 #   Son attribut principal est 'dossiers' : liste de noeuds candidat.
@@ -26,26 +33,36 @@ from utils.toolbox import *
 #################################################################################
 #                               Fichier                                         #
 #################################################################################
-class Fichier(object):
-    """ objet fichier : son but est de contenir toutes les méthodes qui agissent
-    sur le contenu des fichiers, i.e. les dossiers de candidatures. Ces fichiers
-    sont des attributs des objets 'Client' que gère l'objet 'Serveur'."""
+class Fichier:
+    """objet fichier : son but est de contenir toutes les méthodes qui
+    agissent sur le contenu des fichiers, i.e. les dossiers de
+    candidatures. Ces fichiers sont des attributs des objets 'Client'
+    que gère l'objet 'Serveur'.
+
+    """
 
     ############# Méthodes de classe ##############
+
     @classmethod
     def get(cls, cand, attr):
-        """ accesseur : récupère le contenu d'un noeud xml
-        cand est un etree.Element pointant un candidat
-        attr est une clé du dictionnaire 'acces' défini ci-dessous """
-        # Le dictionnaire 'acces' contient le chemin xpath relatif à l'attribut attr et éventuellement le nom d'une
-        # fonction de post-traitement. Celle-ci sert à mettre en 'forme' la valeur lue (nécessairement de type string)
-        # pour l'usage auquel elle est destinée. 'acces' contient également la valeur à renvoyer dans le cas où le noeud
-        # n'existe pas (valeur par défaut).
+        """accesseur : récupère le contenu d'un noeud xml cand est un
+        etree.Element pointant un candidat attr est une clé du
+        dictionnaire 'acces' défini ci-dessous
+
+        """
+
+        # Le dictionnaire 'acces' contient le chemin xpath relatif à
+        # l'attribut attr et éventuellement le nom d'une fonction de
+        # post-traitement. Celle-ci sert à mettre en 'forme' la valeur
+        # lue (nécessairement de type string) pour l'usage auquel elle
+        # est destinée. 'acces' contient également la valeur à
+        # renvoyer dans le cas où le noeud n'existe pas (valeur par
+        # défaut).
         try:
             result = cand.xpath(cls.acces[attr]['query'])[0].text
             if 'post' in cls.acces[attr]:
                 result = cls.acces[attr]['post'](result)
-            if not(result):
+            if not result:
                 result = cls.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
         except:
             try:
@@ -56,13 +73,17 @@ class Fichier(object):
 
     @classmethod
     def set(cls, cand, attr, value):
-        """ mutateur : écrit le contenu d'un noeud xml
-         cand est un etree.Element pointant un candidat
-         attr est une clé du dictionnaire 'acces' défini ci-dessus
-         value est la valeur à écrire dans le noeud choisi.
-         Si le noeud n'existe pas, la fonction accro_branch (ci-après) reconstituera l'arborescence manquante. """
-         # 'acces' contient éventuellement une le nom d'une fonction de pré-traitement. Celle-ci sert à préparer la
-         # valeur à être stockée dans le fichier xml.
+        """mutateur : écrit le contenu d'un noeud xml cand est un
+         etree.Element pointant un candidat attr est une clé du
+         dictionnaire 'acces' défini ci-dessus value est la valeur à
+         écrire dans le noeud choisi.  Si le noeud n'existe pas, la
+         fonction accro_branch (ci-après) reconstituera l'arborescence
+         manquante.
+        """
+
+         # 'acces' contient éventuellement une le nom d'une fonction
+         # de pré-traitement. Celle-ci sert à préparer la valeur à
+         # être stockée dans le fichier xml.
         query = cls.acces[attr]['query']
         if 'pre' in cls.acces[attr]:
             value = cls.acces[attr]['pre'](value)
@@ -77,16 +98,25 @@ class Fichier(object):
 
     @classmethod
     def _accro_branche(cls, cand, pere, fils):
-        """ Reconstruction d'une arborescence incomplète. On procède
-        de manière récursive en commençant par l'extrémité (les feuilles !)...
+        """Reconstruction d'une arborescence incomplète. On procède de manière
+        récursive en commençant par l'extrémité (les feuilles !)...
         pere est un chemin (xpath) et fils un etree.Element
-        ATTENTION : il ne faut pas d'espaces superflues dans la chaine pere. """
+
+        ATTENTION : il ne faut pas d'espaces superflues dans la chaine
+        pere.
+
+        """
+
         if cand.xpath(pere) != []: # test si pere est une branche existante
             cand.xpath(pere)[0].append(fils) # si oui, on accroche le fils
         else: # sinon on créé le père et on va voir le grand-père
-            node = pere.split('/')[-1] # récupération du dernier champ du chemin
-            if 'Chimie' == node[0:6]: node=pere.split('/')[-2]+'/'+node # un traitement
-            # particulier quand le champ contient (Physique/Chimie)
+
+            # récupération du dernier champ du chemin
+            node = pere.split('/')[-1]
+
+             # un traitement particulier quand le champ contient (Physique/Chimie)
+            if node.startswith('Chimie'):
+                node=pere.split('/')[-2]+'/'+node
             grand_pere = parse('{}/' + node, pere)[0] # le reste du chemin est le grand-pere
             # analyse et création du père avec tous ses champs...
             noeuds = parse('{}[{}]', node)
@@ -94,8 +124,7 @@ class Fichier(object):
                 noeuds = [node]
             pere = etree.Element(noeuds[0])
             if noeuds != [node]: # le père a d'autres enfants
-                list = noeuds[1].split('][')
-                for li in list:
+                for li in noeuds[1].split(']['):
                     dico = parse('{nom}="{val}"', li)
                     el = etree.Element(dico['nom'])
                     el.text = dico['val']
@@ -106,16 +135,17 @@ class Fichier(object):
     @classmethod
     def is_cpes(cls, cand):
         """ Renvoie True si le candidat est en CPES """
-        return ('cpes' in cls.get(cand, 'Classe actuelle').lower())
+        return 'cpes' in cls.get(cand, 'Classe actuelle').lower()
 
     @classmethod
     def is_math_expertes(cls, cand):
-        """ Renvoie True si le candidat a au moins une note d'option math expertes """
+        """Renvoie True si le candidat a au moins une note d'option math
+        expertes
+        """
+
         expert = False # initialisation
         # Construction de l'ensemble des champs à vérifier
-        champs = set(['Mathématiques Expertes Terminale {}'.format(da) \
-                for da in ['trimestre 1', 'trimestre 2', 'trimestre 3']\
-                ])
+        champs = {'Mathématiques Expertes Terminale trimestre {}'.format(j) for j in range(1,4)}
 
         # Dès qu'un champ est renseigné on arrête et renvoie True
         while len(champs) > 0:
@@ -127,29 +157,34 @@ class Fichier(object):
 
     @classmethod
     def is_premiere_semestrielle(cls, cand):
-        """ Renvoie True si le candidat est noté en 
-        semestres en première """
-        return (cls.get(cand, 'Première semestrielle') == '1')
+        """Renvoie True si le candidat est noté en semestres en première
+
+        """
+        return cls.get(cand, 'Première semestrielle') == '1'
 
     @classmethod
     def is_terminale_semestrielle(cls, cand):
-        """ Renvoie True si le candidat est noté en 
-        semestres en terminale """
-        return (cls.get(cand, 'Terminale semestrielle') == '1')
+        """Renvoie True si le candidat est noté en semestres en terminale
+
+        """
+        return cls.get(cand, 'Terminale semestrielle') == '1'
 
     @classmethod
     def is_complet(cls, cand):
-        """ Renvoie True si tous les éléments nécessaires à un calcul correct du score brut sont présents """
-        # Cette fonction est appelée dans nettoie.py. Si elle renvoie False, une alerte est mise en place et l'admin
-        # doit faire tout ce qu'il peut pour la lever..
-        # Les éléments à vérifier sont lus dans parametres.py (coef...)
-        # Construction de l'ensemble des champs à vérifier
+        """Renvoie True si tous les éléments nécessaires à un calcul correct
+        du score brut sont présents"""
+
+        # Cette fonction est appelée dans nettoie.py. Si elle renvoie
+        # False, une alerte est mise en place et l'admin doit faire
+        # tout ce qu'il peut pour la lever..  Les éléments à vérifier
+        # sont lus dans parametres.py (coef...)  Construction de
+        # l'ensemble des champs à vérifier
         champs = set()
         if cls.is_cpes(cand):
-            coefs = coef_cpes 
+            coefs = coef_cpes
             term = False
         else:
-            coefs = coef_term 
+            coefs = coef_term
             term = True
 
         for key, coef in coefs.items():
@@ -158,7 +193,7 @@ class Fichier(object):
             # on ajoute à champ si coef non nul, si
             # math_expertes et option du candidat et si
             # les trimestres 'ne sont pas' des semestres
-            if coef == 0: 
+            if coef == 0:
                 ajout = False
 
             if 'expertes' in key.lower() and  not cls.is_math_expertes(cand):
@@ -170,7 +205,8 @@ class Fichier(object):
             if 'terminale trimestre 3' in key.lower() and cls.is_terminale_semestrielle(cand):
                 ajout = False
 
-            if term and cls.is_terminale_semestrielle(cand) and 'terminale trimestre 2' in key.lower():
+            if term and cls.is_terminale_semestrielle(cand) \
+                             and 'terminale trimestre 2' in key.lower():
                 ajout = False
 
             if ajout:
@@ -180,7 +216,9 @@ class Fichier(object):
         complet = True # initialisation
         if cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['defaut']:
             complet = False
-        while complet and len(champs) > 0: # Dès qu'un champ manque à l'appel on arrête et renvoie False
+
+        # Dès qu'un champ manque à l'appel on arrête et renvoie False
+        while complet and len(champs) > 0:
             ch = champs.pop()
             if cls.get(cand, ch) == cls.acces[ch]['defaut']: # note non renseignée ?
                 complet = False
@@ -223,7 +261,7 @@ class Fichier(object):
                     coef[key.replace('trimestre 3', 'trimestre 2')] += val/2
 
         # Il y a aussi des reports si le candidat ne suit pas l'option math expertes
-        if not(cls.is_math_expertes(cand)):
+        if not cls.is_math_expertes(cand):
             for key,val in coef.items():
                 if 'Expertes' in key:
                     coef[key.replace('Expertes', 'Spécialité')] += val
@@ -277,47 +315,83 @@ class Fichier(object):
     # et il PEUT contenir :
     #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
     #       une clé 'post' donnant une fonction de post-traitement (après get).
-    acces = {
-        'Nom'                   : {'query' : 'nom', 'defaut' : '?'},
-        'Prénom'                : {'query' : 'prénom', 'defaut' : '?'},
-        'Sexe'                  : {'query' : 'sexe', 'defaut' : '?'},
-        'Date de naissance'     : {'query' : 'naissance', 'defaut' : '?'},
-        'Classe actuelle'       : {'query' : 'synoptique/classe', 'defaut' : '?'},
-        'Num ParcoursSup'       : {'query' : 'id_apb', 'defaut' : '?'},
-        'INE'                   : {'query' : 'INE', 'defaut' : '?'},
-        'Nationalité'           : {'query' : 'nationalité', 'defaut' : '?'},
-        'Boursier'              : {'query' : 'boursier', 'defaut' : '?'},
-        'Boursier certifié'     : {'query' : 'boursier_certifie', 'defaut' :'?'},
-        'Établissement'         : {'query' : 'synoptique/établissement/nom', 'defaut' : '?'},
-        'Commune'               : {'query' : 'synoptique/établissement/ville', 'defaut' : '?'},
-        'Département'           : {'query' : 'synoptique/établissement/département', 'defaut' : '?'},
-        'Pays'                  : {'query' : 'synoptique/établissement/pays', 'defaut' : '?'},
-        'Écrit EAF'             : {'query' : 'synoptique/français.écrit', 'defaut' : '-', 'pre' : not_note, 'post' : convert},
-        'Oral EAF'              : {'query' : 'synoptique/français.oral', 'defaut' : '-', 'pre' : not_note, 'post' : convert},
-        'Candidatures'          : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'pre' : formate_candid},
-        'Candidatures impr'     : {'query' : 'diagnostic/candidatures', 'defaut' : '???', 'post' : formate_impr_candid},
-        'Première semestrielle' : {'query' : 'bulletins/bulletin[classe="Première"]/semestriel', 'defaut' : '0'},
-        'Terminale semestrielle': {'query' : 'bulletins/bulletin[classe="Terminale"]/semestriel', 'defaut' : '0'},
-        'traité'                : {'query' : 'diagnostic/traité', 'defaut' : False},
-        'Jury'                  : {'query' : 'diagnostic/jury', 'defaut' : 'Auto', 'pre' : formate_jury},
-        'Motifs'                : {'query' : 'diagnostic/motifs', 'defaut' : ''},
-        'Score brut'            : {'query' : 'diagnostic/score', 'defaut' : ''},
-        'Correction'            : {'query' : 'diagnostic/correc', 'defaut' : '0'},
-        'Score final'           : {'query' : 'diagnostic/scoref', 'defaut' : ''},
-        'Rang brut'             : {'query' : 'diagnostic/rangb', 'defaut' : '?'},
-        'Rang final'            : {'query' : 'diagnostic/rangf', 'defaut' : '?'}
-    }
+    acces = init_acces()
+
+    @staticmethod
+    def init_acces():
+        "Crée le dictionnaire d'accès"
+
+        res = {
+            'Nom'                   : {'query' : 'nom'},
+            'Prénom'                : {'query' : 'prénom'},
+            'Sexe'                  : {'query' : 'sexe'},
+            'Date de naissance'     : {'query' : 'naissance'},
+            'Classe actuelle'       : {'query' : 'synoptique/classe'},
+            'Num ParcoursSup'       : {'query' : 'id_apb'},
+            'INE'                   : {'query' : 'INE'},
+            'Nationalité'           : {'query' : 'nationalité'},
+            'Boursier'              : {'query' : 'boursier'},
+            'Boursier certifié'     : {'query' : 'boursier_certifie'},
+            'Établissement'         : {'query' : 'synoptique/établissement/nom'},
+            'Commune'               : {'query' : 'synoptique/établissement/ville'},
+            'Département'           : {'query' : 'synoptique/établissement/département'},
+            'Pays'                  : {'query' : 'synoptique/établissement/pays'},
+            'Écrit EAF'             : {'query' : 'synoptique/français.écrit',
+                                       'defaut' : '-',
+                                       'pre' : not_note,
+                                       'post' : convert},
+            'Oral EAF'              : {'query' : 'synoptique/français.oral',
+                                       'defaut' : '-',
+                                       'pre' : not_note,
+                                       'post' : convert},
+            'Candidatures'          : {'query' : 'diagnostic/candidatures',
+                                       'defaut' : '???',
+                                       'pre' : formate_candid},
+            'Candidatures impr'     : {'query' : 'diagnostic/candidatures',
+                                       'defaut' : '???',
+                                       'post' : formate_impr_candid},
+            'Première semestrielle' : {'query' : 'bulletins/bulletin[classe="Première"]/semestriel',
+                                       'defaut' : '0'},
+            'Terminale semestrielle': {'query' : 'bulletins/bulletin[classe="Terminale"]/semestriel',
+                                       'defaut' : '0'},
+            'traité'                : {'query' : 'diagnostic/traité',
+                                       'defaut' : False},
+            'Jury'                  : {'query' : 'diagnostic/jury',
+                                       'defaut' : 'Auto',
+                                       'pre' : formate_jury},
+            'Motifs'                : {'query' : 'diagnostic/motifs',
+                                       'defaut' : ''},
+            'Score brut'            : {'query' : 'diagnostic/score',
+                                       'defaut' : ''},
+            'Correction'            : {'query' : 'diagnostic/correc',
+                                       'defaut' : '0'},
+            'Score final'           : {'query' : 'diagnostic/scoref',
+                                       'defaut' : ''},
+            'Rang brut'             : {'query' : 'diagnostic/rangb'},
+            'Rang final'            : {'query' : 'diagnostic/rangf'},
+        }
+
+        for val in res.values():
+            if not 'default' in val:
+                val['default'] = '?'
+
+        return res
+
     # Pour les notes du lycée :
-    matiere = ['Mathématiques', 'Mathématiques Spécialité', 'Mathématiques Expertes',\
-                    'Physique/Chimie', 'Physique-Chimie Spécialité']
+    matiere = ['Mathématiques',
+               'Mathématiques Spécialité',
+               'Mathématiques Expertes',
+               'Physique/Chimie',
+               'Physique-Chimie Spécialité']
     date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
     classe = ['Première', 'Terminale']
     for cl in classe:
         for mat in matiere:
             for da in date:
                 key = '{} {} {}'.format(mat, cl, da)
-                query = 'bulletins/bulletin[classe="{}"]/matières/matière[intitulé="{}"][date="{}"]/note'.format(\
-                        cl, mat, da)
+                query_classe = f'bulletins/bulletin[classe="{cl}"]'
+                query_mat = f'{query_classe}/matières/matière[intitulé="{mat}"]'
+                query = f'{query_mat}[date="{da}"]/note'
                 acces[key] = {'query' : query, 'defaut' : '-', 'pre' : not_note, 'post' : convert}
     # Pour les notes CPES :
     for mat in matiere:
@@ -372,7 +446,8 @@ class Fichier(object):
         # À n'utiliser que sur des fichiers contenant le candidat ('cand in fichier' True)
         # Utile de la rendre plus robuste (gérer l'erreur si 'cand in fichier' False) ?
         index = 0
-        while Fichier.get(cand, 'Num ParcoursSup') != Fichier.get(self._dossiers[index], 'Num ParcoursSup'):
+        fich_cand = Fichier.get(cand, 'Num ParcoursSup')
+        while fich_cand != Fichier.get(self._dossiers[index], 'Num ParcoursSup'):
             index += 1
         return self._dossiers[index]
 
@@ -391,7 +466,8 @@ class Fichier(object):
         """ renvoie une liste des candidatures ordonnées selon le critère demandé
         (critère appartenant à l'attribut de classe _critere_tri) """
         # Classement par age
-        doss = sorted(self._dossiers, key = lambda cand: self.convert(Fichier.get(cand, 'Date de naissance')))
+        tri = lambda cand: self.convert(Fichier.get(cand, 'Date de naissance'))
+        doss = sorted(self._dossiers, key = tri)
         # puis par critere
         return sorted(doss, key = Fichier._criteres_tri[critere])
 
