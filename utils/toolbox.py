@@ -85,40 +85,37 @@ def format_jury(jury):
     return jury
 
 ## Fonction de découpage du fichier pdf
-def decoup(sourc, dest):
+def decoup(src, dest):
     """découpage du fichier pdf en autant de fichiers que de candidats
-    sourc: fichier source
-    dest: dossier destination"""
+    src: nom du fichier source
+    dest: nom du dossier de destination"""
+
     # précompilation de la requête pour gagner en vitesse
     regex = compile('{}Dossier n°{id:d}{}Page {page:d}')
-    file_obj = open(sourc, 'rb')
-    reader = PyPDF2.PdfFileReader(file_obj)
-    id_cand = -1
+    with open(src, 'rb') as file_obj:
+        reader = PyPDF2.PdfFileReader(file_obj)
+        id_cand = -1
         # pour le candidat -1, au lieu de faire un cas particulier
-    writer = PyPDF2.PdfFileWriter()
-    for page in range(reader.numPages):
-        # récupération de la page courante
-        page_obj = reader.getPage(page)
-        # puis de son texte brut
-        txt = page_obj.extractText()
-        # et enfin, numéro de dossier et page
-        res = regex.parse(txt)
-        if res or page == reader.numPages-1:
-            # est-ce un changement de candidat?
-            if (id_cand != res['id']
-                    or page == reader.numPages-1):
-                nom = os.path.join (dest, 'docs_{}.pdf'.format(id_cand))
-                output_file = open(nom, 'wb')
-                # sinon il en manque un bout
-                if page == reader.numPages-1:
-                    writer.addPage(page_obj)
-                # écrasement de tout fichier existant!!
-                writer.write(output_file)
-                output_file.close()
-                # réinitialisations
-                writer = PyPDF2.PdfFileWriter()
-                id_cand = res['id']
-            writer.addPage(page_obj)
+        writer = PyPDF2.PdfFileWriter()
+        for page_num in range(reader.numPages):
+            page = reader.getPage(page_num)
+            txt = page.extractText()
+            res = regex.parse(txt)
+            if res or page_num == reader.numPages-1:
+                # si c'est un changement de candidat ou la fin du fichier
+                if (id_cand != res['id']
+                    or page_num == reader.numPages-1):
+                    nom = os.path.join(dest, f'docs_{id_cand}.pdf')
+                    with open(nom, 'wb') as output_file:
+                        # sinon il en manque un bout
+                        if page_num == reader.numPages-1:
+                            writer.addPage(page)
+                        # écrasement de tout fichier existant!!
+                        writer.write(output_file)
+                        # réinitialisations
+                        writer = PyPDF2.PdfFileWriter()
+                        id_cand = res['id']
+                        writer.addPage(page)
     os.remove(os.path.join(dest, 'docs_-1.pdf'))
 
 ############## Manipulation de répertoires
