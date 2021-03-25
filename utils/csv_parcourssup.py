@@ -1,6 +1,11 @@
-# pylint: disable=I1101,C0114,C0115,C0116
+# pylint: disable=I1101
 # I1101 car c'est lxml qui le déclenche beaucoup
-# C0114, C0115 et C0116 parce que tout ça manque de docstrings
+
+"""Ce module fournit des fonctions pour lire un fichier csv exporté
+par ParcoursSup et reformater ses données au format XML, qu'il peut
+alors sauver.
+
+"""
 
 # Pour lire le csv de parcourssup, il faut commencer par regarder la
 # première ligne et identifier dans l'ordre les différents
@@ -81,6 +86,11 @@ from utils.toolbox import num_to_col
 #
 
 class Etape(Enum):
+    """Cette classe fournit une énumération des grandes étapes pour
+    l'automate à états de la lecture.
+
+    """
+
     GENERALITES = 1
     SYNOPTIQUE = 2
     BULLETINS = 3
@@ -101,6 +111,11 @@ class Etape(Enum):
 #
 
 def clore_candidat(etat, ligne):
+    """"Ce lecteur sert à finaliser le candidat qui était en construction
+    et à l'ajouter dans la liste des candidats connus.
+
+    """
+
     if etat['test']:
         print('clore_candidat')
     etat = clore_bulletin(etat, ligne)
@@ -109,6 +124,11 @@ def clore_candidat(etat, ligne):
     return etat
 
 def clore_bulletin(etat, ligne):
+    """Ce lecteur sert à finaliser le bulletin qui était en construction
+    et à l'ajouter à la liste.
+
+    """
+
     if etat['test']:
         print('clore_bulletin')
     etat = clore_matiere(etat, ligne)
@@ -128,6 +148,11 @@ def clore_bulletin(etat, ligne):
     return etat
 
 def clore_etablissement(etat, _ligne):
+    """Ce lecteur sert à finaliser la description de l'établissement telle
+    qu'on peut la trouver dans la fiche synoptique ou les bulletins.
+
+    """
+
     if etat['test']:
         print('clore_etablissement')
 
@@ -138,12 +163,18 @@ def clore_etablissement(etat, _ligne):
         synoptique = etat['candidat'].xpath('synoptique')[0]
         synoptique.append(etat['établissement'])
     else:
+        # FIXME: en trouve-t-on encore dans les bulletins!?
         etat['bulletin'].append(etat['établissement'])
     etat['établissement'] = nouvel_etablissement()
 
     return etat
 
 def clore_matiere(etat, _ligne):
+    """Ce lecteur sert à finaliser la lecture des informations sur une
+    matière dans la fiche synoptique ou dans un bulletin.
+
+    """
+
     if list(etat['matière']) == []:
         if etat['test']:
             print('clore_matiere (triviale)')
@@ -162,14 +193,24 @@ def clore_matiere(etat, _ligne):
     return etat
 
 def transition_etape(etat, _ligne, val):
+    """Ce lecteur procède à un changement d'état de l'automate de lecture
+    d'une ligne d'une grande étape à une autre. Il ne lit pas...
+
+    """
     if etat['test']:
         print('transition_etape vers {0:s}'.format(val))
     etat['étape'] = val
     return etat
 
 def lecteur_note(etat, ligne, colonne, intitule, nature, _valeur):
-    # nature peut par exemple être une 'plus petite', 'plus grande',
-    # mais aussi 'rang' ou 'effectif', par exemple
+    """Ce lecteur récupère une valeur portée dans une colonne ; il sait à
+    quelle matière elle correspond (intitule) ainsi que sa nature
+    (cela peut être une moyenne 'candidat', 'classe', 'plus
+    petite'... mais aussi 'rang' ou 'effectif', donc ce n'est pas
+    forcément une note!).
+
+    """
+
     if etat['test']:
         print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(num_to_col(colonne+1),
                                                           intitule, nature))
@@ -185,8 +226,12 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, _valeur):
 
     return etat
 
-# ce lecteur lit directement dans une colonne une des informations principales
 def lecteur_direct(etat, ligne, colonne, nom, champ):
+    """Ce lecteur récupère directement une information principale dans une
+    colonne (pas une information secondaire qui va aller dans un
+    sous-arbre).
+
+    """
     if etat['test']:
         print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(num_to_col(colonne+1),
                                                             nom, champ))
@@ -198,9 +243,13 @@ def lecteur_direct(etat, ligne, colonne, nom, champ):
         fils.text = ligne[colonne]
     return etat
 
-# ce lecteur écrit une constante à un endroit donné (le nom de la
-# matière est dans l'entête de la colonne, pas sur la ligne, par exemple)
 def lecteur_fixe(etat, _ligne, nom, champ, valeur):
+    """Ce lecteur écrit une information qui a été notée ; par exemple le
+    nom d'une matière, qui n'apparaît que dans l'entête de la colonne
+    et pas sur la ligne courante.
+
+    """
+
     if etat['test']:
         print('lecteur_fixe ({0:s}, {1:s}) = {2:s}'.format(nom, champ, valeur))
     # si on a déjà l'info, inutile de la remettre
@@ -212,6 +261,11 @@ def lecteur_fixe(etat, _ligne, nom, champ, valeur):
     return etat
 
 def lecteur_synoptique(etat, ligne, colonne, champ):
+    """Ce lecteur récupère une information générale dans le tableau qui a
+    trait à la fiche synoptique.
+
+    """
+
     if etat['test']:
         print('lecteur_synoptique[{0:s}] ({1:s})'.format(num_to_col(colonne+1),
                                                          champ))
@@ -222,6 +276,11 @@ def lecteur_synoptique(etat, ligne, colonne, champ):
     return etat
 
 def lecteur_type_scolarite(etat, ligne, colonne):
+    """Ce lecteur détecte si la scolarité est trimestrielle ou
+    semestrielle.
+
+    """
+
     if etat['test']:
         print('lecteur_type_scolarite[{0:s}] ({1:s})'.format(num_to_col(colonne+1),
                                                              ligne[colonne]))
@@ -244,6 +303,10 @@ def lecteur_type_scolarite(etat, ligne, colonne):
 #
 
 def nouveau_candidat():
+    """Cette fonction crée un nouveau nœud XML pour décrire un candidat,
+    avec des sous-arbres prêts à accueillir les données.
+
+    """
     res = etree.Element('candidat')
     etree.SubElement(res, 'bulletins')
     fils = etree.SubElement(res, 'synoptique')
@@ -254,23 +317,28 @@ def nouveau_candidat():
     return res
 
 def nouvel_etablissement():
+    """Cette fonction crée un nouveau nœud XML pour décrire un établissement"""
     return etree.Element('établissement')
 
 def nouveau_bulletin():
+    """Cette fonction crée un nouveau nœud XML pour décrire un bulletin"""
     res = etree.Element('bulletin')
     etree.SubElement(res, 'matières')
     return res
 
 def nouvelle_matiere():
+    """Cette fonction crée un nouveau nœud XML pour décrire une matière"""
     return etree.Element('matière')
 
 #
 # IMPLÉMENTATION DE LA RECONNAISSANCE DES CHAMPS
 #
 
-# Premier groupe de colonnes : les informations générales
-
 def prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test = False):
+    """Cette fonction reconnaît le premier groupe de colonnes, qui
+    contient les informations générales.
+
+    """
     lecteurs.append(lambda e, l: transition_etape(e, l, Etape.GENERALITES))
     if test:
         print('Début de la lecture des informations générales')
@@ -314,8 +382,11 @@ def prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test = Fa
 
     return colonne
 
-# Second groupe de colonnes : la fiche synoptique
 def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
+    """Cette fonction reconnaît le second groupe de colonnes, qui contient
+    les informations de la fiche synoptique
+
+    """
     lecteurs.append(lambda e, l: transition_etape(e, l, Etape.SYNOPTIQUE))
     if test:
         print('Début de la lecture de la fiche synoptique')
@@ -444,6 +515,10 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
     return colonne
 
 def prepare_lecteurs_bulletins(champs, lecteurs, colonne, test = False):
+    """Cette fonction reconnaît les derniers groupes de colonnes, sont
+    successivement les différents bulletins.
+
+    """
     if test:
         print('Début de la lecture des bulletins')
     lecteurs.append(lambda e, l: transition_etape(e, l, Etape.BULLETINS))
@@ -531,8 +606,10 @@ def prepare_lecteurs_bulletins(champs, lecteurs, colonne, test = False):
     return colonne
 
 def prepare_lecteurs(champs, test = False):
-    """Reçoit la liste des chaînes de la première ligne et renvoie la
-    liste des lecteurs qui seront capables d'interpréter les autres lignes
+    """Cette fonction reçoit la liste des chaînes de la première ligne et
+    renvoie la liste des lecteurs qui seront capables d'interpréter
+    les autres lignes ; elle appelle donc successivement les
+    différentes autres fonction prepare_*.
 
     """
 
@@ -559,8 +636,14 @@ def prepare_lecteurs(champs, test = False):
 
     return lecteurs
 
-# cette fonction a le beau rôle : elle n'a presque plus rien à faire!
 def execute_lecteurs(lecteurs, lignes, test = False):
+    """Cette fonction est responsable de la lecture de toutes les lignes
+    après la première : elle fait simplement tourner l'automate décrit
+    par la liste des lecteurs obtenue à l'étape de reconnaissance des
+    colonnes, ce qui construit au fur et à mesure le document XML
+    décrivant les candidats.
+
+    """
 
     # définition de l'état initial
     etat = dict()
@@ -580,6 +663,10 @@ def execute_lecteurs(lecteurs, lignes, test = False):
     return etat['candidats']
 
 def lire(nom, test = False):
+    """Cette fonction lit un fichier CSV obtenu de ParcoursSup et renvoie
+    un document XML contenant les mêmes données.
+
+    """
     with open(nom, encoding='utf-8-sig') as fich:
         reader = csv.reader(fich, delimiter=';')
         lecteurs = prepare_lecteurs(next(reader), test)
