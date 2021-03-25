@@ -58,17 +58,15 @@ class Fichier:
         # est destinée. 'acces' contient également la valeur à
         # renvoyer dans le cas où le noeud n'existe pas (valeur par
         # défaut).
+        cls_attr = cls.acces[attr]
         try:
-            result = cand.xpath(cls.acces[attr]['query'])[0].text
-            if 'post' in cls.acces[attr]:
-                result = cls.acces[attr]['post'](result)
-            if not result:
-                result = cls.acces[attr]['defaut'] # évite un retour None si le champ est <blabla/>
+            result = cand.xpath(cls_attr['query'])[0].text
+            if 'post' in cls_attr:
+                result = cls_attr['post'](result)
         except:
-            try:
-                result = cls.acces[attr]['defaut']
-            except:
-                result = 'ND' # ne devrait pas arriver 'NOT DEFINED'
+            result = None
+        if not result:
+            result = cls_attr['defaut'] # init_acces garantit que ça marche
         return result
 
     @classmethod
