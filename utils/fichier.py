@@ -182,40 +182,36 @@ class Fichier:
         champs = set()
         if cls.is_cpes(cand):
             coefs = coef_cpes
-            term = False
+            en_term = False
         else:
             coefs = coef_term
-            term = True
+            en_term = True
 
         for key, coef in coefs.items():
-            ajout = True
 
             # on ajoute à champ si coef non nul, si
             # math_expertes et option du candidat et si
             # les trimestres 'ne sont pas' des semestres
-            if coef == 0:
-                ajout = False
 
-            if 'expertes' in key.lower() and  not cls.is_math_expertes(cand):
-                ajout = False
-
-            if 'première trimestre 3' in key.lower() and cls.is_premiere_semestrielle(cand):
-                ajout = False
-
-            if 'terminale trimestre 3' in key.lower() and cls.is_terminale_semestrielle(cand):
-                ajout = False
-
-            if term and cls.is_terminale_semestrielle(cand) \
-                             and 'terminale trimestre 2' in key.lower():
-                ajout = False
+            ajout = not coef == 0
+            ajout = ajout \
+                and not ('expertes' in key.lower() \
+                         and not cls.is_math_expertes(cand))
+            ajout = ajout \
+                and not ('première trimestre 3' in key.lower() \
+                         and cls.is_premiere_semestrielle(cand))
+            ajout = ajout \
+                and not ('terminale trimestre 3' in key.lower() \
+                         and cls.is_terminale_semestrielle(cand))
+            ajout = ajout \
+                and not (en_term and cls.is_terminale_semestrielle(cand) \
+                         and 'terminale trimestre 2' in key.lower())
 
             if ajout:
                 champs.add(key)
 
         # Tests :
-        complet = True # initialisation
-        if cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['defaut']:
-            complet = False
+        complet = not cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['defaut']
 
         # Dès qu'un champ manque à l'appel on arrête et renvoie False
         while complet and len(champs) > 0:
