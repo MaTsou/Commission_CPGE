@@ -169,7 +169,7 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, _valeur):
     # nature peut par exemple être une 'plus petite', 'plus grande',
     # mais aussi 'rang' ou 'effectif', par exemple
     if etat['test']:
-        print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(n2c(colonne+1),
+        print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(num_vers_col(colonne+1),
                                                           intitule, nature))
 
     intitules = etat['matière'].xpath('intitulé')
@@ -186,7 +186,7 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, _valeur):
 # ce lecteur lit directement dans une colonne une des informations principales
 def lecteur_direct(etat, ligne, colonne, nom, champ):
     if etat['test']:
-        print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(n2c(colonne+1),
+        print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(num_vers_col(colonne+1),
                                                             nom, champ))
     # inutile de récupérer plusieurs fois la même information
     if etat[nom].xpath(champ) != []:
@@ -211,7 +211,7 @@ def lecteur_fixe(etat, _ligne, nom, champ, valeur):
 
 def lecteur_synoptique(etat, ligne, colonne, champ):
     if etat['test']:
-        print('lecteur_synoptique[{0:s}] ({1:s})'.format(n2c(colonne+1),
+        print('lecteur_synoptique[{0:s}] ({1:s})'.format(num_vers_col(colonne+1),
                                                          champ))
     if ligne[colonne] != '':
         synoptique = etat['candidat'].xpath('synoptique')[0]
@@ -221,7 +221,7 @@ def lecteur_synoptique(etat, ligne, colonne, champ):
 
 def lecteur_type_scolarite(etat, ligne, colonne):
     if etat['test']:
-        print('lecteur_type_scolarite[{0:s}] ({1:s})'.format(n2c(colonne+1),
+        print('lecteur_type_scolarite[{0:s}] ({1:s})'.format(num_vers_col(colonne+1),
                                                              ligne[colonne]))
 
     sem = etat['bulletin'].xpath('semestriel')
@@ -301,7 +301,7 @@ def prepare_lecteurs(champs, test = False):
 
         if champs[colonne] in directs:
             if test:
-                print('Colonne {0:s}: généralité ({1:s})'.format(n2c(colonne+1),
+                print('Colonne {0:s}: généralité ({1:s})'.format(num_vers_col(colonne+1),
                                                                  champs[colonne]))
             lecteurs.append(lambda e,l, a=colonne, b=directs[champs[colonne]]:
                             lecteur_direct(e, l, a, 'candidat', b))
@@ -316,7 +316,7 @@ def prepare_lecteurs(champs, test = False):
         # courante dans cette étape ni comme le début de l'étape
         # suivante: à ignorer!
         if test:
-            print('Colonne {0:s}: à ignorer ({1:s})'.format(n2c(colonne+1),
+            print('Colonne {0:s}: à ignorer ({1:s})'.format(num_vers_col(colonne+1),
                                                             champs[colonne]))
         # pas de lecteurs.append ici, logiquement!
         colonne = colonne + 1
@@ -357,7 +357,7 @@ def prepare_lecteurs(champs, test = False):
     matiere = ''
     while colonne < len(champs):
 
-        n_col = n2c(colonne+1)
+        n_col = num_vers_col(colonne+1)
         titre = champs[colonne]
 
         # Cas particulier : cette colonne est une généralité sur le
@@ -494,7 +494,7 @@ def prepare_lecteurs(champs, test = False):
     while colonne < len(champs):
 
         titre = champs[colonne]
-        n_col = n2c(colonne+1)
+        n_col = num_vers_col(colonne+1)
 
         # on reconnaît le début d'un bulletin à son année
         if titre in ['Année', 'Année scolaire']:
@@ -577,7 +577,7 @@ def prepare_lecteurs(champs, test = False):
     # une colonne qu'on ne connaissait pas: on sort en vitesse, il va
     # falloir adapter le code!
     if colonne < len(champs) and test:
-        print('Il reste des colonnes non traitées à partir de la {0:s}!'.format(n2c(colonne+1)))
+        print(f'Il reste des colonnes non traitées à partir de la {num_vers_col(colonne+1)}!')
         sys.exit(-1)
 
     if test:
@@ -620,7 +620,7 @@ def lire(nom, test = False):
 # FONCTIONS DIVERSES
 #
 
-def n2c(num):
+def num_vers_col(num):
     'Convertit un numéro de colonne vers son nom dans un tableur'
     res = ''
     while num > 0:
