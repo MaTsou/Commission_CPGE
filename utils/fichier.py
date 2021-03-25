@@ -265,7 +265,7 @@ class Fichier:
         for key, val in coef.items():
             note = cls.get(cand, key)
             if note != cls.acces[key]['defaut']:
-                somme += vers_num(note)*val
+                somme += str_to_num(note)*val
                 poids += val
         if poids != 0:
             scoreb = somme/poids

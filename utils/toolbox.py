@@ -19,20 +19,20 @@ def num_to_col(num):
         num = (num-mod) // 26
     return res
 
+def str_to_num(string):
+    "Convertit une chaîne contenant un nombre à virgule en flottant"
+    return float(string.replace(',','.'))
+
 ## Méthodes de pré-traitement et de post-traitement utilisées dans les fonctions get et set de la classe Fichier.
 # accompagnées de fonctions de conversion utiles à la classe Fichier
 def isnote(note):
     """ Teste si 'note' est bien un réel compris entre 0 et 20 """
     bool = True
     try:
-        vers_num(note)
+        str_to_num(note)
     except:
         bool = False
-    return bool and vers_num(note)>=0 and vers_num(note)<=20
-
-def vers_num(str):
-    """ Transforme une chaîne contenant un nombre en un float """
-    return float(str.replace(',','.'))
+    return bool and str_to_num(note)>=0 and str_to_num(note)<=20
 
 def vers_str(num):
     """ Convertit un nombre en une chaîne formatée à 2 décimales """
@@ -47,7 +47,7 @@ def not_note(note):
 def convert(str):
     """ formate la chaine 'str' contenant un nombre.
     Intérêt seulement esthétique dans la page web """
-    return vers_str(vers_num(str))
+    return vers_str(str_to_num(str))
 
 def formate_candid(cc):
     """ transforme un mot binaire contenant les candidatures
