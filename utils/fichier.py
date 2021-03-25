@@ -225,7 +225,7 @@ class Fichier:
         # Si correction = 'NC', cela signifie que l'admin rejette le
         # dossier ; score nul d'office!
         if cls.get(cand, 'Correction') == 'NC': # candidat rejeté
-            cls.set(cand, 'Score brut', vers_str(0))
+            cls.set(cand, 'Score brut', num_to_str(0))
             return
 
         # Récupération des coefficients, en les copiant car si
@@ -274,7 +274,7 @@ class Fichier:
         # Bonus pour les cpes ou les math expertes...
         if (cls.is_cpes(cand) or cls.is_math_expertes(cand)):
             scoreb += 5
-        cls.set(cand, 'Score brut', vers_str(scoreb))
+        cls.set(cand, 'Score brut', num_to_str(scoreb))
 
     @classmethod
     def rang(cls, cand, dossiers, critere):

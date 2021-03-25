@@ -23,6 +23,10 @@ def str_to_num(string):
     "Convertit une chaîne contenant un nombre à virgule en flottant"
     return float(string.replace(',','.'))
 
+def num_to_str(num):
+    'Convertit un flottant en chaîne avec deux chiffres après la virgule'
+    return f'{num:.2f}'.replace('.', ',')
+
 ## Méthodes de pré-traitement et de post-traitement utilisées dans les fonctions get et set de la classe Fichier.
 # accompagnées de fonctions de conversion utiles à la classe Fichier
 def isnote(note):
@@ -34,10 +38,6 @@ def isnote(note):
         bool = False
     return bool and str_to_num(note)>=0 and str_to_num(note)<=20
 
-def vers_str(num):
-    """ Convertit un nombre en une chaîne formatée à 2 décimales """
-    return '{:5.2f}'.format(num).replace('.',',')
-
 def not_note(note):
     """ si note n'est pas une note, renvoie '-' """
     if not isnote(note):
@@ -47,7 +47,7 @@ def not_note(note):
 def convert(str):
     """ formate la chaine 'str' contenant un nombre.
     Intérêt seulement esthétique dans la page web """
-    return vers_str(str_to_num(str))
+    return num_to_str(str_to_num(str))
 
 def formate_candid(cc):
     """ transforme un mot binaire contenant les candidatures
