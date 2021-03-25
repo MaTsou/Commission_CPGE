@@ -334,15 +334,15 @@ class Fichier:
             'Écrit EAF'             : {'query' : 'synoptique/français.écrit',
                                        'defaut' : '-',
                                        'pre' : normalize_note,
-                                       'post' : str_to_num_to_str},
+                                       'post' : format_mark},
             'Oral EAF'              : {'query' : 'synoptique/français.oral',
                                        'defaut' : '-',
                                        'pre' : normalize_note,
-                                       'post' : str_to_num_to_str},
+                                       'post' : format_mark},
             'Candidatures'          : {'query' : 'diagnostic/candidatures',
-                                       'pre' : formate_candid},
+                                       'pre' : format_candidatures},
             'Candidatures impr'     : {'query' : 'diagnostic/candidatures',
-                                       'post' : formate_impr_candid},
+                                       'post' : format_candidatures_impr},
             'Première semestrielle' : {'query' : 'bulletins/bulletin[classe="Première"]/semestriel',
                                        'defaut' : '0'},
             'Terminale semestrielle': {'query' : 'bulletins/bulletin[classe="Terminale"]/semestriel',
@@ -351,7 +351,7 @@ class Fichier:
                                        'defaut' : False},
             'Jury'                  : {'query' : 'diagnostic/jury',
                                        'defaut' : 'Auto',
-                                       'pre' : formate_jury},
+                                       'pre' : format_jury},
             'Motifs'                : {'query' : 'diagnostic/motifs',
                                        'defaut' : ''},
             'Score brut'            : {'query' : 'diagnostic/score',
@@ -388,12 +388,12 @@ class Fichier:
                 acces[key] = {'query' : query,
                               'defaut' : '-',
                               'pre' : normalize_note,
-                              'post' : str_to_num_to_str}
+                              'post' : format_mark}
     # Pour les notes CPES :
     for mat in matiere:
         key = '{} CPES'.format(mat)
         query = 'synoptique/matières/matière[intitulé="{}"]/note'.format(mat)
-        acces[key] = {'query' : query, 'defaut' : '-', 'pre' : normalize_note, 'post' : str_to_num_to_str}
+        acces[key] = {'query' : query, 'defaut' : '-', 'pre' : normalize_note, 'post' : format_mark}
     ############## Fin attributs de classe ########
 
     ############# Méthodes d'instance #############
