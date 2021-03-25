@@ -74,7 +74,7 @@ from parse import parse
 
 from lxml import etree
 
-from utils.toolbox import num_vers_col
+from utils.toolbox import num_to_col
 
 #
 # DESCRIPTION DE L'ÉTAT
@@ -171,7 +171,7 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, _valeur):
     # nature peut par exemple être une 'plus petite', 'plus grande',
     # mais aussi 'rang' ou 'effectif', par exemple
     if etat['test']:
-        print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(num_vers_col(colonne+1),
+        print('lecteur_note[{0:s}] ({1:s}, {2:s})'.format(num_to_col(colonne+1),
                                                           intitule, nature))
 
     intitules = etat['matière'].xpath('intitulé')
@@ -188,7 +188,7 @@ def lecteur_note(etat, ligne, colonne, intitule, nature, _valeur):
 # ce lecteur lit directement dans une colonne une des informations principales
 def lecteur_direct(etat, ligne, colonne, nom, champ):
     if etat['test']:
-        print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(num_vers_col(colonne+1),
+        print('lecteur_direct[{0:s}] ({1:s}, {2:s})'.format(num_to_col(colonne+1),
                                                             nom, champ))
     # inutile de récupérer plusieurs fois la même information
     if etat[nom].xpath(champ) != []:
@@ -213,7 +213,7 @@ def lecteur_fixe(etat, _ligne, nom, champ, valeur):
 
 def lecteur_synoptique(etat, ligne, colonne, champ):
     if etat['test']:
-        print('lecteur_synoptique[{0:s}] ({1:s})'.format(num_vers_col(colonne+1),
+        print('lecteur_synoptique[{0:s}] ({1:s})'.format(num_to_col(colonne+1),
                                                          champ))
     if ligne[colonne] != '':
         synoptique = etat['candidat'].xpath('synoptique')[0]
@@ -223,7 +223,7 @@ def lecteur_synoptique(etat, ligne, colonne, champ):
 
 def lecteur_type_scolarite(etat, ligne, colonne):
     if etat['test']:
-        print('lecteur_type_scolarite[{0:s}] ({1:s})'.format(num_vers_col(colonne+1),
+        print('lecteur_type_scolarite[{0:s}] ({1:s})'.format(num_to_col(colonne+1),
                                                              ligne[colonne]))
 
     sem = etat['bulletin'].xpath('semestriel')
@@ -292,7 +292,7 @@ def prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test = Fa
 
         if champs[colonne] in directs:
             if test:
-                print('Colonne {0:s}: généralité ({1:s})'.format(num_vers_col(colonne+1),
+                print('Colonne {0:s}: généralité ({1:s})'.format(num_to_col(colonne+1),
                                                                  champs[colonne]))
             lecteurs.append(lambda e,l, a=colonne, b=directs[champs[colonne]]:
                             lecteur_direct(e, l, a, 'candidat', b))
@@ -307,7 +307,7 @@ def prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test = Fa
         # courante dans cette étape ni comme le début de l'étape
         # suivante: à ignorer!
         if test:
-            print('Colonne {0:s}: à ignorer ({1:s})'.format(num_vers_col(colonne+1),
+            print('Colonne {0:s}: à ignorer ({1:s})'.format(num_to_col(colonne+1),
                                                             champs[colonne]))
         # pas de lecteurs.append ici, logiquement!
         colonne = colonne + 1
@@ -350,7 +350,7 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
     matiere = ''
     while colonne < len(champs):
 
-        n_col = num_vers_col(colonne+1)
+        n_col = num_to_col(colonne+1)
         titre = champs[colonne]
 
         # Cas particulier : cette colonne est une généralité sur le
@@ -464,7 +464,7 @@ def prepare_lecteurs_bulletins(champs, lecteurs, colonne, test = False):
     while colonne < len(champs):
 
         titre = champs[colonne]
-        n_col = num_vers_col(colonne+1)
+        n_col = num_to_col(colonne+1)
 
         # on reconnaît le début d'un bulletin à son année
         if titre.startswith('Année'):
@@ -551,7 +551,7 @@ def prepare_lecteurs(champs, test = False):
     # une colonne qu'on ne connaissait pas : on sort en vitesse, il va
     # falloir adapter le code!
     if colonne < len(champs) and test:
-        print(f'Il reste des colonnes non traitées à partir de la {num_vers_col(colonne+1)}!')
+        print(f'Il reste des colonnes non traitées à partir de la {num_to_col(colonne+1)}!')
         sys.exit(-1)
 
     if test:

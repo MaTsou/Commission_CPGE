@@ -6,6 +6,18 @@ from parse import parse
 from parse import compile
 from config import filieres
 
+##
+# Fonctions de conversion
+##
+
+def num_to_col(num):
+    'Convertit un numéro de colonne vers son nom dans un tableur'
+    res = ''
+    while num > 0:
+        mod = (num-1) % 26
+        res = chr(65+mod) + res
+        num = (num-mod) // 26
+    return res
 
 ## Méthodes de pré-traitement et de post-traitement utilisées dans les fonctions get et set de la classe Fichier.
 # accompagnées de fonctions de conversion utiles à la classe Fichier
@@ -31,15 +43,6 @@ def not_note(note):
     if not isnote(note):
         note = '-'
     return note
-
-def num_vers_col(num):
-    'Convertit un numéro de colonne vers son nom dans un tableur'
-    res = ''
-    while num > 0:
-        mod = (num-1) % 26
-        res = chr(65+mod) + res
-        num = (num-mod) // 26
-    return res
 
 def convert(str):
     """ formate la chaine 'str' contenant un nombre.
