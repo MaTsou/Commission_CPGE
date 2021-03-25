@@ -385,7 +385,10 @@ class Fichier:
                 query_classe = f'bulletins/bulletin[classe="{cl}"]'
                 query_mat = f'{query_classe}/matières/matière[intitulé="{mat}"]'
                 query = f'{query_mat}[date="{da}"]/note'
-                acces[key] = {'query' : query, 'defaut' : '-', 'pre' : not_note, 'post' : str_to_num_to_str}
+                acces[key] = {'query' : query,
+                              'defaut' : '-',
+                              'pre' : not_note,
+                              'post' : str_to_num_to_str}
     # Pour les notes CPES :
     for mat in matiere:
         key = '{} CPES'.format(mat)
