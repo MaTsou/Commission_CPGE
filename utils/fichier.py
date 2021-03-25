@@ -320,7 +320,7 @@ class Fichier:
             'Prénom'                : {'query' : 'prénom'},
             'Sexe'                  : {'query' : 'sexe'},
             'Date de naissance'     : {'query' : 'naissance',
-                                       'default': '1970/01/01'}, # EPOCH!
+                                       'defaut': '01/01/1970'}, # EPOCH!
             'Classe actuelle'       : {'query' : 'synoptique/classe'},
             'Num ParcoursSup'       : {'query' : 'id_apb'},
             'INE'                   : {'query' : 'INE'},
