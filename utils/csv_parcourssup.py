@@ -268,20 +268,9 @@ def nouvelle_matiere():
 # IMPLÉMENTATION DE LA RECONNAISSANCE DES CHAMPS
 #
 
-def prepare_lecteurs(champs, test = False):
-    """Reçoit la liste des chaînes de la première ligne et renvoie la
-    liste des lecteurs qui seront capables d'interpréter les autres lignes
+# Premier groupe de colonnes : les informations générales
 
-    """
-
-    lecteurs = []
-    colonne = 0
-
-    if test:
-        print("Début de la reconnaissance des champs")
-
-    # lecture des informations générales
-
+def prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test = False):
     lecteurs.append(lambda e, l: transition_etape(e, l, Etape.GENERALITES))
     if test:
         print('Début de la lecture des informations générales')
@@ -310,7 +299,7 @@ def prepare_lecteurs(champs, test = False):
             colonne = colonne + 1
             continue
 
-        # on reconnaît le début de la fiche synoptique
+        # on reconnaît le début de la fiche synoptique : fin du traitement ici
         if champs[colonne].endswith('établissement'):
             break
 
@@ -322,10 +311,11 @@ def prepare_lecteurs(champs, test = False):
                                                             champs[colonne]))
         # pas de lecteurs.append ici, logiquement!
         colonne = colonne + 1
-        continue # pas nécessaire mais plus propre et évite les ennuis à terme
 
-    # lecture de la fiche synoptique
+    return colonne
 
+# Second groupe de colonnes : la fiche synoptique
+def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
     lecteurs.append(lambda e, l: transition_etape(e, l, Etape.SYNOPTIQUE))
     if test:
         print('Début de la lecture de la fiche synoptique')
@@ -341,7 +331,7 @@ def prepare_lecteurs(champs, test = False):
     synoptique = {
         "Type de formation": 'classe',
         'Série/Domaine/Filière': 'filière',
-        'Spécialité/Mention/Voie': 'spécialité',
+        'Spécialité/Mention/Voie': 'spécialité', # FIXME: en général vide: laisser tomber?
         'Méthode de travail': 'methode_travail',
         'Autonomie': 'autonomie',
         'Engagement citoyen': 'engagement_citoyen',
@@ -351,11 +341,12 @@ def prepare_lecteurs(champs, test = False):
         'Avis sur la capacité à réussir': 'capacite_reussite',
     }
 
-    # même organisation avec une boucle et un drapeau encore, pour les
-    # mêmes raisons, mais apparition de matiere, qui sert à se
-    # souvenir à propos de quelle matière on a lu des informations :
-    # comme cela, si on voit des choses sur une autre matière, on sait
-    # qu'il faut d'abord clore!
+    # même organisation que pour la fonction
+    # prepare_lecteurs_informations_generales avec une boucle et un
+    # drapeau pour les mêmes raisons, mais apparition de matiere, qui
+    # sert à se souvenir à propos de quelle matière on a lu des
+    # informations : comme cela, si on voit des choses sur une autre
+    # matière, on sait qu'il faut d'abord clore!
     matiere = ''
     while colonne < len(champs):
 
@@ -441,23 +432,7 @@ def prepare_lecteurs(champs, test = False):
             colonne = colonne + 1
             continue
 
-        if titre == "Note à l'épreuve de Ecrit de Français (épreuve anticipée)":
-            if test:
-                print(f"Colonne {n_col}: note d'écrit de français")
-            lecteurs.append(lambda e, l, a=colonne:
-                            lecteur_synoptique(e, l, a, 'français.écrit'))
-            colonne = colonne + 1
-            continue
-
-        if titre == "Note à l'épreuve de Oral de Français (épreuve anticipée)":
-            if test:
-                print(f"Colonne {n_col}: note d'oral de français")
-            lecteurs.append(lambda e, l, a=colonne:
-                            lecteur_synoptique(e, l, a, 'français.oral'))
-            colonne = colonne + 1
-            continue
-
-        # début d'un bulletin
+        # on reconnaît le début d'un bulletin: fin du traitement ici
         if titre in ['Année', 'Année scolaire']:
             break
 
@@ -465,31 +440,24 @@ def prepare_lecteurs(champs, test = False):
             print(f'Colonne {n_col}: à ignorer ({titre})')
         matiere = ''
         colonne = colonne + 1
-        continue
 
-    lecteurs.append(clore_bulletin)
+    return colonne
 
-    # lecture des bulletins
-
+def prepare_lecteurs_bulletins(champs, lecteurs, colonne, test = False):
     if test:
         print('Début de la lecture des bulletins')
     lecteurs.append(lambda e, l: transition_etape(e, l, Etape.BULLETINS))
 
-    directs_etablissement = {
-        'Code établissement': 'code',
-        'Libelle établissement': 'nom',
-        'Ville établissement': 'ville',
-        'Département établissement': 'département',
-        'Pays établissement': 'pays',
-    }
     directs_bulletin = {
-        "Niveau d'étude": 'classe', # plutôt que "Type de formation"
-                                    # qui est vide pour ceux qui ne
-                                    # sont pas scolarisés!
-        'Classe': 'série', # L, S, ES?
-        'Série': 'série', # hmmm... douteux : FIXME?
-        'LV1': 'LV1',
-        'LV2': 'LV2',
+        "Niveau d'étude": 'classe', # 'Seconde', 'Terminale', 'Non
+                                    # scolarisé'
+
+        # suivant les bulletins on trouve 'Classe' ou 'Série', avec le
+        # même genre de données!
+        'Classe': 'série', # 'Série Générale', 'Scientifique' (vieux),
+                           # '' (non scolarisé)
+        'Série': 'série', # 'Série Générale', 'Scientifique' (vieux),
+                          # '' (non scolarisé)
     }
 
     matiere = ''
@@ -499,22 +467,12 @@ def prepare_lecteurs(champs, test = False):
         n_col = num_vers_col(colonne+1)
 
         # on reconnaît le début d'un bulletin à son année
-        if titre in ['Année', 'Année scolaire']:
+        if titre.startswith('Année'):
             if test:
                 print(f"Début d'un bulletin via sa date en colonne {n_col}")
             lecteurs.append(clore_bulletin)
             lecteurs.append(lambda e,l, a=colonne:
                             lecteur_direct (e, l, a, 'bulletin', 'année'))
-            colonne = colonne + 1
-            matiere = ''
-            continue
-
-        if titre in directs_etablissement:
-            champ = directs_etablissement[titre]
-            if test:
-                print(f"La colonne {n_col} est une information d'établissement: {champ} ({titre})")
-            lecteurs.append(lambda e,l, a=colonne, b=champ:
-                            lecteur_direct(e, l, a, 'établissement', b))
             colonne = colonne + 1
             matiere = ''
             continue
@@ -564,19 +522,33 @@ def prepare_lecteurs(champs, test = False):
             colonne = colonne + 1
             continue
 
-
         # on ignore tout le reste
         if test:
             print(f'La colonne {n_col} est à ignorer ({titre})')
         matiere = ''
         colonne = colonne + 1
-        continue
 
-    lecteurs.append(clore_candidat)
+    return colonne
+
+def prepare_lecteurs(champs, test = False):
+    """Reçoit la liste des chaînes de la première ligne et renvoie la
+    liste des lecteurs qui seront capables d'interpréter les autres lignes
+
+    """
+
+    lecteurs = []
+    colonne = 0
+
+    if test:
+        print("Début de la reconnaissance des champs")
+
+    colonne = prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test)
+    colonne = prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test)
+    colonne = prepare_lecteurs_bulletins(champs, lecteurs, colonne, test)
 
     # On est peut-être arrivé là en pensant qu'on avait fini toutes
     # les étapes successives alors qu'en fait, on est juste tombés sur
-    # une colonne qu'on ne connaissait pas: on sort en vitesse, il va
+    # une colonne qu'on ne connaissait pas : on sort en vitesse, il va
     # falloir adapter le code!
     if colonne < len(champs) and test:
         print(f'Il reste des colonnes non traitées à partir de la {num_vers_col(colonne+1)}!')
