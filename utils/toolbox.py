@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
-import os, PyPDF2
+import os
 from parse import parse
 from parse import compile
+
+import PyPDF2
+
 from config import filieres
 
 ##
@@ -40,20 +43,22 @@ def date_to_num(naissance):
         res = 0
     return res
 
-## Méthodes de pré-traitement et de post-traitement utilisées dans les fonctions get et set de la classe Fichier.
-# accompagnées de fonctions de conversion utiles à la classe Fichier
-def isnote(note):
+## Méthodes de pré-traitement et de post-traitement utilisées dans les
+## fonctions get et set de la classe Fichier.
+
+def is_note(note):
     """ Teste si 'note' est bien un réel compris entre 0 et 20 """
-    bool = True
+    res = False
     try:
-        str_to_num(note)
+        num = str_to_num(note)
+        result = 0 <= num <= 20
     except:
-        bool = False
-    return bool and str_to_num(note)>=0 and str_to_num(note)<=20
+        pass
+    return res
 
 def not_note(note):
     """ si note n'est pas une note, renvoie '-' """
-    if not isnote(note):
+    if not is_note(note):
         note = '-'
     return note
 
@@ -64,9 +69,9 @@ def formate_candid(cc):
     while len(bina) < len(filieres):
         bina = '0{}'.format(bina) # on complète pour qu'il y ait le bon nb de digits.
     cc = ''
-    for i in range(len(filieres)):
+    for i, filiere in enumerate(filieres):
         if bina[-1-i] == '1':
-            cc += filieres[i][0].upper()
+            cc += filiere[0].upper()
         else:
             cc += '-'
     return cc
@@ -77,15 +82,15 @@ def formate_impr_candid(cc):
 
 def formate_jury(jury):
     """ formate le contenu du champ 'jury' (pour affichage dans les tableaux) """
-    if ('Jury' in jury):
+    if 'Jury' in jury:
         jury = parse('Jury {}', jury)[0]
     return jury
 
 ## Fonction de découpage du fichier pdf
 def decoup(sourc, dest):
-    """ découpage du fichier pdf en autant de fichiers que de candidats """
-    "sourc: fichier source"
-    "dest: dossier destination"
+    """découpage du fichier pdf en autant de fichiers que de candidats
+    sourc: fichier source
+    dest: dossier destination"""
     # précompilation de la requête pour gagner en vitesse
     regex = compile('{}Dossier n°{id:d}{}Page {page:d}')
     pdfFileObj = open(sourc, 'rb')
@@ -130,10 +135,10 @@ def efface_dest(chem):
             os.remove(fich) # on efface les fichiers
     os.rmdir(chem) # suppression du dossier vide
 
-def restaure_virginite(chem): #  amélioration : shutil a une fonction qui supprime un répertoire non vide
+def restaure_virginite(chem): #  amélioration : shutil a une fonction
+                              #  qui supprime un répertoire non vide
     """ Créé le répertoire pointé par chem ou le vide s'il existe
     En gros, redonne une complète virginité à ce répertoire """
     if os.path.exists(chem):
         efface_dest(chem) # on efface chem (s'il existe)
     os.mkdir(chem) # on le (re)-créé
-
