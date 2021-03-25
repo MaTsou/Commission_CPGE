@@ -319,7 +319,8 @@ class Fichier:
             'Nom'                   : {'query' : 'nom'},
             'Prénom'                : {'query' : 'prénom'},
             'Sexe'                  : {'query' : 'sexe'},
-            'Date de naissance'     : {'query' : 'naissance'},
+            'Date de naissance'     : {'query' : 'naissance',
+                                       'default': '1970/01/01'}, # EPOCH!
             'Classe actuelle'       : {'query' : 'synoptique/classe'},
             'Num ParcoursSup'       : {'query' : 'id_apb'},
             'INE'                   : {'query' : 'INE'},
@@ -447,18 +448,11 @@ class Fichier:
         """ renvoie la filière """
         return self._filiere
 
-    def convert(self, naiss):
-        """ Convertit une date de naissance en un nombre pour le classement """
-        dic = {'a':1900, 'm':12, 'j':31}# cas où la date de naissance n'est pas renseignée
-        if naiss != Fichier.acces['Date de naissance']['defaut']:
-            dic = parse('{j:d}/{m:d}/{a:d}', naiss)
-        return dic['a']*10**4 + dic['m']*10**2 + dic['j']
-
     def ordonne(self, critere):
         """ renvoie une liste des candidatures ordonnées selon le critère demandé
         (critère appartenant à l'attribut de classe _critere_tri) """
         # Classement par age
-        tri = lambda cand: self.convert(Fichier.get(cand, 'Date de naissance'))
+        tri = lambda cand: date_to_num(Fichier.get(cand, 'Date de naissance'))
         doss = sorted(self._dossiers, key = tri)
         # puis par critere
         return sorted(doss, key = Fichier._criteres_tri[critere])

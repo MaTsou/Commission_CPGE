@@ -31,6 +31,15 @@ def str_to_num_to_str(string):
     'Convertit une chaîne en nombre puis à nouveau en chaîne - esthétique'
     return num_to_str(str_to_num(string))
 
+def date_to_num(naissance):
+    'Convertit une chaîne donnant une date de naissance en nombre'
+    try:
+        dico = parse('{jour:d}/{mois:d}/{annee:d}', naissance)
+        res = dico['annee']*10000+dico['mois']*100+dico['jour']
+    except:
+        res = 0
+    return res
+
 ## Méthodes de pré-traitement et de post-traitement utilisées dans les fonctions get et set de la classe Fichier.
 # accompagnées de fonctions de conversion utiles à la classe Fichier
 def isnote(note):
