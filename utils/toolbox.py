@@ -24,7 +24,11 @@ def num_to_col(num):
 
 def str_to_num(string):
     "Convertit une chaîne contenant un nombre à virgule en flottant"
-    return float(string.replace(',','.'))
+    try:
+        res = float(string.replace(',','.'))
+    except ValueError:
+        res = -1 # va être vu comme erroné
+    return res
 
 def num_to_str(num):
     'Convertit un flottant en chaîne avec deux chiffres après la virgule'
@@ -35,7 +39,7 @@ def date_to_num(naissance):
     try:
         dico = parse('{jour:d}/{mois:d}/{annee:d}', naissance)
         res = dico['annee']*10000+dico['mois']*100+dico['jour']
-    except:
+    except KeyError:
         res = 0
     return res
 
@@ -44,35 +48,35 @@ def date_to_num(naissance):
 
 def normalize_note(note):
     """ si note n'est pas une note valide, renvoie '-' """
-    try:
-        num = str_to_num(note)
-        if not 0 <= num <= 20:
-            note = '-'
-    except:
-        pass
+    num = str_to_num(note)
+    if not 0 <= num <= 20:
+        note = '-'
     return note
 
 def format_mark(string):
     'Convertit une chaîne en nombre puis à nouveau en chaîne - esthétique'
     return num_to_str(str_to_num(string))
 
-def format_candidatures(cc):
-    """ transforme un mot binaire contenant les candidatures
-    en une chaîne 'MP-' ou 'M-C', etc. """
-    bina = bin(cc)[2:] # chaine exprimant cc en binaire (on enlève les 2 premiers caract. : '0b')
+def format_candidatures(candidatures):
+    """transforme un mot binaire contenant les candidatures en une chaîne
+    'MP-' ou 'M-C', etc."""
+
+    # chaine exprimant 'candidatures' en binaire
+    # (on enlève les 2 premiers caract. : '0b')
+    bina = bin(candidatures)[2:]
     while len(bina) < len(filieres):
         bina = '0{}'.format(bina) # on complète pour qu'il y ait le bon nb de digits.
-    cc = ''
+    res = ''
     for i, filiere in enumerate(filieres):
         if bina[-1-i] == '1':
-            cc += filiere[0].upper()
+            res += filiere[0].upper()
         else:
-            cc += '-'
-    return cc
+            res += '-'
+    return res
 
-def format_candidatures_impr(cc):
+def format_candidatures_impr(candidatures):
     """ Formate le contenu du noeud 'candidatures multiples' en vue de l'impression """
-    return '-'.join(fil.upper() for fil in filieres if cc[filieres.index(fil)]!='-')
+    return '-'.join(fil.upper() for fil in filieres if candidatures[filieres.index(fil)]!='-')
 
 def format_jury(jury):
     """ formate le contenu du champ 'jury' (pour affichage dans les tableaux) """
@@ -87,35 +91,34 @@ def decoup(sourc, dest):
     dest: dossier destination"""
     # précompilation de la requête pour gagner en vitesse
     regex = compile('{}Dossier n°{id:d}{}Page {page:d}')
-    pdfFileObj = open(sourc, 'rb')
-    pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
-    page_deb = -1
+    file_obj = open(sourc, 'rb')
+    reader = PyPDF2.PdfFileReader(file_obj)
     id_cand = -1
         # pour le candidat -1, au lieu de faire un cas particulier
-    pdfWriter = PyPDF2.PdfFileWriter()
-    for page in range(pdfReader.numPages):
+    writer = PyPDF2.PdfFileWriter()
+    for page in range(reader.numPages):
         # récupération de la page courante
-        pageObj = pdfReader.getPage(page)
+        page_obj = reader.getPage(page)
         # puis de son texte brut
-        txt = pageObj.extractText()
+        txt = page_obj.extractText()
         # et enfin, numéro de dossier et page
         res = regex.parse(txt)
-        if res or page == pdfReader.numPages-1:
+        if res or page == reader.numPages-1:
             # est-ce un changement de candidat?
             if (id_cand != res['id']
-                    or page == pdfReader.numPages-1):
+                    or page == reader.numPages-1):
                 nom = os.path.join (dest, 'docs_{}.pdf'.format(id_cand))
-                pdfOutputFile = open(nom, 'wb')
+                output_file = open(nom, 'wb')
                 # sinon il en manque un bout
-                if page == pdfReader.numPages-1:
-                    pdfWriter.addPage(pageObj)
+                if page == reader.numPages-1:
+                    writer.addPage(page_obj)
                 # écrasement de tout fichier existant!!
-                pdfWriter.write(pdfOutputFile)
-                pdfOutputFile.close()
+                writer.write(output_file)
+                output_file.close()
                 # réinitialisations
-                pdfWriter = PyPDF2.PdfFileWriter()
+                writer = PyPDF2.PdfFileWriter()
                 id_cand = res['id']
-            pdfWriter.addPage(pageObj)
+            writer.addPage(page_obj)
     os.remove(os.path.join(dest, 'docs_-1.pdf'))
 
 ############## Manipulation de répertoires
