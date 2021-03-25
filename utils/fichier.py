@@ -333,11 +333,11 @@ class Fichier:
             'Pays'                  : {'query' : 'synoptique/établissement/pays'},
             'Écrit EAF'             : {'query' : 'synoptique/français.écrit',
                                        'defaut' : '-',
-                                       'pre' : not_note,
+                                       'pre' : normalize_note,
                                        'post' : str_to_num_to_str},
             'Oral EAF'              : {'query' : 'synoptique/français.oral',
                                        'defaut' : '-',
-                                       'pre' : not_note,
+                                       'pre' : normalize_note,
                                        'post' : str_to_num_to_str},
             'Candidatures'          : {'query' : 'diagnostic/candidatures',
                                        'pre' : formate_candid},
@@ -387,13 +387,13 @@ class Fichier:
                 query = f'{query_mat}[date="{da}"]/note'
                 acces[key] = {'query' : query,
                               'defaut' : '-',
-                              'pre' : not_note,
+                              'pre' : normalize_note,
                               'post' : str_to_num_to_str}
     # Pour les notes CPES :
     for mat in matiere:
         key = '{} CPES'.format(mat)
         query = 'synoptique/matières/matière[intitulé="{}"]/note'.format(mat)
-        acces[key] = {'query' : query, 'defaut' : '-', 'pre' : not_note, 'post' : str_to_num_to_str}
+        acces[key] = {'query' : query, 'defaut' : '-', 'pre' : normalize_note, 'post' : str_to_num_to_str}
     ############## Fin attributs de classe ########
 
     ############# Méthodes d'instance #############

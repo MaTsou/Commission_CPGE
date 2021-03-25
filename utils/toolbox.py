@@ -56,8 +56,8 @@ def is_note(note):
         pass
     return res
 
-def not_note(note):
-    """ si note n'est pas une note, renvoie '-' """
+def normalize_note(note):
+    """ si note n'est pas une note valide, renvoie '-' """
     if not is_note(note):
         note = '-'
     return note
