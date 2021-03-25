@@ -74,6 +74,8 @@ from parse import parse
 
 from lxml import etree
 
+from utils.toolbox import num_vers_col
+
 #
 # DESCRIPTION DE L'ÉTAT
 #
@@ -615,16 +617,3 @@ def lire(nom, test = False):
         for candidat in candidats:
             res.append(candidat)
         return res
-
-#
-# FONCTIONS DIVERSES
-#
-
-def num_vers_col(num):
-    'Convertit un numéro de colonne vers son nom dans un tableur'
-    res = ''
-    while num > 0:
-        mod = (num-1) % 26
-        res = chr(65+mod) + res
-        num = (num-mod) // 26
-    return res

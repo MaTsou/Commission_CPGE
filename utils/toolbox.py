@@ -32,6 +32,15 @@ def not_note(note):
         note = '-'
     return note
 
+def num_vers_col(num):
+    'Convertit un numéro de colonne vers son nom dans un tableur'
+    res = ''
+    while num > 0:
+        mod = (num-1) % 26
+        res = chr(65+mod) + res
+        num = (num-mod) // 26
+    return res
+
 def convert(str):
     """ formate la chaine 'str' contenant un nombre.
     Intérêt seulement esthétique dans la page web """
