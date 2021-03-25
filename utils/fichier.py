@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
+# pylint: disable=I1101
+# I1101 car lxml le déclenche beaucoup
 
 # Ce fichier contient la classe Fichier.
 
