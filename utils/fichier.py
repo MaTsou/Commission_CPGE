@@ -112,7 +112,7 @@ class Fichier:
         # Utile de la rendre plus robuste (gérer l'erreur si 'cand in fichier' False) ?
         index = 0
         num = candidat.identifiant()
-        while num != self._candidats[index].identifian():
+        while num != self._candidats[index].identifiant():
             index += 1
         return self._candidats[index]
 
