@@ -370,32 +370,36 @@ class Fichier:
             if not 'default' in val:
                 val['default'] = '?'
 
+        # Pour les notes du lycée :
+        matieres = ['Mathématiques',
+                    'Mathématiques Spécialité',
+                    'Mathématiques Expertes',
+                    'Physique/Chimie',
+                    'Physique-Chimie Spécialité']
+        dates = ['trimestre 1', 'trimestre 2', 'trimestre 3']
+        classes = ['Première', 'Terminale']
+        for classe in classes:
+            for matiere in matieres:
+                for date in dates:
+                    key = f'{matiere} {classe} {date}'
+                    query_classe = f'bulletins/bulletin[classe="{classe}"]'
+                    query_matiere = f'{query_classe}/matières/matière[intitulé="{matiere}"]'
+                    query = f'{query_matiere}[date="{date}"]/note'
+                    res[key] = {'query' : query,
+                                'default' : '-',
+                                'pre' : normalize_note,
+                                'post' : format_mark}
+
+        # Pour les notes de CPES :
+        for matiere in matieres:
+            key = f'{matiere} CPES'
+            query = f'synoptique/matières/matière[intitulé="{matiere}"]/note'
+            res[key] = {'query' : query,
+                        'default' : '-',
+                        'pre' : normalize_note,
+                        'post' : format_mark}
         return res
 
-    # Pour les notes du lycée :
-    matiere = ['Mathématiques',
-               'Mathématiques Spécialité',
-               'Mathématiques Expertes',
-               'Physique/Chimie',
-               'Physique-Chimie Spécialité']
-    date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
-    classe = ['Première', 'Terminale']
-    for cl in classe:
-        for mat in matiere:
-            for da in date:
-                key = '{} {} {}'.format(mat, cl, da)
-                query_classe = f'bulletins/bulletin[classe="{cl}"]'
-                query_mat = f'{query_classe}/matières/matière[intitulé="{mat}"]'
-                query = f'{query_mat}[date="{da}"]/note'
-                acces[key] = {'query' : query,
-                              'default' : '-',
-                              'pre' : normalize_note,
-                              'post' : format_mark}
-    # Pour les notes CPES :
-    for mat in matiere:
-        key = '{} CPES'.format(mat)
-        query = 'synoptique/matières/matière[intitulé="{}"]/note'.format(mat)
-        acces[key] = {'query' : query, 'default' : '-', 'pre' : normalize_note, 'post' : format_mark}
     ############## Fin attributs de classe ########
 
     ############# Méthodes d'instance #############
