@@ -68,7 +68,7 @@ class Fichier:
         except:
             result = None
         if not result:
-            result = cls_attr['defaut'] # init_acces garantit que ça marche
+            result = cls_attr['default'] # init_acces garantit que ça marche
         return result
 
     @classmethod
@@ -150,7 +150,7 @@ class Fichier:
         # Dès qu'un champ est renseigné on arrête et renvoie True
         while len(champs) > 0:
             ch = champs.pop()
-            if cls.get(cand, ch) != cls.acces[ch]['defaut']: # champ renseigné ?
+            if cls.get(cand, ch) != cls.acces[ch]['default']: # champ renseigné ?
                 expert = True
                 break
         return expert
@@ -211,12 +211,12 @@ class Fichier:
                 champs.add(key)
 
         # Tests :
-        complet = not cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['defaut']
+        complet = not cls.get(cand, 'Classe actuelle') == cls.acces['Classe actuelle']['default']
 
         # Dès qu'un champ manque à l'appel on arrête et renvoie False
         while complet and len(champs) > 0:
             ch = champs.pop()
-            if cls.get(cand, ch) == cls.acces[ch]['defaut']: # note non renseignée ?
+            if cls.get(cand, ch) == cls.acces[ch]['default']: # note non renseignée ?
                 complet = False
         return complet
 
@@ -266,7 +266,7 @@ class Fichier:
         somme, poids = 0, 0
         for key, val in coef.items():
             note = cls.get(cand, key)
-            if note != cls.acces[key]['defaut']:
+            if note != cls.acces[key]['default']:
                 somme += str_to_num(note)*val
                 poids += val
         if poids != 0:
@@ -307,7 +307,7 @@ class Fichier:
     # L'argument est encore un dictionnaire :
     # Celui-ci DOIT contenir :
     #       une clé 'query' donnant le path xml,
-    #       une clé 'defaut' donnant la valeur à renvoyer par défaut.
+    #       une clé 'default' donnant la valeur à renvoyer par défaut.
     # et il PEUT contenir :
     #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
     #       une clé 'post' donnant une fonction de post-traitement (après get).
@@ -322,7 +322,7 @@ class Fichier:
             'Prénom'                : {'query' : 'prénom'},
             'Sexe'                  : {'query' : 'sexe'},
             'Date de naissance'     : {'query' : 'naissance',
-                                       'defaut': '01/01/1970'}, # EPOCH!
+                                       'default': '01/01/1970'}, # EPOCH!
             'Classe actuelle'       : {'query' : 'synoptique/classe'},
             'Num ParcoursSup'       : {'query' : 'id_apb'},
             'INE'                   : {'query' : 'INE'},
@@ -334,11 +334,11 @@ class Fichier:
             'Département'           : {'query' : 'synoptique/établissement/département'},
             'Pays'                  : {'query' : 'synoptique/établissement/pays'},
             'Écrit EAF'             : {'query' : 'synoptique/français.écrit',
-                                       'defaut' : '-',
+                                       'default' : '-',
                                        'pre' : normalize_note,
                                        'post' : format_mark},
             'Oral EAF'              : {'query' : 'synoptique/français.oral',
-                                       'defaut' : '-',
+                                       'default' : '-',
                                        'pre' : normalize_note,
                                        'post' : format_mark},
             'Candidatures'          : {'query' : 'diagnostic/candidatures',
@@ -346,22 +346,22 @@ class Fichier:
             'Candidatures impr'     : {'query' : 'diagnostic/candidatures',
                                        'post' : format_candidatures_impr},
             'Première semestrielle' : {'query' : 'bulletins/bulletin[classe="Première"]/semestriel',
-                                       'defaut' : '0'},
+                                       'default' : '0'},
             'Terminale semestrielle': {'query' : 'bulletins/bulletin[classe="Terminale"]/semestriel',
-                                       'defaut' : '0'},
+                                       'default' : '0'},
             'traité'                : {'query' : 'diagnostic/traité',
-                                       'defaut' : False},
+                                       'default' : False},
             'Jury'                  : {'query' : 'diagnostic/jury',
-                                       'defaut' : 'Auto',
+                                       'default' : 'Auto',
                                        'pre' : format_jury},
             'Motifs'                : {'query' : 'diagnostic/motifs',
-                                       'defaut' : ''},
+                                       'default' : ''},
             'Score brut'            : {'query' : 'diagnostic/score',
-                                       'defaut' : ''},
+                                       'default' : ''},
             'Correction'            : {'query' : 'diagnostic/correc',
-                                       'defaut' : '0'},
+                                       'default' : '0'},
             'Score final'           : {'query' : 'diagnostic/scoref',
-                                       'defaut' : ''},
+                                       'default' : ''},
             'Rang brut'             : {'query' : 'diagnostic/rangb'},
             'Rang final'            : {'query' : 'diagnostic/rangf'},
         }
@@ -388,14 +388,14 @@ class Fichier:
                 query_mat = f'{query_classe}/matières/matière[intitulé="{mat}"]'
                 query = f'{query_mat}[date="{da}"]/note'
                 acces[key] = {'query' : query,
-                              'defaut' : '-',
+                              'default' : '-',
                               'pre' : normalize_note,
                               'post' : format_mark}
     # Pour les notes CPES :
     for mat in matiere:
         key = '{} CPES'.format(mat)
         query = 'synoptique/matières/matière[intitulé="{}"]/note'.format(mat)
-        acces[key] = {'query' : query, 'defaut' : '-', 'pre' : normalize_note, 'post' : format_mark}
+        acces[key] = {'query' : query, 'default' : '-', 'pre' : normalize_note, 'post' : format_mark}
     ############## Fin attributs de classe ########
 
     ############# Méthodes d'instance #############
