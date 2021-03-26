@@ -129,7 +129,7 @@ class Candidat:
     def __init__(self, node):
         self._node = node
 
-    def _get(self, attr):
+    def get(self, attr):
         """accesseur : récupère l'information voulue sur le candidat ; attr
         est une clef du dictionnaire '_acces'
 
@@ -146,7 +146,7 @@ class Candidat:
             result = my_attr['default'] # init_acces garantit que ça marche
         return result
 
-    def _set(self, attr, value):
+    def set(self, attr, value):
         """mutateur : écrit l'information voulue sur le candidat ; attr est
         une clef du dictionnaire '_acces'. Si le sous-nœud cible
         n'existe pas, il est créé."""
@@ -166,6 +166,8 @@ class Candidat:
             fils.text = value
             pere = parse('{}/' + node, query)[0]
             self._accro_branche(pere, fils)
+
+    xpath = self.node.xpath
 
     def _accro_branche(self, pere, fils):
         """Reconstruction d'une arborescence incomplète. On procède de manière
@@ -204,11 +206,11 @@ class Candidat:
 
     def identifiant(self):
         """Renvoie le numéro d'identifiant sur ParcoursSup"""
-        return self._get('Num ParcoursSup')
+        return self.get('Num ParcoursSup')
 
     def is_cpes(self):
         """Renvoie True si le candidat est en CPES """
-        return 'cpes' in self._get('Classe actuelle').lower()
+        return 'cpes' in self.get('Classe actuelle').lower()
 
     def is_math_expertes(self):
         """Renvoie True si le candidat a au moins une note d'option math
@@ -223,7 +225,7 @@ class Candidat:
         # Dès qu'un champ est renseigné on arrête et renvoie True
         while len(champs) > 0:
             champ = champs.pop()
-            if self._get(champ) != _acces[champ]['default']: # champ renseigné ?
+            if self.get(champ) != _acces[champ]['default']: # champ renseigné ?
                 expert = True
                 break
         return expert
@@ -232,13 +234,13 @@ class Candidat:
         """Renvoie True si le candidat est noté en semestres en première
 
         """
-        return self._get('Première semestrielle') == '1'
+        return self.get('Première semestrielle') == '1'
 
     def is_terminale_semestrielle(self):
         """Renvoie True si le candidat est noté en semestres en terminale
 
         """
-        return self._get('Terminale semestrielle') == '1'
+        return self.get('Terminale semestrielle') == '1'
 
     def is_complet(self):
         """Renvoie True si tous les éléments nécessaires à un calcul correct
@@ -281,12 +283,12 @@ class Candidat:
                 champs.add(key)
 
         # Tests :
-        complet = not self._get('Classe actuelle') == _acces['Classe actuelle']['default']
+        complet = not self.get('Classe actuelle') == _acces['Classe actuelle']['default']
 
         # Dès qu'un champ manque à l'appel on arrête et renvoie False
         while complet and len(champs) > 0:
             champ = champs.pop()
-            if self._get(champ) == _acces[champ]['default']: # note non renseignée ?
+            if self.get(champ) == _acces[champ]['default']: # note non renseignée ?
                 complet = False
         return complet
 
@@ -295,8 +297,8 @@ class Candidat:
 
         # Si correction = 'NC', cela signifie que l'admin rejette le
         # dossier ; score nul d'office!
-        if self._get('Correction') == 'NC': # candidat rejeté
-            self._set('Score brut', num_to_str(0))
+        if self.get('Correction') == 'NC': # candidat rejeté
+            self.set('Score brut', num_to_str(0))
             return
 
         # Récupération des coefficients, en les copiant car si
@@ -334,7 +336,7 @@ class Candidat:
         # On a maintenant tout ce qu'il faut pour lancer le calcul
         somme, poids = 0, 0
         for key, val in coef.items():
-            note = self._get(key)
+            note = self.get(key)
             if note != _acces[key]['default']:
                 somme += str_to_num(note)*val
                 poids += val
@@ -345,7 +347,7 @@ class Candidat:
         # Bonus pour les cpes ou les math expertes...
         if (self.is_cpes() or self.is_math_expertes()):
             scoreb += 5
-        self._set('Score brut', num_to_str(scoreb))
+        self.set('Score brut', num_to_str(scoreb))
 
     class Critere(IntEnum):
         """Fournit la liste des critères de score possibles pour un candidat"""
@@ -363,11 +365,11 @@ class Candidat:
         """
 
         if critere == Candidat.Critere.SCORE_BRUT:
-            return -float(self._get('Score brut').replace(',', '.'))
+            return -float(self.get('Score brut').replace(',', '.'))
         if critere == Candidat.Critere.SCORE_FINAL:
-            return -float(self._get('Score final').replace(',', '.'))
+            return -float(self.get('Score final').replace(',', '.'))
         if critere == Candidat.Critere.NOM:
-            return self._get('Nom')
+            return self.get('Nom')
         if critere == Candidat.Critere.NAISSANCE:
-            return -date_to_num(self._get('Date de naissance'))
+            return -date_to_num(self.get('Date de naissance'))
         return 0
