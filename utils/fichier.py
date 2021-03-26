@@ -120,14 +120,16 @@ class Fichier:
         """ renvoie la filière """
         return self._filiere
 
-    def ordonne(self, critere):
-        """ renvoie une liste des candidatures ordonnées selon:
-        - 0: le score final
-        - 1: le score brut
-        - 2: le nom"""
-        # Classement par âge -- on va donc privilégier les plus jeunes
-        candidats = sorted(self._candidats, key = lambda cand: cand.score(3))
-        # puis par critère:
+    Critere = Candidat.Critere
+
+    def ordonne(self, critere = Fichier.Critere.SCORE_BRUT):
+        """renvoie une liste des candidatures ordonnées selon le critère donné
+        -- mais après avoir trié par âge, donc en privilégiant les
+        plus jeunes.
+
+        """
+
+        candidats = sorted(self._candidats, key = lambda cand: Fichier.Critere.NAISSANCE)
         candidats.sort(key = lambda cand: cand.score(critere))
         return candidats
 

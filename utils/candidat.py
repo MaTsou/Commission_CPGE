@@ -15,6 +15,7 @@ candidat sous une forme facilement interrogeable.
 # renvoyer dans le cas où le noeud n'existe pas (valeur par
 # défaut).
 
+from enum import IntEnum, auto
 from parse import parse
 from lxml import etree
 
@@ -346,20 +347,27 @@ class Candidat:
             scoreb += 5
         self._set('Score brut', num_to_str(scoreb))
 
-    def score(self, crit = 0):
-        """Renvoie le score du candidat suivant divers critères:
-        - 0: score final (flottant)
-        - 1: score brut (flottant)
-        - 2: nom (alphabétique)
-        - 3: naissance (flottant)
+    class Critere(IntEnum):
+        """Fournit la liste des critères de score possibles pour un candidat"""
+
+        SCORE_BRUT = auto()
+
+        SCORE_FINAL = auto()
+
+        NOM = auto()
+
+        NAISSANCE = auto()
+
+    def score(self, critere = Candidat.Critere.SCORE_BRUT):
+        """Renvoie le score du candidat suivant le critère demandé
         """
 
-        if crit == 0:
+        if critere == Candidat.Critere.SCORE_BRUT:
             return -float(self._get('Score brut').replace(',', '.'))
-        if crit == 1:
+        if critere == Candidat.Critere.SCORE_FINAL:
             return -float(self._get('Score final').replace(',', '.'))
-        if crit == 2:
+        if critere == Candidat.Critere.NOM:
             return self._get('Nom')
-        if crit == 3:
+        if critere == Candidat.Critere.NAISSANCE:
             return -date_to_num(self._get('Date de naissance'))
         return 0
