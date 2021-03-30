@@ -278,19 +278,6 @@ class Fichier:
             scoreb += 5
         cls.set(cand, 'Score brut', num_to_str(scoreb))
 
-    @classmethod
-    def rang(cls, cand, dossiers, critere):
-        """ Trouver le rang d'un candidat dans une liste de dossiers, selon un critère donné """
-        rg = 1
-        score = lambda ca: float(cls.get(ca, critere).replace(',','.'))
-        # On traite le cas d'un candidat non encore traité : son score est une chaîne vide !
-        score_cand = 0
-        if cls.get(cand, critere) != '':
-            score_cand = score(cand)
-        if dossiers:
-            while (rg <= len(dossiers) and score(dossiers[rg-1]) > score_cand):
-                rg+= 1
-        return rg
     #                                             #
     ############ Fin méthodes de classe ###########
     def init_acces():
