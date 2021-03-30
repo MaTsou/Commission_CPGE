@@ -336,7 +336,7 @@ class Admin(Client):
             doss = fich.ordonne('score_b')
             # Calcul du rang de chaque candidat et renseignement du noeuds 'rang_brut'
             for cand in fich:
-                Fichier.set(cand, 'Rang brut',  str(Fichier.rang(cand, doss, 'Score brut')))
+                Fichier.set(cand, 'Rang brut',  str(1 + doss.index(cand)))
             # Récupération de la filière et du nombre de jurys 
             nbjury = int(nb_jurys[fich.filiere().lower()])
             # Découpage en n listes de dossiers
