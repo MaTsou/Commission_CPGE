@@ -85,7 +85,10 @@ class Jury(Client):
         # On classes ceux-ci par ordre de score final décroissant
         doss.sort(reverse = True)
         # On calcule le rang du score_final actuel (celui de cand) dans cette liste
-        rg = 1 + doss.index(Fichier.get(cand, 'Score final'))
+        try:
+            rg = 1 + doss.index(Fichier.get(cand, 'Score final'))
+        except:
+            rg = len(doss)
         # À ce stade, rg est le rang dans la liste du jury. 
         # La suite consiste à calculer n*(rg-1) + k
         # où n est le nombre de jurys pour cette filière et k l'indice du jury courant.

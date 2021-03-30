@@ -293,27 +293,6 @@ class Fichier:
         return rg
     #                                             #
     ############ Fin méthodes de classe ###########
-
-    ############## Attributs de classe #############
-    ## _criteres_tri : contient les fonctions qui sont les clés de tri de la méthode
-    # 'ordonne' définie plus bas..
-    _criteres_tri = {
-            'score_b' : lambda cand: -float(Fichier.get(cand, 'Score brut').replace(',','.')),
-            'score_f' : lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')),
-            'alpha' : lambda cand: Fichier.get(cand, 'Nom')
-            }
-
-    ## acces : dictionnaire contenant les clés d'accès aux informations candidat
-    # L'argument est encore un dictionnaire :
-    # Celui-ci DOIT contenir :
-    #       une clé 'query' donnant le path xml,
-    #       une clé 'default' donnant la valeur à renvoyer par défaut.
-    # et il PEUT contenir :
-    #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
-    #       une clé 'post' donnant une fonction de post-traitement (après get).
-    acces = init_acces()
-
-    @staticmethod
     def init_acces():
         "Crée le dictionnaire d'accès"
 
@@ -399,6 +378,26 @@ class Fichier:
                         'pre' : normalize_note,
                         'post' : format_mark}
         return res
+
+    ############## Attributs de classe #############
+    ## _criteres_tri : contient les fonctions qui sont les clés de tri de la méthode
+    # 'ordonne' définie plus bas..
+    _criteres_tri = {
+            'score_b' : lambda cand: -float(Fichier.get(cand, 'Score brut').replace(',','.')),
+            'score_f' : lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')),
+            'alpha' : lambda cand: Fichier.get(cand, 'Nom')
+            }
+
+    ## acces : dictionnaire contenant les clés d'accès aux informations candidat
+    # L'argument est encore un dictionnaire :
+    # Celui-ci DOIT contenir :
+    #       une clé 'query' donnant le path xml,
+    #       une clé 'default' donnant la valeur à renvoyer par défaut.
+    # et il PEUT contenir :
+    #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
+    #       une clé 'post' donnant une fonction de post-traitement (après get).
+    acces = init_acces()
+
 
     ############## Fin attributs de classe ########
 
