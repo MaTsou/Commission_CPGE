@@ -79,12 +79,13 @@ class Jury(Client):
 
     def get_rgfinal(self, cand):
         """ Renvoie une estimation du rg final d'un candidat """
-        # On extrait du fichier les dossiers traités et non NC
-        doss = [ca for ca in self.fichier if (Fichier.get(ca, 'traité') == 'oui' and Fichier.get(ca, 'Correction') != 'NC')]
+        # On extrait du fichier la liste des scores des dossiers traités et non NC
+        doss = [float(Fichier.get(ca, 'Score final').replace(',','.')) for ca in self.fichier\
+                if (Fichier.get(ca, 'traité') == 'oui' and Fichier.get(ca, 'Correction') != 'NC')]
         # On classes ceux-ci par ordre de score final décroissant
-        doss[:] = sorted(doss, key = lambda cand: -float(Fichier.get(cand, 'Score final').replace(',','.')))
+        doss.sort(reverse = True)
         # On calcule le rang du score_final actuel (celui de cand) dans cette liste
-        rg = Fichier.rang(cand, doss, 'Score final')
+        rg = 1 + doss.index(Fichier.get(cand, 'Score final'))
         # À ce stade, rg est le rang dans la liste du jury. 
         # La suite consiste à calculer n*(rg-1) + k
         # où n est le nombre de jurys pour cette filière et k l'indice du jury courant.
