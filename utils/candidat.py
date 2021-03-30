@@ -33,7 +33,6 @@ from utils.toolbox import (date_to_num, num_to_str, str_to_num,
 # et il PEUT contenir :
 #       une clé 'pre' donnant une fonction de pré-traitement (avant set),
 #       une clé 'post' donnant une fonction de post-traitement (après get).
-_acces = _init_acces()
 
 def _init_acces():
     "Crée le dictionnaire d'accès"
@@ -122,6 +121,8 @@ def _init_acces():
 
     return res
 
+_acces = _init_acces()
+
 class Candidat:
     """Le but de ce type d'objet est de fournir une interface sur un nœud
     XML décrivant un candidat"""
@@ -167,7 +168,7 @@ class Candidat:
             pere = parse('{}/' + node, query)[0]
             self._accro_branche(pere, fils)
 
-    xpath = self.node.xpath
+#    xpath = self.node.xpath
 
     def _accro_branche(self, pere, fils):
         """Reconstruction d'une arborescence incomplète. On procède de manière
