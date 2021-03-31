@@ -130,6 +130,9 @@ class Candidat:
     def __init__(self, node):
         self._node = node
 
+    def get_node(self):
+        return self._node
+
     def get(self, attr):
         """accesseur : récupère l'information voulue sur le candidat ; attr
         est une clef du dictionnaire '_acces'
@@ -167,8 +170,6 @@ class Candidat:
             fils.text = value
             pere = parse('{}/' + node, query)[0]
             self._accro_branche(pere, fils)
-
-#    xpath = self.node.xpath
 
     def _accro_branche(self, pere, fils):
         """Reconstruction d'une arborescence incomplète. On procède de manière
@@ -293,7 +294,7 @@ class Candidat:
                 complet = False
         return complet
 
-    def update_brut_score(self):
+    def update_raw_score(self):
         """ Calcul du score brut et mise à jour dans le nœud XML """
 
         # Si correction = 'NC', cela signifie que l'admin rejette le
