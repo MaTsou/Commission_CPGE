@@ -49,11 +49,16 @@ class Fichier:
         # stockage du nom
         self.nom = nom
 
-        # A priori, il n'est pas nécessaire de vérifier que le
-        # fichier 'nom' existe, cela a été fait avant la construction
-        parser = etree.XMLParser(remove_blank_text=True) # pour que pretty_print fonctionne bien
-        self._root = etree.parse(nom, parser).getroot() # récupération du contenu du fichier
-        self._candidats = [Candidat(node) for node in self._root.xpath('candidat')]
+        # A priori, il n'est pas nécessaire de vérifier que le fichier 'nom' 
+        # existe, cela a été fait avant la construction
+
+        # Ci-dessous, option remove_blank pour que pretty_print fonctionne bien
+        parser = etree.XMLParser(remove_blank_text=True)
+
+        # récupération du contenu du fichier :
+        self._root = etree.parse(nom, parser).getroot()
+        self._candidats = [Candidat(node) \
+                for node in self._root.xpath('candidat')]
 
         # On créé aussi l'ensemble (set) des identifiants des
         # candidats pour que __contains__ soit plus efficace
@@ -63,16 +68,16 @@ class Fichier:
         self._filiere = {fil for fil in filieres if fil in nom.lower()}.pop()
 
     def __iter__(self):
-        """ Cette méthode fait d'un objet fichier un itérable (utilisable dans une boucle)
-        Cela sert à créer la liste de dossiers qui apparaît dans la page html de traitement
-        On itère sur la liste de dossiers que contient le fichier. """
+        """ Cette méthode fait d'un objet fichier un itérable (utilisable dans 
+        une boucle) Cela sert à créer la liste de dossiers qui apparaît dans la 
+        page html de traitement On itère sur la liste de dossiers que contient 
+        le fichier. """
         return self._candidats.__iter__()
 
     def __contains__(self, candidat_):
-        """ méthode qui implémente l'opérateur 'in'.
-        la syntaxe est 'if cand in objet_Fichier'
-        dans laquelle cand est un noeud xml pointant sur un candidat.
-        Elle retourne un booléen. Utile pour l'admin qui traite un
+        """ méthode qui implémente l'opérateur 'in'.  la syntaxe est 'if cand in 
+        objet_Fichier' dans laquelle cand est un noeud xml pointant sur un 
+        candidat.  Elle retourne un booléen. Utile pour l'admin qui traite un 
         candidat et reporte dans toutes les filières demandées. """
         return candidat_.identifiant() in self._identif
 
@@ -85,12 +90,13 @@ class Fichier:
         return self._candidats[index]
 
     def get_cand(self, candidat):
-        """ Renvoie le candidat dont l'identifiant est identique à celui de cand """
-        # Sert à l'admin quand il traite un candidat sur une filière
-        # et REPORTE ses modifs dans toutes les filières demandées..
-        # Sert aussi à la fonction stat() dans la classe Admin.
-        # À n'utiliser que sur des fichiers contenant le candidat ('cand in fichier' True)
-        # Utile de la rendre plus robuste (gérer l'erreur si 'cand in fichier' False) ?
+        """ Renvoie le candidat dont l'identifiant est identique à celui de cand 
+        """
+        # Sert à l'admin quand il traite un candidat sur une filière et REPORTE 
+        # ses modifs dans toutes les filières demandées..  Sert aussi à la 
+        # fonction stat() dans la classe Admin.  À n'utiliser que sur des 
+        # fichiers contenant le candidat ('cand in fichier' True) Utile de la 
+        # rendre plus robuste (gérer l'erreur si 'cand in fichier' False) ?
         index = 0
         num = candidat.identifiant()
         while num != self._candidats[index].identifiant():
@@ -110,11 +116,14 @@ class Fichier:
 
         """
 
-        candidats = sorted(self._candidats, key = lambda cand: Fichier.Critere.NAISSANCE)
+        candidats = sorted(self._candidats, \
+                key = lambda cand: Fichier.Critere.NAISSANCE)
         candidats.sort(key = lambda cand: cand.score(critere))
         return candidats
 
     def sauvegarde(self):
-        """ Sauvegarde le fichier : mise à jour (par écrasement) du fichier xml """
+        """ Sauvegarde le fichier : mise à jour (par écrasement) du fichier xml 
+        """
         with open(self.nom, 'wb') as fich:
-            fich.write(etree.tostring(self._root, pretty_print=True, encoding='utf-8'))
+            fich.write(etree.tostring(self._root, pretty_print=True, \
+                    encoding='utf-8'))
