@@ -676,3 +676,8 @@ def lire(nom, test = False):
         for candidat in candidats:
             res.append(candidat)
         return res
+
+def ecrire(nom, xml):
+    """Cette fonction écrit des données XML dans un fichier"""
+    with open(nom, 'wb') as fich:
+        fich.write(etree.tostring(xml, pretty_print=True, encoding='utf-8'))
