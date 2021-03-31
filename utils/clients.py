@@ -22,7 +22,7 @@ import os, glob, pickle, copy, csv
 from lxml import etree
 from parse import parse
 from utils.fichier import Fichier
-from utils.csv_parcourssup import lire
+from utils.csv_parcourssup import lire, ecrire
 from utils.nettoie_xml import nettoie
 from config import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
 from utils.toolbox import decoup, restaure_virginite

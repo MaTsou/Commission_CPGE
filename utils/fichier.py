@@ -103,7 +103,7 @@ class Fichier:
 
     Critere = Candidat.Critere
 
-    def ordonne(self, critere = Fichier.Critere.SCORE_BRUT):
+    def ordonne(self, critere = Critere.SCORE_BRUT):
         """renvoie une liste des candidatures ordonnées selon le critère donné
         -- mais après avoir trié par âge, donc en privilégiant les
         plus jeunes.
