@@ -361,7 +361,7 @@ class Candidat:
 
         NAISSANCE = auto()
 
-    def score(self, critere = Candidat.Critere.SCORE_BRUT):
+    def score(self, critere = Critere.SCORE_BRUT):
         """Renvoie le score du candidat suivant le critère demandé
         """
 
