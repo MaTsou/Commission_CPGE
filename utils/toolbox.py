@@ -115,7 +115,7 @@ def decoup(src, dest):
                         # réinitialisations
                         writer = PyPDF2.PdfFileWriter()
                         id_cand = res['id']
-                        writer.addPage(page)
+                writer.addPage(page)
     os.remove(os.path.join(dest, 'docs_-1.pdf'))
 
 ############## Manipulation de répertoires
