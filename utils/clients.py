@@ -243,8 +243,7 @@ class Admin(Client):
                     yield "Fichier {} ... ".format(fil.upper())
                     contenu_xml = lire(source) # première lecture brute
                     contenu_xml = nettoie(contenu_xml) # nettoyage doux, filtrage des dossiers invalides + Alertes
-                    with open(dest, 'wb') as fich: # Écriture du fichier admin_FILIÈRE.xml
-                        fich.write(etree.tostring(contenu_xml, pretty_print=True, encoding='utf-8'))
+                    ecrire(dest, contenu_xml) # Écriture du fichier admin_FILIÈRE.xml
                     yield "traité."
 
     def traiter_pdf(self):
