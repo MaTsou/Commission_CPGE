@@ -86,9 +86,9 @@ def _init_acces():
         'Rang final'            : {'query' : 'diagnostic/rangf'},
     }
 
-    # On garantit q
+    # On garantit qu'une valeur par défaut existe
     for val in res.values():
-        if not 'default' in val:
+        if not 'default' in val.keys():
             val['default'] = '?'
 
     # Pour les notes du lycée :
@@ -96,7 +96,8 @@ def _init_acces():
                 'Mathématiques Spécialité',
                 'Mathématiques Expertes',
                 'Physique/Chimie',
-                'Physique-Chimie Spécialité']
+                'Physique-Chimie Spécialité',
+                'Français']
     dates = ['trimestre 1', 'trimestre 2', 'trimestre 3']
     classes = ['Première', 'Terminale']
     for classe in classes:

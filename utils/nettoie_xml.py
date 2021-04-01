@@ -1,3 +1,4 @@
+from utils.candidat import *
 """Le résultat de la reconnaissance des données sur ParcoursSup est
 parfois un peu brut : ce module fournit des fonctions
 d'assainissement.
@@ -20,17 +21,17 @@ series_non_valides = \
      "Professionnelle"]
 
 
-def elague_bulletins_triviaux(candidat):
+def elague_bulletins_triviaux(node):
     """Supprime les bulletins vides du dossier du candidat donné"""
 
-    probs = candidat.xpath('bulletins/bulletin[matières[not(matière)]]')
+    probs = node.xpath('bulletins/bulletin[matières[not(matière)]]')
     for prob in probs:
-        candidat.xpath('bulletins')[0].remove(prob)
+        node.xpath('bulletins')[0].remove(prob)
 
-    return candidat
+    return node
 
 
-def filtre(candidat):
+def filtre(node):
     """Cette fonction filtre automatiquement certains candidats dont le
     dossier présente des défauts rédhibitoires pour un traitement
     automatique : il faut qu'un administrateur regarde!
@@ -38,8 +39,10 @@ def filtre(candidat):
     """
     prefixe = ''
     commentaire = ''
+    # Création d'un objet candidat car on va écrire dans le noeud
+    candidat = Candidat(node)
 
-    valids = candidat.xpath('synoptique/établissement/candidature_validée')
+    valids = node.xpath('synoptique/établissement/candidature_validée')
     oui = valids[0].text.lower()
     if oui != 'oui':
         commentaire = 'Candidature non validée sur ParcoursSup'
@@ -48,7 +51,7 @@ def filtre(candidat):
     else:  # si validée,
         # on récupère la série
         serie = ''
-        probs = candidat.xpath('bulletins/bulletin[classe="Terminale"]')
+        probs = node.xpath('bulletins/bulletin[classe="Terminale"]')
         for prob in probs:  # fausse boucle (normalement)
             serie = prob.xpath('série')[0].text
         # Si série non valide, on exclut
@@ -73,36 +76,59 @@ def filtre(candidat):
         candidat.set('Motifs', f'{prefixe} {commentaire}')
     else:  # si aucune remarque, on calcule le score brut
         candidat.update_brut_score()
-    # Fin des filtres; on retourne un candidat mis à jour
-    return candidat
+    # Fin des filtres; on retourne le noeud du candidat mis à jour
+    return candidat.get_node()
 
 
-def repeche(candidat):
+def repeche(node):
     # FIXME: Fonction utile en 2021 seulement
-    """Pour les candidats de CPES, cette fonctions reporte les notes de
+    """Pour les candidats de CPES, cette fonction reporte les notes de
     maths et physique dans les champs des spécialités correspondantes.
+    Pour les candidats en terminale, reporte les notes de contrôle continu de 
+    français vers les notes EAF.
 
     """
+    # Création d'un objet candidat car on va écrire dans le noeud
+    candidat = Candidat(node)
+
+    # CPES
+    # Dictionnaire source : destination
+    transfert = {
+            'Mathématiques Spécialité' : 'Mathématiques',
+            'Physique-Chimie Spécialité' : 'Physique/Chimie',
+            }
 
     if candidat.get('Classe actuelle').lower() == 'cpes':
         for classe in ['Première', 'Terminale']:
             for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
-                candidat.set(f'Mathématiques Spécialité {classe} {date}',
-                             candidat.get(f'Mathématiques {classe} {date}'))
-                candidat.set(f'Physique-Chimie Spécialité {classe} {date}',
-                             candidat.get(f'Physique/Chimie {classe} {date}'))
-    return candidat
+                for sour,dest in transfert.items():
+                    sour_value = candidat.get(f'{sour} {classe} {date}')
+                    if sour_value != '-' and \
+                            candidat.get(f'{dest} {classe} {date}') == '-':
+                        candidat.set(f'{dest} {classe} {date}', sour_value)
+
+    # Terminales
+    if candidat.get('Classe actuelle').lower() != 'cpes' and \
+            candidat.get('Écrit EAF') == '-':
+        somme, coef = 0, 0
+        for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
+            sour_value = candidat.get(f'Français Première {date}')
+            if sour_value != '-':
+                somme += float(sour_value.replace(',','.'))
+                coef += 1
+            if coef:
+                candidat.set('Écrit EAF', str(somme/coef))
+    return candidat.get_node()
 
 #
 # FONCTION PRINCIPALE
 #
 
 
-def nettoie(candidats):
+def nettoie(xml_nodes):
     """Cette fonction appelle successivement toutes les fonctions de
     nettoyage"""
-    _ = [elague_bulletins_triviaux(candidat)
-         for candidat in candidats]
-    _ = [repeche(candidat) for candidat in candidats]
-    _ = [filtre(candidat) for candidat in candidats]
-    return candidats
+    _ = [elague_bulletins_triviaux(node) for node in xml_nodes]
+    _ = [repeche(node) for node in xml_nodes]
+    _ = [filtre(node) for node in xml_nodes]
+    return xml_nodes
