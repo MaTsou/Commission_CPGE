@@ -264,7 +264,7 @@ class Admin(Client):
             # ne passera pas en commission) Pour ce cas là, on ne recopie pas 
             # dans toutes les filières. Admin peut exclure une candidature dans 
             # une filière sans l'exclure des autres. Sécurité !
-            cand.set('Correction', 'NC') # la fonction update_raw_score renverra 0 !
+            cand.set('Correction', 'NC') # update_raw_score renverra 0 !
             cand.set('Jury', 'Admin') # exclu par l'admin
             cand.set('Motifs', motif)
         else:
@@ -427,7 +427,7 @@ class Admin(Client):
             for cand in fich:
                 cand.update_raw_score()
             # Classement par scoreb décroissant
-            doss = fich.ordonne('score_b')
+            doss = fich.ordonne(Fichier.Critere.SCORE_BRUT)
             # Calcul du rang de chaque candidat et renseignement du noeuds 
             # 'rang_brut'
             for cand in fich:

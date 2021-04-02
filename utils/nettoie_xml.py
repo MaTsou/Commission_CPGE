@@ -75,7 +75,7 @@ def filtre(node):
     if commentaire != '':
         candidat.set('Motifs', f'{prefixe} {commentaire}')
     else:  # si aucune remarque, on calcule le score brut
-        candidat.update_brut_score()
+        candidat.update_raw_score()
     # Fin des filtres; on retourne le noeud du candidat mis à jour
     return candidat.get_node()
 
@@ -118,6 +118,7 @@ def repeche(node):
                 coef += 1
             if coef:
                 candidat.set('Écrit EAF', str(somme/coef))
+                candidat.set('Oral EAF', str(somme/coef))
     return candidat.get_node()
 
 #
