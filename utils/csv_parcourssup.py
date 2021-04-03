@@ -435,7 +435,7 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
             continue
 
         if titre in directs:
-            champ = directs[champs[colonne]]
+            champ = directs[titre]
             if test:
                 print(f"Colonne {n_col}: {champ} de l'établissement ({titre})")
             lecteurs.append(lambda e, l, a=colonne, b=champ:
@@ -444,8 +444,8 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
             colonne = colonne + 1
             continue
 
-        if champs[colonne] in synoptique:
-            nom = synoptique[champs[colonne]]
+        if titre in synoptique:
+            nom = synoptique[titre]
             if test:
                 print(f'Colonne {n_col}: {nom} (synoptique) ({titre})')
             lecteurs.append(lambda e, l, a=colonne, b=nom:
