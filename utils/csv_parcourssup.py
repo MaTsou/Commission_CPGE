@@ -397,7 +397,6 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
         'Département établissement': 'département',
         'Pays établissement': 'pays',
         'Téléphone établissement': 'téléphone', # pour J!
-        'Candidature validée (O/N)': 'candidature_validée'
     }
     synoptique = {
         "Type de formation": 'classe',
@@ -410,6 +409,7 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
         "Autres éléments d'appréciation": 'appreciation_subsidiaire',
         'Niveau de la classe': 'niveau_classe',
         'Avis sur la capacité à réussir': 'capacite_reussite',
+        'Candidature validée (O/N)': 'candidature_validée',
     }
 
     # même organisation que pour la fonction
