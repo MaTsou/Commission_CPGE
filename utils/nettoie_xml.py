@@ -42,7 +42,7 @@ def filtre(node):
     # Création d'un objet candidat car on va écrire dans le noeud
     candidat = Candidat(node)
 
-    valids = node.xpath('synoptique/établissement/candidature_validée')
+    valids = node.xpath('synoptique/candidature_validée')
     oui = valids[0].text.lower()
     if oui != 'oui':
         commentaire = 'Candidature non validée sur ParcoursSup'
@@ -108,17 +108,17 @@ def repeche(node):
                         candidat.set(f'{dest} {classe} {date}', sour_value)
 
     # Terminales
-    if candidat.get('Classe actuelle').lower() != 'cpes' and \
-            candidat.get('Écrit EAF') == '-':
-        somme, coef = 0, 0
-        for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
-            sour_value = candidat.get(f'Français Première {date}')
-            if sour_value != '-':
-                somme += float(sour_value.replace(',','.'))
-                coef += 1
-            if coef:
-                candidat.set('Écrit EAF', str(somme/coef))
-                candidat.set('Oral EAF', str(somme/coef))
+    #if candidat.get('Classe actuelle').lower() != 'cpes' and \
+    #        candidat.get('Écrit EAF') == '-':
+    #    somme, coef = 0, 0
+    #    for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
+    #        sour_value = candidat.get(f'Français Première {date}')
+    #        if sour_value != '-':
+    #            somme += float(sour_value.replace(',','.'))
+    #            coef += 1
+    #        if coef:
+    #            candidat.set('Écrit EAF', str(somme/coef))
+    #            candidat.set('Oral EAF', str(somme/coef))
     return candidat.get_node()
 
 #
