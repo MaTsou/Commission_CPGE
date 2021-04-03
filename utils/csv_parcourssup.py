@@ -410,6 +410,8 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
         'Niveau de la classe': 'niveau_classe',
         'Avis sur la capacité à réussir': 'capacite_reussite',
         'Candidature validée (O/N)': 'candidature_validée',
+        "Note à l'épreuve de Oral de Français (épreuve anticipée)": 'français.oral',
+        "Note à l'épreuve de Ecrit de Français (épreuve anticipée)": 'français.écrit',
     }
 
     # même organisation que pour la fonction
