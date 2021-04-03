@@ -512,6 +512,8 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
         matiere = ''
         colonne = colonne + 1
 
+    lecteurs.append(clore_etablissement)
+
     return colonne
 
 def prepare_lecteurs_bulletins(champs, lecteurs, colonne, test = False):
@@ -603,6 +605,7 @@ def prepare_lecteurs_bulletins(champs, lecteurs, colonne, test = False):
         matiere = ''
         colonne = colonne + 1
 
+    lecteurs.append(clore_candidat)
     return colonne
 
 def prepare_lecteurs(champs, test = False):
@@ -622,7 +625,6 @@ def prepare_lecteurs(champs, test = False):
     colonne = prepare_lecteurs_informations_generales(champs, lecteurs, colonne, test)
     colonne = prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test)
     colonne = prepare_lecteurs_bulletins(champs, lecteurs, colonne, test)
-    lecteurs.append(clore_candidat)
 
     # On est peut-être arrivé là en pensant qu'on avait fini toutes
     # les étapes successives alors qu'en fait, on est juste tombés sur
