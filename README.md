@@ -113,12 +113,7 @@ ParcoursSUP :
        Dans ce cas, l'administrateur peut, en consultant le dossier (lien 
        proposé au-dessus du tableau de synthèse des notes), éventuellement 
        trouver les informations manquantes et renseigner directement dans la 
-       page html les champs adéquats. Remarque : un candidat noté en semestre a 
-       nécessairement moins de notes qu'un candidat noté en trimestres; le 
-       dossier apparaît incomplet alors qu'il ne l'est pas. Il suffit alors à 
-       l'administrateur de cocher les cases (à côté du niveau `Première` ou 
-       `Terminale`) pour en tenir compte et que le calcul de score brut soit 
-       juste.
+       page html les champs adéquats.
      * vérifier la filière : l'analyse initiale n'a pas reconnue la filière 
        d'origine du candidat comme étant 'recevable' ou 'non recevable'. 
        L'administrateur doit, en consultant le dossier, vérifier ce point.
@@ -127,8 +122,9 @@ ParcoursSUP :
   fois qu'il a fait tout son possible pour compléter un dossier, de supprimer 
   les caractères `- Alerte :` du champ de motifs et de les remplacer 
   (éventuellement) par un message à l'intention des jurys.. Ensuite, soit il 
-  décide que le dossier n'est pas recevable (il clique alors sur le bouton 
-  `NC`), soit qu'il l'est (il clique alors sur le bouton `Classer`).  
+  décide que le dossier n'est pas recevable (il sélectionne alors la correction 
+  `NC`), soit qu'il l'est (il sélectionne la correction 0) puis clique sur le 
+  bouton `Valider`).  
 
   Une fois que toutes les alertes sont levées, le bouton `générer les fichiers 
   commission` (menu prinipal) devient actif. En cliquant dessus, 
@@ -152,11 +148,9 @@ ParcoursSUP :
   sont listés. Chaque jury choisit le fichier qui lui a été attribué par 
   l'administrateur et commence son traitement. Les dossiers exlus par 
   l'administrateur n'apparaissent pas; les dossiers sur lesquels l'adminstrateur 
-  à laissé un message apparaissent sur fond rouge. Traiter un dossier signifie :
-
-  * soit, avoir corrigé (ou non) le score d'un dossier, avoir motivé cette 
-    correction et avoir validé en cliquant sur le bouton `Classer`,
-  * soit, avoir motivé un non classement et avoir cliqué sur `NC`.
+  à laissé un message apparaissent sur fond rouge. Traiter un dossier signifie 
+  avoir cliqué sur le bouton `Valider` après avoir éventuellement corrigé le 
+  score (ou choisi 'NC') et motiver la-dite correction.
 
   L'avancement de la commission peut être suivie sur la machine serveur. Sont 
   affichés _en temps réel_ les nombres de dossiers traités par filière. La 
