@@ -51,7 +51,8 @@ def _init_acces():
         'Boursier certifié'     : {'query' : 'boursier_certifie'},
         'Établissement'         : {'query' : 'synoptique/établissement/nom'},
         'Commune'               : {'query' : 'synoptique/établissement/ville'},
-        'Département'           : {'query' : 'synoptique/établissement/département'},
+        'Département'           : {'query' : \
+                'synoptique/établissement/département'},
         'Pays'                  : {'query' : 'synoptique/établissement/pays'},
         'Écrit EAF'             : {'query' : 'synoptique/français.écrit',
                                    'default' : '-',
@@ -65,9 +66,11 @@ def _init_acces():
                                    'pre' : format_candidatures},
         'Candidatures impr'     : {'query' : 'diagnostic/candidatures',
                                    'post' : format_candidatures_impr},
-        'Première semestrielle' : {'query' : 'bulletins/bulletin[classe="Première"]/semestriel',
+        'Première semestrielle' : {'query' : \
+                'bulletins/bulletin[classe="Première"]/semestriel',
                                    'default' : '0'},
-        'Terminale semestrielle': {'query' : 'bulletins/bulletin[classe="Terminale"]/semestriel',
+        'Terminale semestrielle': {'query' : \
+                'bulletins/bulletin[classe="Terminale"]/semestriel',
                                    'default' : '0'},
         'traité'                : {'query' : 'diagnostic/traité',
                                    'default' : False},
@@ -105,7 +108,8 @@ def _init_acces():
             for date in dates:
                 key = f'{matiere} {classe} {date}'
                 query_classe = f'bulletins/bulletin[classe="{classe}"]'
-                query_matiere = f'{query_classe}/matières/matière[intitulé="{matiere}"]'
+                query_matiere = \
+                        f'{query_classe}/matières/matière[intitulé="{matiere}"]'
                 query = f'{query_matiere}[date="{date}"]/note'
                 res[key] = {'query' : query,
                             'default' : '-',
@@ -130,6 +134,8 @@ class Candidat:
 
     def __init__(self, node):
         self._node = node
+        self._coefs = {}
+        self.set_coefs()
 
     def get_node(self):
         return self._node
@@ -192,7 +198,8 @@ class Candidat:
              # un traitement particulier quand le champ contient (Physique/Chimie)
             if node.startswith('Chimie'):
                 node=pere.split('/')[-2]+'/'+node
-            grand_pere = parse('{}/' + node, pere)[0] # le reste du chemin est le grand-pere
+            # le reste du chemin est le grand-pere
+            grand_pere = parse('{}/' + node, pere)[0]
             # analyse et création du père avec tous ses champs...
             noeuds = parse('{}[{}]', node)
             if noeuds is None:
@@ -211,6 +218,88 @@ class Candidat:
         """Renvoie le numéro d'identifiant sur ParcoursSup"""
         return self.get('Num ParcoursSup')
 
+    def set_coefs(self):
+        # Récupération des coefficients, en les copiant car si
+        # l'organisation est semestrielle, on va vouloir faire des
+        # reports pour maintenir les poids relatifs
+        if self.is_cpes():
+            self._coefs = dict(coef_cpes)
+            # report coef de terminale si notation semestrielle
+            if self.is_terminale_semestrielle():
+                for key, val in self._coefs.items():
+                    if 'Terminale trimestre 3' in key:
+                        self._coefs[key.replace('trimestre 3', \
+                                'trimestre 1')] += val/2
+                        self._coefs[key.replace('trimestre 3', \
+                                'trimestre 2')] += val/2
+                        self._coefs[key] = 0
+        else:
+            self._coefs = dict(coef_term)
+            # report coef de terminale si notation semestrielle
+            if self.is_terminale_semestrielle():
+                for key, val in self._coefs.items():
+                    if 'Terminale trimestre 2' in key:
+                        self._coefs[key.replace('trimestre 2', \
+                                'trimestre 1')] += val
+                        self._coefs[key] = 0
+
+        # Report des coef de première si notation semestrielle
+        if self.is_premiere_semestrielle():
+            for key, val in self._coefs.items():
+                if 'Première trimestre 3' in key:
+                    self._coefs[key.replace('trimestre 3', \
+                            'trimestre 1')] += val/2
+                    self._coefs[key.replace('trimestre 3', \
+                            'trimestre 2')] += val/2
+                    self._coefs[key] = 0
+
+        # Il y a aussi des reports si le candidat ne suit pas l'option math 
+        # expertes
+        if not self.is_math_expertes():
+            for key,val in self._coefs.items():
+                if 'Expertes' in key:
+                    self._coefs[key.replace('Expertes', 'Spécialité')] += val
+                    self._coefs[key] = 0
+
+        #####################################
+        # Reports spécial-confinement
+        self.coef_confinement()
+        #####################################
+
+    def coef_confinement(self):
+        if self.is_cpes():
+            # report coef de terminale si notation semestrielle
+            if self.is_terminale_semestrielle():
+                for key, val in self._coefs.items():
+                    if 'Terminale trimestre 2' in key:
+                        self._coefs[key.replace('trimestre 2', \
+                                'trimestre 1')] += val
+                        self._coefs[key] = 0
+            else:
+                for key, val in self._coefs.items():
+                    if 'Terminale trimestre 3' in key:
+                        self._coefs[key.replace('trimestre 3', \
+                                'trimestre 1')] += val/2
+                        self._coefs[key.replace('trimestre 3', \
+                                'trimestre 2')] += val/2
+                        self._coefs[key] = 0
+        else:
+            # report coef de première si notation semestrielle
+            if self.is_premiere_semestrielle():
+                for key, val in self._coefs.items():
+                    if 'Première trimestre 2' in key:
+                        self._coefs[key.replace('trimestre 2', \
+                                'trimestre 1')] += val
+                        self._coefs[key] = 0
+            else:
+                for key, val in self._coefs.items():
+                    if 'Première trimestre 3' in key:
+                        self._coefs[key.replace('trimestre 3', \
+                                'trimestre 1')] += val/2
+                        self._coefs[key.replace('trimestre 3', \
+                                'trimestre 2')] += val/2
+                        self._coefs[key] = 0
+
     def is_cpes(self):
         """Renvoie True si le candidat est en CPES """
         return 'cpes' in self.get('Classe actuelle').lower()
@@ -223,7 +312,8 @@ class Candidat:
 
         expert = False # initialisation
         # Construction de l'ensemble des champs à vérifier
-        champs = {'Mathématiques Expertes Terminale trimestre {}'.format(j) for j in range(1,4)}
+        champs = {'Mathématiques Expertes Terminale trimestre {}'.format(j) \
+                for j in range(1,4)}
 
         # Dès qu'un champ est renseigné on arrête et renvoie True
         while len(champs) > 0:
@@ -252,46 +342,24 @@ class Candidat:
         # Cette fonction est appelée dans nettoie.py. Si elle renvoie
         # False, une alerte est mise en place et l'admin doit faire
         # tout ce qu'il peut pour la lever..  Les éléments à vérifier
-        # sont lus dans parametres.py (coef...)  Construction de
-        # l'ensemble des champs à vérifier
-        champs = set()
-        if self.is_cpes():
-            coefs = coef_cpes
-            en_term = False
-        else:
-            coefs = coef_term
-            en_term = True
+        # sont lus dans parametres.py (coef...)
 
-        for key, coef in coefs.items():
+        # Initialisation des coefs
+        self.set_coefs()
 
-            # on ajoute à champ si coef non nul, si
-            # math_expertes et option du candidat et si
-            # les trimestres 'ne sont pas' des semestres
-
-            ajout = not coef == 0
-            ajout = ajout \
-                and not ('expertes' in key.lower() \
-                         and not self.is_math_expertes())
-            ajout = ajout \
-                and not ('première trimestre 3' in key.lower() \
-                         and self.is_premiere_semestrielle())
-            ajout = ajout \
-                and not ('terminale trimestre 3' in key.lower() \
-                         and self.is_terminale_semestrielle())
-            ajout = ajout \
-                and not (en_term and self.is_terminale_semestrielle() \
-                         and 'terminale trimestre 2' in key.lower())
-
-            if ajout:
-                champs.add(key)
+        # Construction de l'ensemble des champs à vérifier :
+        # toutes les notes affectées d'un coef non nul
+        champs = set([key for key in self._coefs.keys() \
+                if self._coefs[key]])
 
         # Tests :
-        complet = not self.get('Classe actuelle') == _acces['Classe actuelle']['default']
+        complet = not self.get('Classe actuelle') == \
+                _acces['Classe actuelle']['default']
 
         # Dès qu'un champ manque à l'appel on arrête et renvoie False
         while complet and len(champs) > 0:
             champ = champs.pop()
-            if self.get(champ) == _acces[champ]['default']: # note non renseignée ?
+            if self.get(champ) == _acces[champ]['default']: # note absente ?
                 complet = False
         return complet
 
@@ -304,41 +372,11 @@ class Candidat:
             self.set('Score brut', num_to_str(0))
             return
 
-        # Récupération des coefficients, en les copiant car si
-        # l'organisation est semestrielle, on va vouloir faire des
-        # reports pour maintenir les poids relatifs
-        if self.is_cpes():
-            coef = dict(coef_cpes)
-            # report coef de terminale si notation semestrielle
-            if self.is_terminale_semestrielle():
-                for key, val in coef.items():
-                    if 'Terminale trimestre 3' in key:
-                        coef[key.replace('trimestre 3', 'trimestre 1')] += val/2
-                        coef[key.replace('trimestre 3', 'trimestre 2')] += val/2
-        else:
-            coef = dict(coef_term)
-            # report coef de terminale si notation semestrielle
-            if self.is_terminale_semestrielle():
-                for key, val in coef.items():
-                    if 'Terminale trimestre 2' in key:
-                        coef[key.replace('trimestre 2', 'trimestre 1')] += val
-
-        # Report des coef de première si notation semestrielle
-        if self.is_premiere_semestrielle() == '1':
-            for key, val in coef.items():
-                if 'Première trimestre 3' in key:
-                    coef[key.replace('trimestre 3', 'trimestre 1')] += val/2
-                    coef[key.replace('trimestre 3', 'trimestre 2')] += val/2
-
-        # Il y a aussi des reports si le candidat ne suit pas l'option math expertes
-        if not self.is_math_expertes():
-            for key,val in coef.items():
-                if 'Expertes' in key:
-                    coef[key.replace('Expertes', 'Spécialité')] += val
-
+        # Mise à jour des coefs (cas d'un dossier complété par admin)
+        self.set_coefs()
         # On a maintenant tout ce qu'il faut pour lancer le calcul
         somme, poids = 0, 0
-        for key, val in coef.items():
+        for key, val in self._coefs.items():
             note = self.get(key)
             if note != _acces[key]['default']:
                 somme += str_to_num(note)*val
