@@ -299,6 +299,8 @@ class Candidat:
                         self._coefs[key.replace('trimestre 3', \
                                 'trimestre 2')] += val/2
                         self._coefs[key] = 0
+        for key in ['Écrit EAF','Oral EAF']:
+            self._coefs[key] = 0
 
     def is_cpes(self):
         """Renvoie True si le candidat est en CPES """
