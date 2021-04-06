@@ -150,7 +150,7 @@ ParcoursSUP :
   l'administrateur n'apparaissent pas; les dossiers sur lesquels l'adminstrateur 
   à laissé un message apparaissent sur fond rouge. Traiter un dossier signifie 
   avoir cliqué sur le bouton `Valider` après avoir éventuellement corrigé le 
-  score (ou choisi 'NC') et motiver la-dite correction.
+  score (ou choisi 'NC') et motivé la-dite correction.
 
   L'avancement de la commission peut être suivie sur la machine serveur. Sont 
   affichés _en temps réel_ les nombres de dossiers traités par filière. La 
