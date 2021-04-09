@@ -27,7 +27,7 @@ def str_to_num(string):
     try:
         res = float(string.replace(',','.'))
     except ValueError:
-        res = -1 # va être vu comme erroné
+        res = '-'
     return res
 
 def num_to_str(num):
@@ -49,7 +49,7 @@ def date_to_num(naissance):
 def normalize_note(note):
     """ si note n'est pas une note valide, renvoie '-' """
     num = str_to_num(note)
-    if not 0 <= num <= 20:
+    if num == '-' or (not 0 <= num <= 20):
         note = '-'
     return note
 
