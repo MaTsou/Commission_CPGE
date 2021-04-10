@@ -44,6 +44,26 @@ def get_serie(node):
         serie = prob.xpath('série')[0].text
     return serie
 
+def filtre_eds(node):
+    # les enseignements de spécialité conviennent-ils ?
+    eds_requises = {'Mathématiques Spécialité','Physique-Chimie Spécialité'}
+    eds_candidat = set()
+    # eds de terminale
+    probs = node.xpath('synoptique/eds_term')
+    for prob in probs:  # on récupère tous les eds
+        eds_candidat.add(prob.text)
+    if not eds_requises.issubset(eds_candidat):
+        return 'Enseignements de Spécialité inadéquats (classe de terminale)'
+
+    eds_candidat = set()
+    # eds de première
+    probs = node.xpath('synoptique/eds_prem')
+    for prob in probs:  # on récupère tous les eds
+        eds_candidat.add(prob.text)
+    if not eds_requises.issubset(eds_candidat):
+        return 'Enseignements de Spécialité inadéquats (classe de première)'
+    return False
+
 def elague_bulletins_triviaux(node):
     """Supprime les bulletins vides du dossier du candidat donné"""
 
@@ -87,12 +107,21 @@ def filtre(node):
 
     # Si on arrive là, c'est une candidature a priori recevable. On va indiquer 
     # à l'admin les dossiers qui nécessitent son regard (anomalies)
+    # On va tester également les enseignements de spécialité. Il faut veiller à 
+    # ce que l'éventuel rejet d'un dossier ne soit pas dû à un problème 
+    # d'identification. Seuls les dossiers de candidats dans une série reconnue, 
+    # et étant en terminale FIXME (cpes aussi à partir de 2022) peuvent être 
+    # rejetés pour cette raison.
     prefixe = '- Alerte :' # indicateur d'une alerte
     commentaire = [] # reçoit les différents commentaires
+
+    # enseignements de spécialité ok ?
+    wrong_eds = filtre_eds(node)
 
     # 1/ Série reconnue comme valide ?
     if serie not in series_valides:
         commentaire.append('Vérifier la série')
+        wrong_eds = False
 
     # 2/ Le dossier est-il complet?
     # (toutes les notes présentes et classe actuelle correcte)
@@ -102,13 +131,19 @@ def filtre(node):
     # 3/ Classe actuelle non reconnue ?
     if classe_actuelle not in classes_actuelles_valides:
         commentaire.append('Vérifier la classe actuelle')
+        wrong_eds = False
 
-    # Insertion de l'alerte dans le dossier candidat
-    if len(commentaire):
-        commentaires = ' | '.join(commentaire)
-        candidat.set('Motifs', f'{prefixe} {commentaires}')
-    else:  # si aucune remarque, on calcule le score brut
-        candidat.update_raw_score()
+    # Traitement
+    # on exclut si mauvais enseignements de spé
+    if wrong_eds and not candidat.is_cpes(): # FIXME test cpes only en 2021
+        exclure_candidature(candidat, wrong_eds)
+    else:
+        # Insertion de l'éventuelle alerte dans le dossier candidat
+        if len(commentaire):
+            commentaires = ' | '.join(commentaire)
+            candidat.set('Motifs', f'{prefixe} {commentaires}')
+        else:  # si aucune remarque :
+            candidat.update_raw_score()
     # Fin des filtres; on retourne le noeud du candidat mis à jour
     return candidat.get_node()
 
