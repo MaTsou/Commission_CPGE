@@ -414,6 +414,8 @@ def prepare_lecteurs_fiche_synoptique(champs, lecteurs, colonne, test = False):
         "Note à l'épreuve de Français écrit": 'français.écrit',
         "Note à l'épreuve de Oral de Français (épreuve anticipée)": 'français.oral', # FIXME: ancien bac
         "Note à l'épreuve de Ecrit de Français (épreuve anticipée)": 'français.écrit', # FIXME: ancien bac
+        "EDS BAC Terminale": 'enseignement_de_specialite_terminale',
+        "EDS BAC Premiere": 'enseignement_de_specialite_premiere',
     }
 
     # même organisation que pour la fonction

@@ -49,7 +49,7 @@ def filtre_eds(node):
     eds_requises = {'Mathématiques Spécialité','Physique-Chimie Spécialité'}
     eds_candidat = set()
     # eds de terminale
-    probs = node.xpath('synoptique/eds_term')
+    probs = node.xpath('synoptique/enseignement_de_spécialite_terminale')
     for prob in probs:  # on récupère tous les eds
         eds_candidat.add(prob.text)
     if not eds_requises.issubset(eds_candidat):
@@ -57,7 +57,7 @@ def filtre_eds(node):
 
     eds_candidat = set()
     # eds de première
-    probs = node.xpath('synoptique/eds_prem')
+    probs = node.xpath('synoptique/enseignement_de_spécialite_premiere')
     for prob in probs:  # on récupère tous les eds
         eds_candidat.add(prob.text)
     if not eds_requises.issubset(eds_candidat):
