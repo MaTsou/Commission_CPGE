@@ -27,6 +27,8 @@ classes_actuelles_valides = ["Terminale", "CPES"]
 classes_actuelles_non_valides = \
     ["CPGE",
      "Licence",
+     "Licence sélective",
+     "DUT",
      "Formations des écoles d'ingénieurs",
      "Formations d'architecture, du paysage et du patrimoine",
      "Autre formation du supérieur",
