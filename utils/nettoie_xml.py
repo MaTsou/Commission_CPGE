@@ -10,9 +10,11 @@ d'assainissement.
 
 # Variables globales
 
-series_valides = ["Série Générale",
-                  "Scientifique",
-                  "Préparation au bac Européen"]
+series_valides = \
+    ["Série Générale",
+     "Scientifique",
+     "Préparation au bac Européen"]
+
 series_non_valides = \
     ["Sciences et Technologies de l'Industrie et du Développement Durable",
      "Economique et social",
@@ -20,6 +22,27 @@ series_non_valides = \
      "Sciences et technologie de laboratoire",
      "Professionnelle"]
 
+classes_actuelles_valides = ["Terminale", "CPES"]
+
+classes_actuelles_non_valides = \
+    ["CPGE",
+     "Licence",
+     "Formations des écoles d'ingénieurs",
+     "Formations d'architecture, du paysage et du patrimoine",
+     "Autre formation du supérieur",
+     "PACES (Médecine, Pharmacie, Sage femme, Dentiste, Kiné"]
+
+def exclure_candidature(cand, motif):
+    cand.set('Correction', 'NC')
+    cand.set('Jury', 'Admin')
+    cand.set('Motifs', motif)
+
+def get_serie(node):
+    serie = ''
+    probs = node.xpath('bulletins/bulletin[classe="Terminale"]')
+    for prob in probs:  # fausse boucle (normalement)
+        serie = prob.xpath('série')[0].text
+    return serie
 
 def elague_bulletins_triviaux(node):
     """Supprime les bulletins vides du dossier du candidat donné"""
@@ -42,38 +65,48 @@ def filtre(node):
     # Création d'un objet candidat car on va écrire dans le noeud
     candidat = Candidat(node)
 
+    # La candidature est-elle validée ?
     valids = node.xpath('synoptique/candidature_validée')
     oui = valids[0].text.lower()
     if oui != 'oui':
-        commentaire = 'Candidature non validée sur ParcoursSup'
-        candidat.set('Correction', 'NC')
-        candidat.set('Jury', 'Admin')
-    else:  # si validée,
-        # on récupère la série
-        serie = ''
-        probs = node.xpath('bulletins/bulletin[classe="Terminale"]')
-        for prob in probs:  # fausse boucle (normalement)
-            serie = prob.xpath('série')[0].text
-        # Si série non valide, on exclut
-        if serie in series_non_valides:
-            commentaire = f'Série {serie}'
-            candidat.set('Correction', 'NC')
-            candidat.set('Jury', 'Admin')
-        else:  # sinon, on alerte Admin sur certaines anomalies rencontrées
-            prefixe = '- Alerte :'
-            # 1/ Série reconnue ?
-            if serie not in series_valides:
-                commentaire += ' | Vérifier la série |'
-            # 2/ Le dossier est-il complet?
-            # (toutes les notes présentes et classe actuelle correcte)
-            if not candidat.is_complet():
-                commentaire += ' | Dossier incomplet |'
-            # 3/ Classe actuelle n'est pas Terminale
-            classe = candidat.get('Classe actuelle').lower()
-            if not ('terminale' in classe or 'cpes' in classe):
-                commentaire += ' | Vérifier la classe actuelle |'
-    if commentaire != '':
-        candidat.set('Motifs', f'{prefixe} {commentaire}')
+        exclure_candidature(candidat, 'Candidature non validée sur ParcoursSup')
+        return candidat.get_node()
+
+    # la classe actuelle convient-elle ?
+    classe_actuelle = candidat.get('Classe actuelle')
+    if classe_actuelle in classes_actuelles_non_valides:
+        exclure_candidature(candidat, 'Classe actuelle inadéquate')
+        return candidat.get_node()
+
+    # la série convient-elle ?
+    serie = get_serie(node)
+    # Si série non valide, on exclut
+    if serie in series_non_valides:
+        exclure_candidature(candidat, 'Série inadéquate')
+        return candidat.get_node()
+
+    # Si on arrive là, c'est une candidature a priori recevable. On va indiquer 
+    # à l'admin les dossiers qui nécessitent son regard (anomalies)
+    prefixe = '- Alerte :' # indicateur d'une alerte
+    commentaire = [] # reçoit les différents commentaires
+
+    # 1/ Série reconnue comme valide ?
+    if serie not in series_valides:
+        commentaire.append('Vérifier la série')
+
+    # 2/ Le dossier est-il complet?
+    # (toutes les notes présentes et classe actuelle correcte)
+    if not candidat.is_complet():
+        commentaire.append('Dossier incomplet')
+
+    # 3/ Classe actuelle non reconnue ?
+    if classe_actuelle not in classes_actuelles_valides:
+        commentaire.append('Vérifier la classe actuelle')
+
+    # Insertion de l'alerte dans le dossier candidat
+    if len(commentaire):
+        commentaires = ' | '.join(commentaire)
+        candidat.set('Motifs', f'{prefixe} {commentaires}')
     else:  # si aucune remarque, on calcule le score brut
         candidat.update_raw_score()
     # Fin des filtres; on retourne le noeud du candidat mis à jour
@@ -84,8 +117,6 @@ def repeche(node):
     # FIXME: Fonction utile en 2021 seulement
     """Pour les candidats de CPES, cette fonction reporte les notes de
     maths et physique dans les champs des spécialités correspondantes.
-    Pour les candidats en terminale, reporte les notes de contrôle continu de 
-    français vers les notes EAF.
 
     """
     # Création d'un objet candidat car on va écrire dans le noeud
@@ -98,27 +129,14 @@ def repeche(node):
             'Physique-Chimie Spécialité' : 'Physique/Chimie',
             }
 
-    if candidat.get('Classe actuelle').lower() == 'cpes':
+    if candidat.is_cpes():
         for classe in ['Première', 'Terminale']:
             for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
-                for sour,dest in transfert.items():
+                for dest,sour in transfert.items():
                     sour_value = candidat.get(f'{sour} {classe} {date}')
                     if sour_value != '-' and \
                             candidat.get(f'{dest} {classe} {date}') == '-':
                         candidat.set(f'{dest} {classe} {date}', sour_value)
-
-    # Terminales
-    #if candidat.get('Classe actuelle').lower() != 'cpes' and \
-    #        candidat.get('Écrit EAF') == '-':
-    #    somme, coef = 0, 0
-    #    for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
-    #        sour_value = candidat.get(f'Français Première {date}')
-    #        if sour_value != '-':
-    #            somme += float(sour_value.replace(',','.'))
-    #            coef += 1
-    #        if coef:
-    #            candidat.set('Écrit EAF', str(somme/coef))
-    #            candidat.set('Oral EAF', str(somme/coef))
     return candidat.get_node()
 
 #
