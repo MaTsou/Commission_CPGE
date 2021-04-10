@@ -314,7 +314,8 @@ class Composeur(object):
         return txt
     
     def genere_liste_stat(self, qui):
-        """ Sous-fonction pour le menu admin : affichage des statistiques de candidatures """
+        """ Sous-fonction pour le menu admin :
+            affichage des statistiques de candidatures """
         liste_stat = ''
         if len(glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))) > 0:
             # si les fichiers admin existent
@@ -443,10 +444,14 @@ class Composeur(object):
             data[attr] = cand.get(attr)
         # récup filiere pour connaître le chemin vers le dossier pdf (dans 
         # répertoire docs_candidats)
+        # Si le fichier pdf n'existe pas, le lien pointe vers une page par 
+        # défaut...
         fil = qui.fichier.filiere()
-        data['ref_fich'] = os.path.join('docs_candidats', '{}'\
-                .format(fil.lower()), 'docs_{}'\
-                .format(cand.get('Num ParcoursSup')))
+        data['ref_fich'] = os.path.join('data', 'docs_candidats', \
+                '{}'.format(fil.lower()), \
+                'docs_{}.pdf'.format(cand.get('Num ParcoursSup')))
+        if not os.path.isfile(data['ref_fich']):
+            data['ref_fich'] = os.path.join('utils', 'pdf_error.html')
         # Formatage des champs de notes et de classe actuelle en fonction de 
         # format_admin En effet, Admin a la possibilité d'écrire dans ces champs 
         # alors que Jury est en lecture seule.
