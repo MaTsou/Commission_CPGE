@@ -42,12 +42,13 @@ class Fichier:
 
     ############# Méthodes d'instance #############
     #                                             #
-    def __init__(self, nom):
+    def __init__(self, nom, journal_de_log):
         """ Constructeur d'une instance Fichier.
         'nom' est le chemin d'un fichier xml. """
 
-        # stockage du nom
+        # stockage du nom et du journal
         self.nom = nom
+        self.journal = journal_de_log
 
         # A priori, il n'est pas nécessaire de vérifier que le fichier 'nom'
         # existe, cela a été fait avant la construction
@@ -57,7 +58,7 @@ class Fichier:
 
         # récupération du contenu du fichier :
         self._root = etree.parse(nom, parser).getroot()
-        self._candidats = [Candidat(node) \
+        self._candidats = [Candidat(node, self.journal) \
                 for node in self._root.xpath('candidat')]
 
         # On créé aussi l'ensemble (set) des identifiants des

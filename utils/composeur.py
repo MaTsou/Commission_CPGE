@@ -99,10 +99,11 @@ class Composeur(object):
     motifs += '</table>'
     ### Fin déclaration attributs de classe
 
-    def __init__(self, titre):
+    def __init__(self, titre, journal_de_log):
         """ constructeur d'une instance Composeur.
         Reçoit une titre de page en paramètre. """
         self.titre = titre
+        self.journal = journal_de_log
 
     # Méthodes
     def genere_entete(self, titre):

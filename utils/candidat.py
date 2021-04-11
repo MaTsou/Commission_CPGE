@@ -132,8 +132,9 @@ class Candidat:
     """Le but de ce type d'objet est de fournir une interface sur un nœud
     XML décrivant un candidat"""
 
-    def __init__(self, node):
+    def __init__(self, node, journal_de_log):
         self._node = node
+        self.journal = journal_de_log
         self._coefs = {}
         self.set_coefs()
 

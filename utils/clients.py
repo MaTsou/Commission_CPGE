@@ -34,11 +34,12 @@ from utils.parametres import min_correc
 
 class Client(): 
     """ Objet client "abstrait" pour la class Serveur """
-    def __init__(self, key, type_client):
+    def __init__(self, key, type_client, journal_de_log):
         """ constructeur """
         # identifiant du client : contenu du cookie déposé sur la machine client
         self.je_suis = key  
         self.type = type_client # type de client (admin ou jury)
+        self.journal = journal_de_log
         self._droits = type_client  # droits : (type suivi nom fichier). Attribut privé car méthode set particulière..
         self.fichier = None  # contiendra une instance 'Fichier'
         # Index (dans le fichier) du candidat suivi.

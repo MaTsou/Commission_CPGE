@@ -65,7 +65,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         self.sse_message_id = 0 # identifiant des messages SSE
 
         # instanciation d'un objet Composeur de page html.
-        self.html_compose = Composeur(entete)
+        self.html_compose = Composeur(entete, self.journal)
         navi = webbrowser.get()  # Quel est le navigateur par défaut ?
         navi.open_new('http://'+ip+':8080') # on ouvre avec la bonne url..
 
@@ -100,11 +100,11 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                     cherrypy.request.remote.ip:
                 # Le client sera Jury, on créé un objet Jury associé à la clé 
                 # key
-                self.clients[key] = Jury(key)
+                self.clients[key] = Jury(key, self.journal)
             else:
                 # Machine serveur et pas d'option -jury ==> c'est un Client 
                 # Admin, on créé un objet Admin associé à la clé key
-                self.clients[key] = Admin(key)
+                self.clients[key] = Admin(key, self.journal)
         else: # sinon,
             # on récupère la clé et le client
             key = cherrypy.session['JE']
@@ -231,7 +231,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # sinon, mise à jour des attributs du client : l'attribut fichier du 
             # client va recevoir une instance d'un objet Fichier, construit à 
             # partir du nom de fichier.
-            client.set_fichier(Fichier(fichier))
+            client.set_fichier(Fichier(fichier, self.journal))
             # Mise à jour de la liste des fichiers utilisés
             self.fichiers_utilises[client] = fichier
             # On émet un message SSE : ajout d'un fichier à la liste des 
@@ -254,7 +254,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Mise à jour des attributs du client : l'attribut fichier du client va 
         # recevoir une instance d'un objet Fichier, construit à partir du nom de 
         # fichier.
-        client.set_fichier(Fichier(kwargs["fichier"]))
+        client.set_fichier(Fichier(kwargs["fichier"], self.journal))
         ## Initialisation des paramètres
         # mem_scroll : cookie qui stocke la position de l'ascenseur dans la 
         # liste des dossiers
@@ -333,5 +333,5 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         client = self.get_client_cour() # récupère le client (c'est un admin !)
         # Mise à jour des attributs du client
         # son fichier courant devient celui qu'il vient de choisir
-        client.set_fichier(Fichier(kwargs["fichier"]))
+        client.set_fichier(Fichier(kwargs["fichier"], self.journal))
         return self.html_compose.page_impression(client)
