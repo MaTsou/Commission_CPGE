@@ -10,3 +10,4 @@ utils/__pycache__/
 *.xml
 *.csv
 *.pdf
+*.log
