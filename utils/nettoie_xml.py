@@ -1,9 +1,19 @@
 from utils.candidat import *
+import logging
 """Le résultat de la reconnaissance des données sur ParcoursSup est
 parfois un peu brut : ce module fournit des fonctions
 d'assainissement.
 """
 
+# Création d'un journal de log
+formatter = logging.Formatter(\
+        "%(levelname)s :: %(message)s")
+# Qui récupère les messages ? (on peut en définir plusieurs)
+handler = logging.FileHandler("journal_nettoie.log", mode="a", encoding="utf-8")
+handler.setFormatter(formatter)
+# L'objet appelé par tout élément du programme qui veut journaliser qqc
+journal = logging.getLogger("nettoie_xml")
+journal.addHandler(handler)
 #
 # FONCTIONS DE POST-TRAITEMENT
 #
@@ -38,6 +48,7 @@ def exclure_candidature(cand, motif):
     cand.set('Correction', 'NC')
     cand.set('Jury', 'Admin')
     cand.set('Motifs', motif)
+    journal.critical(f"{cand.get('Nom')} {cand.get('Prénom')} : {motif}")
 
 def get_serie(node):
     serie = ''
@@ -51,7 +62,7 @@ def filtre_eds(node):
     eds_requises = {'Mathématiques Spécialité','Physique-Chimie Spécialité'}
     eds_candidat = set()
     # eds de terminale
-    probs = node.xpath('synoptique/enseignement_de_spécialite_terminale')
+    probs = node.xpath('synoptique/enseignement_de_specialite_terminale')
     for prob in probs:  # on récupère tous les eds
         eds_candidat.add(prob.text)
     if not eds_requises.issubset(eds_candidat):
@@ -59,7 +70,7 @@ def filtre_eds(node):
 
     eds_candidat = set()
     # eds de première
-    probs = node.xpath('synoptique/enseignement_de_spécialite_premiere')
+    probs = node.xpath('synoptique/enseignement_de_specialite_premiere')
     for prob in probs:  # on récupère tous les eds
         eds_candidat.add(prob.text)
     if not eds_requises.issubset(eds_candidat):
@@ -85,7 +96,7 @@ def filtre(node):
     prefixe = ''
     commentaire = ''
     # Création d'un objet candidat car on va écrire dans le noeud
-    candidat = Candidat(node)
+    candidat = Candidat(node, journal)
 
     # La candidature est-elle validée ?
     valids = node.xpath('synoptique/candidature_validée')
@@ -109,6 +120,7 @@ def filtre(node):
 
     # Si on arrive là, c'est une candidature a priori recevable. On va indiquer 
     # à l'admin les dossiers qui nécessitent son regard (anomalies)
+    #
     # On va tester également les enseignements de spécialité. Il faut veiller à 
     # ce que l'éventuel rejet d'un dossier ne soit pas dû à un problème 
     # d'identification. Seuls les dossiers de candidats dans une série reconnue, 
@@ -157,10 +169,10 @@ def repeche(node):
 
     """
     # Création d'un objet candidat car on va écrire dans le noeud
-    candidat = Candidat(node)
+    candidat = Candidat(node, journal)
 
     # CPES
-    # Dictionnaire source : destination
+    # Dictionnaire destination : source 
     transfert = {
             'Mathématiques Spécialité' : 'Mathématiques',
             'Physique-Chimie Spécialité' : 'Physique/Chimie',

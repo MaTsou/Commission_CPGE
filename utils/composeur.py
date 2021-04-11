@@ -261,7 +261,7 @@ class Composeur(object):
             # toutes les alertes.
             ### Testons s'il reste encore des alertes dans les fichiers admin
             # Récupération des fichiers admin
-            list_fich = {Fichier(fich) \
+            list_fich = {Fichier(fich, self.journal) \
                     for fich in glob.glob(os.path.join(os.curdir, "data", \
                     "admin_*.xml"))}
             alertes = False
@@ -325,7 +325,7 @@ class Composeur(object):
             if not(os.path.exists(chem)):
                 # le fichier stat n'existe pas (cela ne devrait pas arriver)
                 # on le créé
-                list_fich = [Fichier(fich) \
+                list_fich = [Fichier(fich, self.journal) \
                         for fich in glob.glob(os.path.join(os.curdir, "data",\
                         "admin_*.xml"))]
                 qui.stat()
