@@ -57,6 +57,7 @@
 # est suffisamment simple).
 
 import os, sys, cherrypy
+import logging
 from utils.serveur import Serveur
 
 ########################################################################
@@ -76,7 +77,25 @@ préciser certaines options :
   commission,
     tout le reste se fait en local) """
 
-# Début du code :
+##### Début du code :
+### Configuration d'un logger (gestionnaire d'un fichier log)
+# Deux options s'offrent :
+# - soit on passe le logger (l'instance journal) à tous les objets de 
+# l'application.
+# - soit on passe le handler (en gros le fichier qui reçoit le journal) et 
+# chaque objet a son propre logger ; intérêt = gérer les seuils de message 
+# indépendamment...
+#
+# Formatter les messages
+formatter = logging.Formatter(\
+        "%(asctime)s :: %(levelname)s :: %(message)s")
+# Qui récupère les messages ? (on peut en définir plusieurs)
+handler = logging.FileHandler("journal.log", mode="a", encoding="utf-8")
+handler.setFormatter(formatter)
+# L'objet appelé par tout élément du programme qui veut journaliser qqc
+journal = logging.getLogger("commission")
+journal.addHandler(handler)
+
 # Récupération des options de lancement ('-jury' pour une version jury, '-ip 
 # 196.168.1.10' pour changer l'ip serveur)
 jury = '-jury' in sys.argv
@@ -85,7 +104,17 @@ ip = '127.0.0.1' # ip socket_host par défaut...
 if '-ip' in sys.argv:
     ip = sys.argv[sys.argv.index('-ip')+1]
 
+log_level = 'warning'
+if '-log' in sys.argv:
+    log_level = sys.argv[sys.argv.index('-log')+1]
+    try:
+        handler.setLevel(getattr(logging, log_level.upper()))
+        journal.setLevel(getattr(logging, log_level.upper()))
+    except:
+        handler.setLevel(logging.WARNING) # par défaut
+        journal.setLevel(logging.WARNING)
+
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
 cherrypy.config.update({"server.socket_host":ip})
-cherrypy.quickstart(Serveur(jury, ip),'/', config ="utils/cherrypy.conf")
+cherrypy.quickstart(Serveur(jury, ip, journal),'/', config ="utils/cherrypy.conf")
