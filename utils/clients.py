@@ -158,7 +158,6 @@ class Jury(Client):
         cand.set('Motifs', kwargs['motif'])
 
         # Renseignement du journal de log
-        print(self.journal)
         self.journal.info(f"{self._droits} a traité {cand.get('Nom')} {cand.get('Prénom')} : {cor} / {kwargs['motif']}")
 
         ## Fin mise à jour dossier
