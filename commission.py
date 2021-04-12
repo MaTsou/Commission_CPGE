@@ -56,8 +56,8 @@
 # au langage python puisse avoir accès à quelques paramètres (dont la syntaxe 
 # est suffisamment simple).
 
-import os, sys, cherrypy
-import logging
+import os, sys, cherrypy, logging
+from utils.toolbox import restaure_virginite
 from utils.serveur import Serveur
 
 ########################################################################
@@ -86,16 +86,16 @@ préciser certaines options :
 # chaque objet a son propre logger ; intérêt = gérer les seuils de message 
 # indépendamment...
 #
-# Formatter les messages
-formatter = logging.Formatter(\
-        "%(asctime)s :: %(levelname)s :: %(message)s")
-# Qui récupère les messages ? (on peut en définir plusieurs)
-handler = logging.FileHandler(os.path.join("utils", "logs", "journal.log"), \
-        mode="a", encoding="utf-8")
-handler.setFormatter(formatter)
-# L'objet appelé par tout élément du programme qui veut journaliser qqc
-journal = logging.getLogger("commission")
-journal.addHandler(handler)
+def configure_logger(log_path):
+    formatter = logging.Formatter(\
+            "%(asctime)s :: %(levelname)s :: %(message)s")
+    # Qui récupère les messages ? (on peut en définir plusieurs)
+    handler = logging.FileHandler(os.path.join(log_path, "journal.log"), \
+            mode="a", encoding="utf-8")
+    handler.setFormatter(formatter)
+    # L'objet appelé par tout élément du programme qui veut journaliser qqc
+    journal = logging.getLogger("commission")
+    journal.addHandler(handler)
 
 # Récupération des options de lancement ('-jury' pour une version jury, '-ip 
 # 196.168.1.10' pour changer l'ip serveur)
@@ -104,6 +104,11 @@ jury = '-jury' in sys.argv
 ip = '127.0.0.1' # ip socket_host par défaut...
 if '-ip' in sys.argv:
     ip = sys.argv[sys.argv.index('-ip')+1]
+
+log_path = os.path.join("utils", "logs")
+if '-clean-log' in sys.argv:
+    restaure_virginite(log_path)
+configure_logger(log_path)
 
 log_level = 'warning'
 if '-log' in sys.argv:
@@ -118,4 +123,4 @@ if '-log' in sys.argv:
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
 cherrypy.config.update({"server.socket_host":ip})
-cherrypy.quickstart(Serveur(jury, ip, journal),'/', config ="utils/cherrypy.conf")
+cherrypy.quickstart(Serveur(jury, ip),'/', config ="utils/cherrypy.conf")
