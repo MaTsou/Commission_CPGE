@@ -1,5 +1,5 @@
 from utils.candidat import *
-import logging
+import os, logging
 """Le résultat de la reconnaissance des données sur ParcoursSup est
 parfois un peu brut : ce module fournit des fonctions
 d'assainissement.
@@ -9,7 +9,8 @@ d'assainissement.
 formatter = logging.Formatter(\
         "%(levelname)s :: %(message)s")
 # Qui récupère les messages ? (on peut en définir plusieurs)
-handler = logging.FileHandler("journal_nettoie.log", mode="a", encoding="utf-8")
+handler = logging.FileHandler(os.path.join("utils", "logs", \
+        "journal_nettoie.log"), mode="a", encoding="utf-8")
 handler.setFormatter(formatter)
 # L'objet appelé par tout élément du programme qui veut journaliser qqc
 journal = logging.getLogger("nettoie_xml")

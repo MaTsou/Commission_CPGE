@@ -90,7 +90,8 @@ préciser certaines options :
 formatter = logging.Formatter(\
         "%(asctime)s :: %(levelname)s :: %(message)s")
 # Qui récupère les messages ? (on peut en définir plusieurs)
-handler = logging.FileHandler("journal.log", mode="a", encoding="utf-8")
+handler = logging.FileHandler(os.path.join("utils", "logs", "journal.log"), \
+        mode="a", encoding="utf-8")
 handler.setFormatter(formatter)
 # L'objet appelé par tout élément du programme qui veut journaliser qqc
 journal = logging.getLogger("commission")
