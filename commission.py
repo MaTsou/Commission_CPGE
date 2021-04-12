@@ -94,7 +94,7 @@ def standard_logger(name, path, formatter_string):
     # L'objet appelé par tout élément du programme qui veut journaliser qqc
     journal = logging.getLogger(name)
     journal.addHandler(handler)
-    return [journal, handler]
+    return journal
 
 def configure_loggers(log_path):
     journaux = []
@@ -102,13 +102,13 @@ def configure_loggers(log_path):
     comm_log = standard_logger('commission',\
             os.path.join(log_path, 'journal.log'),\
             "%(asctime)s :: %(levelname)s :: %(message)s")
-    journaux.append(comm_log[0])
+    journaux.append(comm_log)
 
     # Création d'un journal de log pour le nettoyage
     nett_log = standard_logger('nettoie_xml',\
             os.path.join(log_path, 'journal_nettoie.log'),\
             "%(levelname)s :: %(message)s")
-    journaux.append(comm_log[0])
+    journaux.append(nett_log)
     return journaux
 
 # Récupération des options de lancement ('-jury' pour une version jury, '-ip 
