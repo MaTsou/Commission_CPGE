@@ -5,19 +5,11 @@ parfois un peu brut : ce module fournit des fonctions
 d'assainissement.
 """
 
-# Création d'un journal de log
-formatter = logging.Formatter(\
-        "%(levelname)s :: %(message)s")
-# Qui récupère les messages ? (on peut en définir plusieurs)
-handler = logging.FileHandler(os.path.join("utils", "logs", \
-        "journal_nettoie.log"), mode="a", encoding="utf-8")
-handler.setFormatter(formatter)
-# L'objet appelé par tout élément qui veut journaliser qqc
-journal = logging.getLogger("nettoie_xml")
-journal.addHandler(handler)
 #
 # FONCTIONS DE POST-TRAITEMENT
 #
+# Journal de log...
+journal = logging.getLogger('nettoie_xml')
 
 # Variables globales
 
@@ -49,7 +41,7 @@ def exclure_candidature(cand, motif):
     cand.set('Correction', 'NC')
     cand.set('Jury', 'Admin')
     cand.set('Motifs', motif)
-    journal.critical(f"{cand.get('Nom')} {cand.get('Prénom')} : {motif}")
+    journal.info(f"{cand.get('Nom')} {cand.get('Prénom')} : {motif}")
 
 def get_serie(node):
     serie = ''
@@ -97,7 +89,7 @@ def filtre(node):
     prefixe = ''
     commentaire = ''
     # Création d'un objet candidat car on va écrire dans le noeud
-    candidat = Candidat(node, journal)
+    candidat = Candidat(node)
 
     # La candidature est-elle validée ?
     valids = node.xpath('synoptique/candidature_validée')
@@ -125,9 +117,9 @@ def filtre(node):
     # On va tester également les enseignements de spécialité. Il faut veiller à 
     # ce que l'éventuel rejet d'un dossier ne soit pas dû à un problème 
     # d'identification. Seuls les dossiers de candidats dans une série reconnue, 
-    # et étant en terminale FIXME (cpes aussi à partir de 2022) peuvent être 
+    # et étant en terminale (FIXME cpes aussi à partir de 2022) peuvent être 
     # rejetés pour cette raison.
-    prefixe = '- Alerte :' # indicateur d'une alerte
+    prefixe = '- Alerte :' # indicateur d'une alerte (important...)
     commentaire = [] # reçoit les différents commentaires
 
     # enseignements de spécialité ok ?
@@ -170,7 +162,7 @@ def repeche(node):
 
     """
     # Création d'un objet candidat car on va écrire dans le noeud
-    candidat = Candidat(node, journal)
+    candidat = Candidat(node)
 
     # CPES
     # Dictionnaire destination : source 

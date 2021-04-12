@@ -86,16 +86,30 @@ préciser certaines options :
 # chaque objet a son propre logger ; intérêt = gérer les seuils de message 
 # indépendamment...
 #
-def configure_logger(log_path):
-    formatter = logging.Formatter(\
-            "%(asctime)s :: %(levelname)s :: %(message)s")
+def standard_logger(name, path, formatter_string):
+    formatter = logging.Formatter(formatter_string)
     # Qui récupère les messages ? (on peut en définir plusieurs)
-    handler = logging.FileHandler(os.path.join(log_path, "journal.log"), \
-            mode="a", encoding="utf-8")
+    handler = logging.FileHandler(path, mode="a", encoding="utf-8")
     handler.setFormatter(formatter)
     # L'objet appelé par tout élément du programme qui veut journaliser qqc
-    journal = logging.getLogger("commission")
+    journal = logging.getLogger(name)
     journal.addHandler(handler)
+    return [journal, handler]
+
+def configure_loggers(log_path):
+    journaux = []
+    # Création d'un journal de log pour la commission
+    comm_log = standard_logger('commission',\
+            os.path.join(log_path, 'journal.log'),\
+            "%(asctime)s :: %(levelname)s :: %(message)s")
+    journaux.append(comm_log[0])
+
+    # Création d'un journal de log pour le nettoyage
+    nett_log = standard_logger('nettoie_xml',\
+            os.path.join(log_path, 'journal_nettoie.log'),\
+            "%(levelname)s :: %(message)s")
+    journaux.append(comm_log[0])
+    return journaux
 
 # Récupération des options de lancement ('-jury' pour une version jury, '-ip 
 # 196.168.1.10' pour changer l'ip serveur)
@@ -108,17 +122,16 @@ if '-ip' in sys.argv:
 log_path = os.path.join("utils", "logs")
 if '-clean-log' in sys.argv:
     restaure_virginite(log_path)
-configure_logger(log_path)
+journaux = configure_loggers(log_path)
 
-log_level = 'warning'
+default_log_level = 'INFO'
 if '-log' in sys.argv:
     log_level = sys.argv[sys.argv.index('-log')+1]
+for journal in journaux:
     try:
-        handler.setLevel(getattr(logging, log_level.upper()))
         journal.setLevel(getattr(logging, log_level.upper()))
     except:
-        handler.setLevel(logging.WARNING) # par défaut
-        journal.setLevel(logging.WARNING)
+        journal.setLevel(getattr(logging, default_log_level))
 
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})

@@ -173,7 +173,7 @@ class Candidat:
         try:
             self._node.xpath(query)[0].text = value
         except:
-            self.journal.info(f"Candidat {self.get('Nom')} \
+            self.journal.debug(f"Candidat {self.get('Nom')} \
                     {self.get('Prénom')} : \
                     le noeud {query} n'existe pas; \
                     lancement de _accro_branche.")
@@ -366,8 +366,6 @@ class Candidat:
             champ = champs.pop()
             if self.get(champ) == _acces[champ]['default']: # note absente ?
                 complet = False
-                self.journal.warning(\
-                f"Candidat {self.get('Nom')} {self.get('Prénom')}, dossier incomplet : {champ} non renseigné(e).")
         return complet
 
     def update_raw_score(self):
