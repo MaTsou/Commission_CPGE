@@ -25,7 +25,7 @@
 ###
 
 from lxml import etree
-
+import logging
 from utils.candidat import Candidat
 from config import filieres
 
@@ -46,8 +46,10 @@ class Fichier:
         """ Constructeur d'une instance Fichier.
         'nom' est le chemin d'un fichier xml. """
 
-        # stockage du nom
+        # stockage du nom et du journal
         self.nom = nom
+        self.journal = logging.getLogger('commission')
+        self.journal.debug(f'Nouvelle instance Fichier pointant sur {nom}')
 
         # A priori, il n'est pas nécessaire de vérifier que le fichier 'nom'
         # existe, cela a été fait avant la construction

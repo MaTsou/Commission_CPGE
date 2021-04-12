@@ -6,7 +6,7 @@
 #   mandaté par le serveur à chaque fois qu'une page doit être envoyée à
 #   un client.
 
-import os, glob, pickle
+import os, glob, pickle, logging
 from parse import parse
 from utils.parametres import min_correc, max_correc, nb_correc
 from config import filieres, motivations, nb_classes
@@ -103,6 +103,7 @@ class Composeur(object):
         """ constructeur d'une instance Composeur.
         Reçoit une titre de page en paramètre. """
         self.titre = titre
+        self.journal = logging.getLogger('commission')
 
     # Méthodes
     def genere_entete(self, titre):

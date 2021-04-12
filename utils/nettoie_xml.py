@@ -1,4 +1,5 @@
 from utils.candidat import *
+import os, logging
 """Le résultat de la reconnaissance des données sur ParcoursSup est
 parfois un peu brut : ce module fournit des fonctions
 d'assainissement.
@@ -7,6 +8,8 @@ d'assainissement.
 #
 # FONCTIONS DE POST-TRAITEMENT
 #
+# Journal de log...
+journal = logging.getLogger('nettoie_xml')
 
 # Variables globales
 
@@ -38,6 +41,7 @@ def exclure_candidature(cand, motif):
     cand.set('Correction', 'NC')
     cand.set('Jury', 'Admin')
     cand.set('Motifs', motif)
+    journal.info(f"{cand.get('Nom')} {cand.get('Prénom')} : {motif}")
 
 def get_serie(node):
     serie = ''
@@ -51,7 +55,7 @@ def filtre_eds(node):
     eds_requises = {'Mathématiques Spécialité','Physique-Chimie Spécialité'}
     eds_candidat = set()
     # eds de terminale
-    probs = node.xpath('synoptique/enseignement_de_spécialite_terminale')
+    probs = node.xpath('synoptique/enseignement_de_specialite_terminale')
     for prob in probs:  # on récupère tous les eds
         eds_candidat.add(prob.text)
     if not eds_requises.issubset(eds_candidat):
@@ -59,7 +63,7 @@ def filtre_eds(node):
 
     eds_candidat = set()
     # eds de première
-    probs = node.xpath('synoptique/enseignement_de_spécialite_premiere')
+    probs = node.xpath('synoptique/enseignement_de_specialite_premiere')
     for prob in probs:  # on récupère tous les eds
         eds_candidat.add(prob.text)
     if not eds_requises.issubset(eds_candidat):
@@ -109,12 +113,13 @@ def filtre(node):
 
     # Si on arrive là, c'est une candidature a priori recevable. On va indiquer 
     # à l'admin les dossiers qui nécessitent son regard (anomalies)
+    #
     # On va tester également les enseignements de spécialité. Il faut veiller à 
     # ce que l'éventuel rejet d'un dossier ne soit pas dû à un problème 
     # d'identification. Seuls les dossiers de candidats dans une série reconnue, 
-    # et étant en terminale FIXME (cpes aussi à partir de 2022) peuvent être 
+    # et étant en terminale (FIXME cpes aussi à partir de 2022) peuvent être 
     # rejetés pour cette raison.
-    prefixe = '- Alerte :' # indicateur d'une alerte
+    prefixe = '- Alerte :' # indicateur d'une alerte (important...)
     commentaire = [] # reçoit les différents commentaires
 
     # enseignements de spécialité ok ?
@@ -160,7 +165,7 @@ def repeche(node):
     candidat = Candidat(node)
 
     # CPES
-    # Dictionnaire source : destination
+    # Dictionnaire destination : source 
     transfert = {
             'Mathématiques Spécialité' : 'Mathématiques',
             'Physique-Chimie Spécialité' : 'Physique/Chimie',

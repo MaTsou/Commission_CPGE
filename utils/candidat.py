@@ -18,7 +18,7 @@ candidat sous une forme facilement interrogeable.
 from enum import IntEnum, auto
 from parse import parse
 from lxml import etree
-
+import logging
 from utils.parametres import coef_cpes, coef_term
 from utils.toolbox import (date_to_num, num_to_str, str_to_num,
                            normalize_note, format_mark,
@@ -134,6 +134,7 @@ class Candidat:
 
     def __init__(self, node):
         self._node = node
+        self.journal = logging.getLogger('commission')
         self._coefs = {}
         self.set_coefs()
 
@@ -172,6 +173,10 @@ class Candidat:
         try:
             self._node.xpath(query)[0].text = value
         except:
+            self.journal.debug(f"Candidat {self.get('Nom')} \
+                    {self.get('Prénom')} : \
+                    le noeud {query} n'existe pas; \
+                    lancement de _accro_branche.")
             node = query.split('/')[-1]
             fils = etree.Element(node)
             fils.text = value
@@ -262,7 +267,7 @@ class Candidat:
                     self._coefs[key] = 0
 
         #####################################
-        # Reports spécial-confinement
+        # Reports spécial-confinement FIXME
         self.coef_confinement()
         #####################################
 

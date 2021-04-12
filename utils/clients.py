@@ -18,7 +18,7 @@
 # (notes notamment) manquantes mais ne juge pas le dossier alors qu'un jury corrige le score brut, commente son choix, 
 # mais ne touche pas au contenu du dossier.
 
-import os, glob, pickle, copy, csv
+import os, glob, pickle, copy, csv, logging
 from lxml import etree
 from parse import parse
 from utils.fichier import Fichier
@@ -39,10 +39,11 @@ class Client():
         # identifiant du client : contenu du cookie déposé sur la machine client
         self.je_suis = key  
         self.type = type_client # type de client (admin ou jury)
-        self._droits = type_client  # droits : (type suivi nom fichier). Attribut privé car méthode set particulière..
+        self.journal = logging.getLogger('commission')#journal_de_log
+        self._droits = type_client  # droits : (type suivi nom fichier).
         self.fichier = None  # contiendra une instance 'Fichier'
         # Index (dans le fichier) du candidat suivi.
-        self.num_doss = -1  # -1 signifie : le jury n'est pas en cours de traitement
+        self.num_doss = -1  # -1 signifie : le jury n'est pas au travail
     
     def reset_droits(self):
         """ Restitue des droits vierges au client """
@@ -155,6 +156,10 @@ class Jury(Client):
 
         # 4/ motivation du jury
         cand.set('Motifs', kwargs['motif'])
+
+        # Renseignement du journal de log
+        print(self.journal)
+        self.journal.info(f"{self._droits} a traité {cand.get('Nom')} {cand.get('Prénom')} : {cor} / {kwargs['motif']}")
 
         ## Fin mise à jour dossier
         # On sélectionne le dossier suivant
@@ -274,6 +279,9 @@ class Admin(Client):
             cand.set('Jury', '')
             for fich in list_fich_cand:
                 fich.get_cand(cand).set('Motifs', motif)
+
+        # Renseignement du journal de log
+        self.journal.info(f"{self._droits} a traité {cand.get('Nom')} {cand.get('Prénom')} : {cand.get('Correction')} / {kwargs['motif']}")
 
         # On (re)calcule le score brut !
         cand.update_raw_score()
