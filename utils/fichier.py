@@ -25,7 +25,7 @@
 ###
 
 from lxml import etree
-
+import logging
 from utils.candidat import Candidat
 from config import filieres
 
@@ -42,13 +42,13 @@ class Fichier:
 
     ############# Méthodes d'instance #############
     #                                             #
-    def __init__(self, nom, journal_de_log):
+    def __init__(self, nom):
         """ Constructeur d'une instance Fichier.
         'nom' est le chemin d'un fichier xml. """
 
         # stockage du nom et du journal
         self.nom = nom
-        self.journal = journal_de_log
+        self.journal = logging.getLogger('commission')
         self.journal.debug(f'Nouvelle instance Fichier pointant sur {nom}')
 
         # A priori, il n'est pas nécessaire de vérifier que le fichier 'nom'
@@ -59,7 +59,7 @@ class Fichier:
 
         # récupération du contenu du fichier :
         self._root = etree.parse(nom, parser).getroot()
-        self._candidats = [Candidat(node, self.journal) \
+        self._candidats = [Candidat(node) \
                 for node in self._root.xpath('candidat')]
 
         # On créé aussi l'ensemble (set) des identifiants des

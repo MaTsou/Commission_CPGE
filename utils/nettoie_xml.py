@@ -12,7 +12,7 @@ formatter = logging.Formatter(\
 handler = logging.FileHandler(os.path.join("utils", "logs", \
         "journal_nettoie.log"), mode="a", encoding="utf-8")
 handler.setFormatter(formatter)
-# L'objet appelé par tout élément du programme qui veut journaliser qqc
+# L'objet appelé par tout élément qui veut journaliser qqc
 journal = logging.getLogger("nettoie_xml")
 journal.addHandler(handler)
 #

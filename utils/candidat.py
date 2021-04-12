@@ -18,7 +18,7 @@ candidat sous une forme facilement interrogeable.
 from enum import IntEnum, auto
 from parse import parse
 from lxml import etree
-
+import logging
 from utils.parametres import coef_cpes, coef_term
 from utils.toolbox import (date_to_num, num_to_str, str_to_num,
                            normalize_note, format_mark,
@@ -132,9 +132,9 @@ class Candidat:
     """Le but de ce type d'objet est de fournir une interface sur un nœud
     XML décrivant un candidat"""
 
-    def __init__(self, node, journal_de_log):
+    def __init__(self, node):
         self._node = node
-        self.journal = journal_de_log
+        self.journal = logging.getLogger('commission')
         self._coefs = {}
         self.set_coefs()
 

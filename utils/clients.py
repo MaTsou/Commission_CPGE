@@ -18,7 +18,7 @@
 # (notes notamment) manquantes mais ne juge pas le dossier alors qu'un jury corrige le score brut, commente son choix, 
 # mais ne touche pas au contenu du dossier.
 
-import os, glob, pickle, copy, csv
+import os, glob, pickle, copy, csv, logging
 from lxml import etree
 from parse import parse
 from utils.fichier import Fichier
@@ -34,12 +34,12 @@ from utils.parametres import min_correc
 
 class Client(): 
     """ Objet client "abstrait" pour la class Serveur """
-    def __init__(self, key, type_client, journal_de_log):
+    def __init__(self, key, type_client):
         """ constructeur """
         # identifiant du client : contenu du cookie déposé sur la machine client
         self.je_suis = key  
         self.type = type_client # type de client (admin ou jury)
-        self.journal = journal_de_log
+        self.journal = logging.getLogger('commission')#journal_de_log
         self._droits = type_client  # droits : (type suivi nom fichier). Attribut privé car méthode set particulière..
         self.fichier = None  # contiendra une instance 'Fichier'
         # Index (dans le fichier) du candidat suivi.
@@ -71,9 +71,9 @@ class Client():
 
 class Jury(Client): 
     """  Objet client (de type jury de commission) pour la class Serveur """
-    def __init__(self, key, journal_de_log):
+    def __init__(self, key):
         """ constructeur : on créé une instance Client avec droits 'Jury'. """
-        Client.__init__(self, key, 'Jury', journal_de_log)
+        Client.__init__(self, key, 'Jury')
         # Fichiers javascripts. Ces attributs servent au Composeur de page html..
         self.script_menu = 'utils/scripts/menu_jury.js'
         self.script_dossiers = 'utils/scripts/dossiers_jury.js'
@@ -172,9 +172,9 @@ class Jury(Client):
 #################################################################################
 class Admin(Client): 
     """ Objet client (de type Administrateur) pour la class Serveur """
-    def __init__(self, key, journal_de_log): 
+    def __init__(self, key): 
         """ constructeur : on créé une instance Client avec droits 'admin' """
-        Client.__init__(self, key, 'Administrateur', journal_de_log)
+        Client.__init__(self, key, 'Administrateur')
 
         # Fichiers javascripts. Ces attributs servent au Composeur de page html..
         self.script_menu = 'utils/scripts/menu_admin.js'
@@ -195,7 +195,7 @@ class Admin(Client):
         # bonne instance Fichier juste après.
 
         # Recherche de tous les fichiers existants (sauf fichier en cours) :
-        list_fich_admin = [Fichier(fich, self.journal) \
+        list_fich_admin = [Fichier(fich) \
                 for fich in glob.glob(os.path.join(os.curdir, "data", \
                 "admin_*.xml")) if fich != self.fichier.nom]
 
@@ -339,7 +339,7 @@ class Admin(Client):
     def stat(self):
         """ Effectue des statistiques sur les candidats """
         # Récupère la liste des fichiers concernés
-        list_fichiers = [Fichier(fich, self.journal) \
+        list_fichiers = [Fichier(fich) \
                 for fich in glob.glob(os.path.join(os.curdir, "data", \
                 "admin_*.xml"))]
 
@@ -421,7 +421,7 @@ class Admin(Client):
         # la filière concernée. Ces fichiers sont construits de façon à ce 
         # qu'ils contiennent des candidatures également solides.
         # Récupération des fichiers admin
-        list_fich = [Fichier(fich, self.journal) \
+        list_fich = [Fichier(fich) \
                 for fich in glob.glob(os.path.join(os.curdir, "data", \
                 "admin_*.xml"))]
         # Pour chaque fichier "admin_*.xml"
@@ -474,7 +474,7 @@ class Admin(Client):
             path = os.path.join(os.curdir, "data", "comm_{}*.xml"\
                     .format(fil.upper()))
             # récupération des fichiers comm de la filière
-            list_fich = [Fichier(fich, self.journal) for fich in glob.glob(path)]
+            list_fich = [Fichier(fich) for fich in glob.glob(path)]
 
             # l'ordre est important pour la suite
             list_fich = sorted(list_fich, key = lambda fich: fich.nom)
@@ -533,7 +533,7 @@ class Admin(Client):
                             encoding='utf-8'))
 
         # On lance la génération des tableaux bilan de commission
-        list_fich = [Fichier(fich, self.journal) \
+        list_fich = [Fichier(fich) \
                 for fich in glob.glob(os.path.join(os.curdir, "data", \
                 "class_*.xml"))]
         self.tableaux_bilan(list_fich)
