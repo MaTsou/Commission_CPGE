@@ -7,7 +7,7 @@
 1. Installation Python 3.6 (ou supérieur) et les bibliothèques nécessaires :
 
     + Télécharger (puis lancer) depuis le site [python.org](www.python.org), 
-      menu donwloads, un installeur python3.6 (les meilleurs résultats ont été 
+      menu downloads, un installeur python3.6 (les meilleurs résultats ont été 
       obtenus avec l'installeur 'webbased'. Bien vérifier que l'option 'PIP' et 
       l'option 'ajouter à la variable PATH' soient sélectionnées).
     + En ligne de commande, lancer les commandes suivantes pour installer les 
@@ -19,7 +19,7 @@
 
 2. Installation de l'application proprement dite :
 Il suffit de télécharger le programme qui se trouve 
-[ICI](https://github.com/MaTsou/Gestion_Commission_EPA) dans le dossier de son 
+[ICI](https://github.com/MaTsou/Commission_CPGE) dans le dossier de son 
 choix.
 
 -------------------------------------------------
@@ -28,37 +28,36 @@ Une fois récupérées les données proposées par ParcoursSup, 3 phases se succ
 :
 
 1. Préparation de la commission par **L'administrateur** (nom utilisé dans 
-l'application pour désigner le responsable du recrutement). Cette 
-phase aboutit à un pré-classement des candidats dans l'ordre d'un _score_ dit 
-brut.
+   l'application pour désigner le responsable du recrutement). Cette phase 
+   aboutit à un pré-classement des candidats dans l'ordre d'un _score_ dit brut.
 
-2. Commission de recrutement. Elle a lieu en réseau et est faite par des jurys. 
-Chaque jury analyse les dossiers qui lui sont soumis et apporte au besoin une 
-correction (motivée) au score brut. Les candidatures obtiennent alors un _score 
-final_.
+2. Commission de recrutement. Elle a lieu en réseau et est faite par des jurys.  
+   Chaque jury analyse les dossiers qui lui sont soumis et apporte au besoin une 
+   correction (motivée) au score brut. Les candidatures obtiennent alors un 
+   _score final_.
 
 3. Clôture de l'opération de recrutement. Opération effectuée par 
-l'administrateur. Récupération des scores finals et classement. Pour que les 
-différences d'appréciation entre des jurys différents n'interviennent pas, la 
-procédure consiste à classer les candidats de chaque jury puis à construire la 
-pile finale en dépilant successivement les piles jury (jury1, jury2, jury3, 
-jury1, jury2, jury3, etc.). Différents documents sont alors produits : une fiche 
-par candidat classé résume le traitement reçu, plusieurs tableaux 
-(configurables) qui contiennent le bilan de commission.
+   l'administrateur. Récupération des scores finals et classement. Pour que les 
+   différences d'appréciation entre des jurys différents n'interviennent pas, la 
+   procédure consiste à classer les candidats de chaque jury puis à construire 
+   la pile finale en dépilant successivement les piles jury (jury1, jury2, 
+   jury3, jury1, jury2, jury3, etc.). Différents documents sont alors produits : 
+   une fiche par candidat classé résume le traitement reçu, plusieurs tableaux 
+   (configurables) qui contiennent le bilan de commission.
 
 ### Différents paramètres de l'application sont modifiables.
 
 1. Les uns se trouvent dans le fichier `config.py` (répertoire racine) : 
-    * liste des filières, liste des nombres de jurys par filière, liste des 
-    nombres de candidats à classer par filière,
-    * liste de valeurs pré-définies pour les motivations des jurys,
-    * Définitions des tableaux à générer en phase 3.
+	* liste des filières, liste des nombres de jurys par filière, liste des 
+	  nombres de candidats à classer par filière,
+	* liste de valeurs pré-définies pour les motivations des jurys,
+	* Définitions des tableaux à générer en phase 3.
 2. Les autres se trouvent dans le fichier `parametres.py` (répertoire `utils`) : 
-    * Entête personnalisée pour les pages html,
-    * coefficients intervenant dans le calcul du score brut (deux cas : 
-      coefficients concernant les candidats actuellement en terminale; 
-      coefficients concernant les candidats actuellement en CPES),
-    * intervalle de correction proposé aux jurys (min, max, pas).
+	* Entête personnalisée pour les pages html,
+	* coefficients intervenant dans le calcul du score brut (deux cas : 
+	  coefficients concernant les candidats actuellement en terminale; 
+	  coefficients concernant les candidats actuellement en CPES),
+	* intervalle de correction proposé aux jurys (min, max, pas).
 
 -------------------------------------------------
 ## Utilisation du programme d'aide au recrutement : 
@@ -71,52 +70,52 @@ ParcoursSUP :
   Notamment : dans la rubrique bulletins, cocher toutes les infos d'entêtes 
   (Niveau de formation, Filière, ...)
   + Fichiers .pdf contenant les dossiers des candidats (au min. bulletins et 
-    fiche de candidature)
+	fiche de candidature)
 
   Ces fichiers doivent tous contenir le nom de la filière à laquelle ils se 
   rapportent, nom tel que mentionné dans le fichier `config.py` (liste 
   _filieres_)
 
 ### Phase 1 :
-  L'administrateur lance l'application par un double-clic sur `commission.py`. 
+  L'administrateur lance l'application par un double-clic sur `commission.py`.  
   Son navigateur par défaut s'ouvre alors automatiquement et affiche la page 
   d'accueil. Sur celle-ci, sont visibles les fichiers .csv et .pdf précédemment 
   déposés dans le répertoire `data`.
 
   1. Première étape : Traiter ces fichiers. En cliquant sur le bouton 
-  `Vérifier/Traiter`, l'administrateur lance une procédure d'exploitation des 
-  fichiers provenant de ParcoursSup. Cette procédure est longue, une page 
-  indiquant la progression est proposée. Pour chaque filière, cette exploitation 
-  consiste en :
-     * la récupération des données utiles contenues dans le fichier .csv, suivie 
-       de la création d'un fichier `admin_XXXX.xml` (XXXX désignant la filière),
-     * une analyse rapide de la validité de certaines candidatures (filière 
-       d'origine et validation du dossier sur ParcoursSup) ainsi que le repérage 
-       des dossiers incomplets,
-     * le découpage du fichier .pdf en autant de fichiers que de candidats,
-     * la réalisation d'un décompte des candidatures.
+	 `Vérifier/Traiter`, l'administrateur lance une procédure d'exploitation des 
+	 fichiers provenant de ParcoursSup. Cette procédure est longue, une page 
+	 indiquant la progression est proposée. Pour chaque filière, cette 
+	 exploitation consiste en :
+	 * la récupération des données utiles contenues dans le fichier .csv, suivie 
+	   de la création d'un fichier `admin_XXXX.xml` (XXXX désignant la filière),
+	 * une analyse rapide de la validité de certaines candidatures (filière 
+	   d'origine et validation du dossier sur ParcoursSup) ainsi que le repérage 
+	   des dossiers incomplets,
+	 * le découpage du fichier .pdf en autant de fichiers que de candidats,
+	 * la réalisation d'un décompte des candidatures.
 
   À la fin de cette opération, un bouton propose le retour au menu.
 
   2. Le menu est alors enrichi. Les décomptes de candidatures sont affichés 
-  ainsi que les fichiers `admin_XXXX.xml` créés. Cette deuxième étape va 
-  consister pour l'administrateur à préparer les dossiers pour la commission.  
-  Grâce à chaque bouton `admin_XXXX.xml`, il accède à une page qui lui permet 
-  de visualiser chacune des candidatures.  Dans la liste à droite figurent sur 
-  fond gris les candidatures éliminées par l'analyse précédante (candidature non 
-  validée ou filière inadéquate) et sur fond rouge les candidatures qui 
-  nécessitent son regard avant d'être soumise à la commission.  Pour chacune des 
-  candidatures sur fond rouge, le motif de l'alerte ainsi donnée à 
-  l'administrateur peut être :
-     * dossier incomplet : il s'agit d'une sitation ou les données nécessaires 
-       au calcul du score brut n'ont pas pû être trouvées dans le fichier .csv. 
-       Dans ce cas, l'administrateur peut, en consultant le dossier (lien 
-       proposé au-dessus du tableau de synthèse des notes), éventuellement 
-       trouver les informations manquantes et renseigner directement dans la 
-       page html les champs adéquats.
-     * vérifier la filière : l'analyse initiale n'a pas reconnue la filière 
-       d'origine du candidat comme étant 'recevable' ou 'non recevable'. 
-       L'administrateur doit, en consultant le dossier, vérifier ce point.
+	 ainsi que les fichiers `admin_XXXX.xml` créés. Cette deuxième étape va 
+	 consister pour l'administrateur à préparer les dossiers pour la commission.  
+	 Grâce à chaque bouton `admin_XXXX.xml`, il accède à une page qui lui permet 
+	 de visualiser chacune des candidatures.  Dans la liste à droite figurent 
+	 sur fond gris les candidatures éliminées par l'analyse précédante 
+	 (candidature non validée ou filière inadéquate) et sur fond rouge les 
+	 candidatures qui nécessitent son regard avant d'être soumise à la 
+	 commission.  Pour chacune des candidatures sur fond rouge, le motif de 
+	 l'alerte ainsi donnée à l'administrateur peut être :
+	 * dossier incomplet : il s'agit d'une sitation ou les données nécessaires 
+	   au calcul du score brut n'ont pas pû être trouvées dans le fichier .csv.  
+	   Dans ce cas, l'administrateur peut, en consultant le dossier (lien 
+	   proposé au-dessus du tableau de synthèse des notes), éventuellement 
+	   trouver les informations manquantes et renseigner directement dans la 
+	   page html les champs adéquats.
+	 * vérifier la filière : l'analyse initiale n'a pas reconnue la filière 
+	   d'origine du candidat comme étant 'recevable' ou 'non recevable'.  
+	   L'administrateur doit, en consultant le dossier, vérifier ce point.
 
   Dans tous les cas, l'administrateur doit lever l'alerte. Il lui suffit, une 
   fois qu'il a fait tout son possible pour compléter un dossier, de supprimer 
