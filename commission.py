@@ -56,7 +56,7 @@
 # au langage python puisse avoir accès à quelques paramètres (dont la syntaxe 
 # est suffisamment simple).
 
-import os, sys, cherrypy, logging
+import os, sys, cherrypy, logging, socket
 from utils.toolbox import restaure_virginite
 from utils.serveur import Serveur
 
@@ -111,13 +111,26 @@ def configure_loggers(log_path):
     journaux.append(nett_log)
     return journaux
 
-# Récupération des options de lancement ('-jury' pour une version jury, '-ip 
-# 196.168.1.10' pour changer l'ip serveur)
+# Obtenir l'adresse ip sur le réseau local
+def get_ip(ip):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = ip
+    finally:
+        s.close()
+    return IP
+
+# Récupération des options de lancement ('-jury' pour une version jury, '-comm 
+# pour servir sur le réseau local)
 jury = '-jury' in sys.argv
 
 ip = '127.0.0.1' # ip socket_host par défaut...
-if '-ip' in sys.argv:
-    ip = sys.argv[sys.argv.index('-ip')+1]
+if '-comm' in sys.argv:
+    ip = get_ip(ip)
 
 log_path = os.path.join("utils", "logs")
 if '-clean-logs' in sys.argv:

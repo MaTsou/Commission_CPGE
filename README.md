@@ -139,8 +139,8 @@ ParcoursSUP :
   serveur) doivent être sur un même réseau.  La machine hébergeant le serveur 
   doit disposer de la présente application. Le lancement de l'application est 
   particulier car celle-ci doit être servie sur l'adresse ip (x.x.x.x) de la 
-  machine serveur. Le lancement se fait en ligne de commande :
-  `python commission.py -ip x.x.x.x`
+  machine serveur sur le réseau local. Le lancement a lieu en ligne de commande :
+  `python commission.py -comm
   Les clients (jurys) accèdent alors à l'application avec le navigateur de leur 
   choix à l'url `x.x.x.x:8080`
   Chaque jury trouve une page d'accueil sur laquelle tous les fichiers à traiter 
