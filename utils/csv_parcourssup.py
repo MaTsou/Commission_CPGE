@@ -313,7 +313,7 @@ def nouveau_candidat():
     etree.SubElement(fils, 'matières')
     fils = etree.SubElement(res, 'diagnostic')
     fils = etree.SubElement(fils, 'score')
-    fils.text = 'NC'
+    fils.text = '0.0'
     return res
 
 def nouvel_etablissement():
