@@ -25,7 +25,7 @@ from utils.fichier import Fichier
 from utils.csv_parcourssup import lire, ecrire
 from utils.nettoie_xml import nettoie
 from config import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
-from utils.toolbox import decoup, restaure_virginite
+from utils.toolbox import decoup, restaure_virginite, str_to_num, normalize_mark
 from utils.parametres import min_correc
 
 #################################################################################
@@ -81,14 +81,13 @@ class Jury(Client):
     def get_rgfinal(self, cand):
         """ Renvoie une estimation du rg final d'un candidat """
         # On extrait du fichier la liste des scores des dossiers traités et non NC
-        doss = [float(ca.get('Score final').replace(',','.')) \
-                for ca in self.fichier\
+        doss = [ca.get('Score final') for ca in self.fichier\
                 if (ca.get('traité') == 'oui' and ca.get('Correction') != 'NC')]
         # On classes ceux-ci par ordre de score final décroissant
         doss.sort(reverse = True)
         # On calcule le rang du score_final de cand dans cette liste
         try:
-            rg = 1 + doss.index(float(cand.get('Score final').replace(',','.')))
+            rg = 1 + doss.index(cand.get('Score final'))
         except:
             return '-'
         # À ce stade, rg est le rang dans la liste du jury. 
@@ -106,7 +105,7 @@ class Jury(Client):
         # par un clic sur 'Classé' ou 'NC'
         cand  = self.get_cand() # on récupère le candidat
         # On récupère la correction apportée par le jury
-        cor = kwargs['correc']
+        cor = float(kwargs['correc'])
 
         # précédente correction si le jury revient sur un candidat :
         cor_prec = cand.get('Correction')
@@ -115,7 +114,7 @@ class Jury(Client):
         # ce fichier a été créé par admin, dans la méthode generation_comm
         a = (cand.get('traité') == 'oui')
         b = (cor_prec == 'NC')
-        c = (float(cor) == float(min_correc))
+        c = (cor == float(min_correc))
         if (not(a ^ b ^ c) and not(b and c)):
             # doit-on changer le nb de candidats classés?
             change_decompte = 1
@@ -134,14 +133,10 @@ class Jury(Client):
 
         # On met à jour le contenu de ce dossier :
         # tout d'abord, calcul du score final
-        if float(cor) == float(min_correc): # cas d'un choix 'NC'
-            cor, scoref = 'NC', '0'
+        if cor == float(min_correc): # cas d'un choix 'NC'
+            cor, scoref = 'NC', 0
         else:
-            note = float(cand.get('Score brut').replace(',','.')) + float(cor)
-            # mise en forme pour que les tableaux bilan de commission soient 
-            # jolis !
-            scoref = '{:.2f}'.format(note).replace('.',',')
-            cor = '{:.2f}'.format(float(cor)).replace('.',',')
+            scoref = cand.get('Score brut') + cor
 
         # Écriture des différents champs
         # 1/ correction et score final
@@ -221,7 +216,9 @@ class Admin(Client):
         for mat in matiere:
             for da in date:
                 key = '{} Première {}'.format(mat, da)
-                if cand.get(key) != kwargs[key]: # note modifiée ?
+                if cand.get(key) != str_to_num(normalize_mark(kwargs[key])):
+                    # si note modifiée 
+                    self.journal.debug(f"{cand.get('Nom')} {cand.get('Prénom')} : admin a saisi '{kwargs[key]}' comme note de {key}")
                     for fich in list_fich_cand:
                         fich.get_cand(cand).set(key, kwargs[key])
 
@@ -232,7 +229,9 @@ class Admin(Client):
         for mat in matiere:
             for da in date:
                 key = '{} Terminale {}'.format(mat, da)
-                if cand.get(key) != kwargs[key]: # note modifiée ?
+                if cand.get(key) != str_to_num(normalize_mark(kwargs[key])):
+                    # si note modifiée
+                    self.journal.debug(f"{cand.get('Nom')} {cand.get('Prénom')} : admin a saisi '{kwargs[key]}' comme note de {key}")
                     for fich in list_fich_cand:
                         fich.get_cand(cand).set(key, kwargs[key])
 
@@ -242,12 +241,13 @@ class Admin(Client):
         # Seulement EAF depuis 2020
         liste = ['Écrit EAF', 'Oral EAF']
         for li in liste:
+            formated_mark = str_to_num(normalize_mark(kwargs[li]))
             if 'cpes' in li.lower():
-                if (cand.is_cpes() and cand.get(li) != kwargs[li]):
+                if (cand.is_cpes() and cand.get(li) != formated_mark):
                     for fich in list_fich_cand:
                         fich.get_cand(cand).set(li, kwargs[li])
             else:
-                if cand.get(li) != kwargs[li]:
+                if cand.get(li) != formated_mark:
                     for fich in list_fich_cand:
                         fich.get_cand(cand).set(li, kwargs[li])
 
@@ -278,9 +278,6 @@ class Admin(Client):
             cand.set('Jury', '')
             for fich in list_fich_cand:
                 fich.get_cand(cand).set('Motifs', motif)
-
-        # Renseignement du journal de log
-        self.journal.info(f"{self._droits} a traité {cand.get('Nom')} {cand.get('Prénom')} : {cand.get('Correction')} / {kwargs['motif']}")
 
         # On (re)calcule le score brut !
         cand.update_raw_score()
@@ -438,7 +435,7 @@ class Admin(Client):
             # Calcul du rang de chaque candidat et renseignement du noeuds 
             # 'rang_brut'
             for cand in fich:
-                cand.set('Rang brut',  str(1 + doss.index(cand)))
+                cand.set('Rang brut',  1 + doss.index(cand))
             # Récupération de la filière et du nombre de jurys 
             nbjury = int(nb_jurys[fich.filiere().lower()])
             # Découpage en n listes de dossiers
@@ -491,7 +488,7 @@ class Admin(Client):
                 for c in fich:
                     if c.get('traité') != 'oui':
                         c.set('Correction', 'NC')
-                        c.set('Score final', '0')
+                        c.set('Score final', 0)
                         if c.get('Jury') == 'Auto': # pas de motif Admin
                             c.set('Motifs', \
                                     'Dossier moins bon que le dernier classé.')
@@ -519,7 +516,7 @@ class Admin(Client):
                 for cand in doss_fin:
                     nu = 'NC'
                     if cand.get('Correction') != 'NC': # si le candidat est classé
-                        nu = str(rg)
+                        nu = rg
                         rg += 1
                     cand.set('Rang final', nu)
 
@@ -575,7 +572,7 @@ class Admin(Client):
                         nb_max = len(fich)
                     a = (cand.get('traité') == 'oui')
                     b = (cand.get('Correction') != 'NC')
-                    c = not(b) or (int(cand.get('Rang final')) <= nb_max)
+                    c = not(b) or (cand.get('Rang final') <= nb_max)
                     if a and b and c:
                         data = [cand.get(champ) for champ in entetes]
                         cw.writerow(data)

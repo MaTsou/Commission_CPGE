@@ -175,7 +175,7 @@ def repeche(node):
         for classe in ['Première', 'Terminale']:
             for date in ['trimestre 1', 'trimestre 2', 'trimestre 3']:
                 for dest,sour in transfert.items():
-                    sour_value = candidat.get(f'{sour} {classe} {date}')
+                    sour_value = str(candidat.get(f'{sour} {classe} {date}'))
                     if sour_value != '-' and \
                             candidat.get(f'{dest} {classe} {date}') == '-':
                         candidat.set(f'{dest} {classe} {date}', sour_value)

@@ -23,16 +23,12 @@ def num_to_col(num):
     return res
 
 def str_to_num(string):
-    "Convertit une chaîne contenant un nombre à virgule en flottant"
+    "Convertit si possible une chaîne contenant un nombre à virgule en flottant"
     try:
         res = float(string.replace(',','.'))
     except ValueError:
-        res = '-'
+        res = string
     return res
-
-def num_to_str(num):
-    'Convertit un flottant en chaîne avec deux chiffres après la virgule'
-    return f'{num:.2f}'.replace('.', ',')
 
 def date_to_num(naissance):
     'Convertit une chaîne donnant une date de naissance en nombre'
@@ -46,17 +42,21 @@ def date_to_num(naissance):
 ## Méthodes de pré-traitement et de post-traitement utilisées dans les
 ## fonctions get et set de la classe Fichier.
 
-def normalize_note(note):
+def normalize_mark(note):
     """ si note n'est pas une note valide, renvoie '-' """
     num = str_to_num(note)
-    if num == '-' or (not 0 <= num <= 20):
+    if type(num) != float or (not 0 <= num <= 20):
         note = '-'
     return note
 
-def format_mark(string):
-    'Convertit une chaîne en nombre puis à nouveau en chaîne - esthétique'
-    return num_to_str(str_to_num(string))
-
+def format_rank(rg):
+    """ Renvoie l'entier rang ou la chaîne 'NC' selon le cas """
+    try:
+        rank = int(rg)
+    except:
+        rank = rg
+    return rank
+ 
 def format_candidatures(candidatures):
     """transforme un mot binaire contenant les candidatures en une chaîne
     'MP-' ou 'M-C', etc."""

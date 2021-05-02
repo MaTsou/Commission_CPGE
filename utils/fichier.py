@@ -49,7 +49,6 @@ class Fichier:
         # stockage du nom et du journal
         self.nom = nom
         self.journal = logging.getLogger('commission')
-        self.journal.debug(f'Nouvelle instance Fichier pointant sur {nom}')
 
         # A priori, il n'est pas nécessaire de vérifier que le fichier 'nom'
         # existe, cela a été fait avant la construction

@@ -20,10 +20,9 @@ from parse import parse
 from lxml import etree
 import logging
 from utils.parametres import coef_cpes, coef_term
-from utils.toolbox import (date_to_num, num_to_str, str_to_num,
-                           normalize_note, format_mark,
+from utils.toolbox import (date_to_num, str_to_num, normalize_mark,
                            format_candidatures, format_candidatures_impr,
-                           format_jury)
+                           format_jury, format_rank)
 
 ## _acces : dictionnaire contenant les clés d'accès aux informations candidat
 # L'argument est encore un dictionnaire :
@@ -56,12 +55,12 @@ def _init_acces():
         'Pays'                  : {'query' : 'synoptique/établissement/pays'},
         'Écrit EAF'             : {'query' : 'synoptique/français.écrit',
                                    'default' : '-',
-                                   'pre' : normalize_note,
-                                   'post' : format_mark},
+                                   'pre' : normalize_mark,
+                                   'post' : str_to_num},
         'Oral EAF'              : {'query' : 'synoptique/français.oral',
                                    'default' : '-',
-                                   'pre' : normalize_note,
-                                   'post' : format_mark},
+                                   'pre' : normalize_mark,
+                                   'post' : str_to_num},
         'Candidatures'          : {'query' : 'diagnostic/candidatures',
                                    'pre' : format_candidatures},
         'Candidatures impr'     : {'query' : 'diagnostic/candidatures',
@@ -80,13 +79,23 @@ def _init_acces():
         'Motifs'                : {'query' : 'diagnostic/motifs',
                                    'default' : ''},
         'Score brut'            : {'query' : 'diagnostic/score',
-                                   'default' : ''},
+                                   'default' : '0.0',
+                                   'pre' : str,
+                                   'post' : str_to_num},
         'Correction'            : {'query' : 'diagnostic/correc',
-                                   'default' : '0'},
+                                   'default' : '0',
+                                   'pre' : str,
+                                   'post' : str_to_num},
         'Score final'           : {'query' : 'diagnostic/scoref',
-                                   'default' : ''},
-        'Rang brut'             : {'query' : 'diagnostic/rangb'},
-        'Rang final'            : {'query' : 'diagnostic/rangf'},
+                                   'default' : '',
+                                   'pre' : str,
+                                   'post' : str_to_num},
+        'Rang brut'             : {'query' : 'diagnostic/rangb',
+                                   'pre' : str,
+                                   'post' : format_rank},
+        'Rang final'            : {'query' : 'diagnostic/rangf',
+                                   'pre' : str,
+                                   'post' : format_rank},
     }
 
     # On garantit qu'une valeur par défaut existe
@@ -113,16 +122,16 @@ def _init_acces():
                 query = f'{query_matiere}[date="{date}"]/note'
                 res[key] = {'query' : query,
                             'default' : '-',
-                            'pre' : normalize_note,
-                            'post' : format_mark}
+                            'pre' : normalize_mark,
+                            'post' : str_to_num}
     # Pour les notes CPES :
     for matiere in matieres:
         key = f'{matiere} CPES'
         query = f'synoptique/matières/matière[intitulé="{matiere}"]/note'
         res[key] = {'query' : query,
                     'default' : '-',
-                    'pre' : normalize_note,
-                    'post' : format_mark}
+                    'pre' : normalize_mark,
+                    'post' : str_to_num}
 
     return res
 
@@ -150,12 +159,19 @@ class Candidat:
         my_attr = _acces[attr]
         try:
             result = self._node.xpath(my_attr['query'])[0].text
-            if 'post' in my_attr:
-                result = my_attr['post'](result)
         except:
             result = None
         if not result:
             result = my_attr['default'] # init_acces garantit que ça marche
+
+        if 'post' in my_attr:
+            result = my_attr['post'](result)
+
+# ATTENTION : une écriture dans le journal ici cause une erreur. De ce que j'ai 
+# compris, la bibliothèque logger utilise des threads. La méthode get étant 
+# appelée très souvent, ça plante : trop de threads simultanés.
+        if 'score' in attr.lower():
+            self.journal.debug(f"{self.get('Nom')} {self.get('Prénom')} : get( {attr} ) a renvoyé {result} de type {type(result)}")
         return result
 
     def set(self, attr, value):
@@ -170,13 +186,11 @@ class Candidat:
         query = my_attr['query']
         if 'pre' in my_attr:
             value = my_attr['pre'](value)
+        self.journal.debug(f"{self.get('Nom')} {self.get('Prénom')} : set( ) tente d'attribuer ({value} de type {type(value)} à l'attribut {attr}")
         try:
             self._node.xpath(query)[0].text = value
         except:
-            self.journal.debug(f"Candidat {self.get('Nom')} \
-                    {self.get('Prénom')} : \
-                    le noeud {query} n'existe pas; \
-                    lancement de _accro_branche.")
+            self.journal.debug(f"Candidat {self.get('Nom')} {self.get('Prénom')} : le noeud {query} n'existe pas; lancement de _accro_branche.")
             node = query.split('/')[-1]
             fils = etree.Element(node)
             fils.text = value
@@ -374,7 +388,7 @@ class Candidat:
         # Si correction = 'NC', cela signifie que l'admin rejette le
         # dossier ; score nul d'office!
         if self.get('Correction') == 'NC': # candidat rejeté
-            self.set('Score brut', num_to_str(0))
+            self.set('Score brut', 0)
             return
 
         # Mise à jour des coefs (cas d'un dossier complété par admin)
@@ -384,7 +398,7 @@ class Candidat:
         for key, val in self._coefs.items():
             note = self.get(key)
             if note != _acces[key]['default']:
-                somme += str_to_num(note)*val
+                somme += note*val
                 poids += val
         if poids != 0:
             scoreb = somme/poids
@@ -393,7 +407,7 @@ class Candidat:
         # Bonus pour les cpes ou les math expertes...
         if (self.is_cpes() or self.is_math_expertes()):
             scoreb += 5
-        self.set('Score brut', num_to_str(scoreb))
+        self.set('Score brut', scoreb)
 
     class Critere(IntEnum):
         """Fournit la liste des critères de score possibles pour un candidat"""
@@ -411,9 +425,9 @@ class Candidat:
         """
 
         if critere == Candidat.Critere.SCORE_BRUT:
-            return -float(self.get('Score brut').replace(',', '.'))
+            return -self.get('Score brut')
         if critere == Candidat.Critere.SCORE_FINAL:
-            return -float(self.get('Score final').replace(',', '.'))
+            return -self.get('Score final')
         if critere == Candidat.Critere.NOM:
             return self.get('Nom')
         if critere == Candidat.Critere.NAISSANCE:

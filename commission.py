@@ -120,7 +120,7 @@ if '-ip' in sys.argv:
     ip = sys.argv[sys.argv.index('-ip')+1]
 
 log_path = os.path.join("utils", "logs")
-if '-clean-log' in sys.argv:
+if '-clean-logs' in sys.argv:
     restaure_virginite(log_path)
 journaux = configure_loggers(log_path)
 

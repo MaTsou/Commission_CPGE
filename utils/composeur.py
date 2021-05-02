@@ -106,6 +106,13 @@ class Composeur(object):
         self.journal = logging.getLogger('commission')
 
     # Méthodes
+    def format_mark(self, mark):
+        """ Met en forme les notes et les scores pour affichage """
+        if type(mark) == float:
+            return f'{mark:.2f}'.replace('.', ',')
+        else:
+            return mark
+
     def genere_entete(self, titre):
         """ Génère le code html de l'entête de page """
         page = '<!DOCTYPE html><html>'
@@ -479,7 +486,7 @@ class Composeur(object):
                 for da in date:
                     key = '{} {} {}'.format(mat, cl, da)
                     data[key] = formateur_note\
-                            .format(key, key, note=cand.get(key))
+                        .format(key, key, note=self.format_mark(cand.get(key)))
         # Autres notes
         liste = ['Mathématiques CPES', 'Physique/Chimie CPES', \
                 'Écrit EAF', 'Oral EAF']
@@ -487,7 +494,8 @@ class Composeur(object):
             if not(cand.is_cpes()) and 'cpes' in li.lower():
                 data[li] = formateur_note.format(li, li, note='-')
             else:
-                data[li] = formateur_note.format(li, li, note=cand.get(li))
+                data[li] = formateur_note.format(li, li,\
+                        note=self.format_mark(cand.get(li)))
         # Suite
         data['cand'] = cand.get('Candidatures impr')
         return data
@@ -505,24 +513,24 @@ class Composeur(object):
                 {}</td>'.format(visib, rg_fin)
         ### Partie correction :
         # récupération correction
-        cor = cand.get('Correction') # Sous forme de chaîne de caractère !
+        cor = cand.get('Correction')
         if cor == 'NC':
             correc = min_correc # NC correspond à la correction minimale
             rg_fin = 'NC'
         else:
             # valeur numérique de la correction -> placement du curseur.
-            correc = float(cor.replace(',','.'))
+            correc = cor
         # Construction de la barre de correction qu'on alimente avec les infos 
         # courantes..
-        barre = Composeur.barre.format(correc, cand.get('Jury'), cor)
+        barre = Composeur.barre.format(correc, cand.get('Jury'), str(cor))
         ### Partie motivations :
         motifs = Composeur.motifs.format(cand.get('Motifs'))
         # On met tout ça dans un dico data pour passage en argument à 
         # html['contenu_action']
         data = {'barre' : barre,
-                'scoreb' : cand.get('Score brut'),
-                'scoref' : cand.get('Score final'),
-                'rg_fin' : rang_final,
+                'scoreb' : self.format_mark(cand.get('Score brut')),
+                'scoref' : self.format_mark(cand.get('Score final')),
+                'rg_fin' : str(rang_final),
                 'motifs' : motifs
                 }
         return data
