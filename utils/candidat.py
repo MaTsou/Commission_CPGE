@@ -331,7 +331,7 @@ class Candidat:
 
         expert = False # initialisation
         # Construction de l'ensemble des champs à vérifier
-        champs = {'Mathématiques Expertes Terminale trimestre {}'.format(j) \
+        champs = {f"Mathématiques Expertes Terminale trimestre {j}" \
                 for j in range(1,4)}
 
         # Dès qu'un champ est renseigné on arrête et renvoie True

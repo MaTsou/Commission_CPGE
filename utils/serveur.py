@@ -76,7 +76,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
     def add_sse_message(self, event, data):
         """ ajoute un message dans l'ensemble des messages SSE à envoyer """
         # L'usage d'un ensemble évite les doublons..
-        self.sse_messages.add("event: {}\ndata: {}\n\n".format(event, data))
+        self.sse_messages.add(f"event: {event}\ndata: {data}\n\n")
 
     ########## Début des méthodes exposées au serveur ############
     # Toutes (sauf send_sse_message) renvoient une page html. 'index' est la 
@@ -92,7 +92,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # en créé un
         if cherrypy.session.get('JE', 'none') == 'none':
             # clé d'identification du client
-            key = 'client_{}'.format(len(self.clients) + 1)
+            key = f"client_{len(self.clients) + 1}"
             # Cookie de session en place; stocké sur la machine client
             cherrypy.session['JE'] = key
             # Si option -jury ou client n'est pas sur la machine serveur,
@@ -133,8 +133,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             txt = ""
             for n in range(nb):
                 self.sse_message_id += 1
-                txt += "id: {}\n{}".format(self.sse_message_id, 
-                        self.sse_messages.pop())
+                txt += f"id: {self.sse_message_id}\n{self.sse_messages.pop()}"
             return txt
 
     @cherrypy.expose
@@ -152,13 +151,13 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # jurys
             self.fichiers_utilises.pop(client)
             client.fichier = None
-            page += """<div style='align:center;padding-top:2cm;'><h2>Le fichier 
-            {} est maintenant libre.</h2></div> """.format(fichier)
+            page += f"""<div style='align:center;padding-top:2cm;'><h2>Le fichier 
+            {fichier} est maintenant libre.</h2></div> """
 
         except:
-            page = """ <div style='align:center;padding-top:2cm;'><h2>Une erreur 
-            est survenue. Le fichier {} n'est pas reconnu.</h2></div> 
-            """.format(fichier)
+            page = f""" <div style='align:center;padding-top:2cm;'><h2>Une erreur 
+            est survenue. Le fichier {fichier} n'est pas reconnu.</h2></div> 
+            """
         page += """
         <div style='align:center;'><form action='/affiche_menu' method = POST> 
         <input type = 'submit' class ='gros_bout' value = 'CLIQUER POUR 

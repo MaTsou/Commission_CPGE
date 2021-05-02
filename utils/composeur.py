@@ -30,6 +30,9 @@ class Composeur(object):
     # ch = "Demain je {action} la cuisine"
     # pourra être formatée par la syntaxe :
     # ch.format(**{'action' : 'fais'})
+    # ou bien la syntaxe :
+    # action = 'fais'
+    # ch = f"Demain je {action} la cuisine"
     # C'est ainsi qu'on obtient des pages html "dynamiques"
     # (dont le contenu change en fonction du contexte).
     html = {}
@@ -57,11 +60,11 @@ class Composeur(object):
     # Elle s'inscrit dans une 'table' html à 3 colonnes
     # (score brut | barre | score final)
     barre = '<tr><td width = "2.5%"></td>' # un peu d'espace
-    barre += '<td><input type = "range" class = "range" min="{}"\
-            max = "{}" step = "{}" name = "correc" id = "correc"\
-            onchange="javascript:maj_note();"\
-            onmousemove="javascript:maj_note();" onclick="click_range();"'\
-            .format(min_correc, max_correc, 1/float(nb_correc))
+    barre += f"""<td><input type = "range" class = "range" min="{min_correc}"
+            max = "{max_correc}" step = "{1/float(nb_correc)}" 
+            name = "correc" id = "correc" onchange="javascript:maj_note();"
+            onmousemove="javascript:maj_note();" onclick="click_range();"
+            """
     barre += ' value = "{}"/></td>' # champ rempli dans la
             # fonction 'genere_action'
     barre += '<td width = "2.5%"></td></tr>' # on termine par un peu d'espace
@@ -70,10 +73,10 @@ class Composeur(object):
         if index == 0: # on remplace la valeur min par NC.
             txt += '<td width = "7%">NC</td>'
         elif (index % 2 == 0):
-            txt += '<td width = "7%">{:+3.1f}</td>'.format(valeur)
-    barre += '<tr><td align = "center" colspan = "3">\
-            <table width = "100%"><tr class ="correc_notimpr">{}</tr></table>'\
-            .format(txt)
+            txt += f'<td width = "7%">{valeur:+3.1f}</td>'
+    barre += f"""<tr><td align = "center" colspan = "3">
+            <table width = "100%"><tr class ="correc_notimpr">{txt}</tr></table>'
+            """
     barre += '<span class = "correc_impr">{} : {}</span>' # champs remplis
     # dans la fonction 'genere_action'
     barre += '</td></tr>'
@@ -89,12 +92,10 @@ class Composeur(object):
         motifs += '<tr>'
         for j in range(2):
             # cette clé sert au code javascript de la page..
-            key = 'mot_{}{}'.format(str(index), str(j))
-            motifs += '<td align = "left"><input type="button" name="{}"'\
-                    .format(key)
-            motifs += ' id="{}" onclick="javascript:maj_motif(this.id)"'\
-                    .format(key)
-            motifs += ' class = "motif" value ="{}"/></td>'.format(motif[j])
+            key = f"mot_{str(index)}{str(j)}"
+            motifs += f'<td align = "left"><input type="button" name="{key}"'
+            motifs += f' id="{key}" onclick="javascript:maj_motif(this.id)"'
+            motifs += f' class = "motif" value ="{motif[j]}"/></td>'
         motifs += '</tr>'
     motifs += '</table>'
     ### Fin déclaration attributs de classe
@@ -136,20 +137,21 @@ class Composeur(object):
         entete = self.genere_entete('Traitement des données ParcoursSup')
         # On récupère la balise <meta> car elle doit être envoyée avec chaque
         # yield sinon on n'a pas le fonctionnement en 'temps réel'
-        meta = '<meta{}>'.format(parse('{}<meta{}>{}', entete)[1])
+        meta_content = parse('{}<meta{}>{}', entete)[1]
+        meta = f'<meta{meta_content}>'
         # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
-        yield '{}<div style="padding-left:12%;">'.format(entete)
+        yield f'{entete}<div style="padding-left:12%;">'
         # Début du traitement du contenu du dico
         for gen, title in action:
-            yield "{}<h2>{}</h2>".format(meta, title) # On envoie le sous-titre
+            yield f"{meta}<h2>{title}</h2>" # On envoie le sous-titre
             flag = True # drapeau servant dans le traitement de la paire de \
                     # yield citée ci-dessus..
             for txt in gen(): # sollicitation du générateur jusqu'à épuisement
                 if flag: # 1e partie de la ligne : "<p>Fichier blabla ..."
-                    txt = '<p style="padding-left:3em;">{}'.format(txt)
+                    txt = f'<p style="padding-left:3em;">{txt}'
                 else: # 2e partie de la ligne : on affiche "traité</p>"
-                    txt = '{}</p>'.format(txt)
-                yield '{}{}'.format(meta, txt)
+                    txt = f'{txt}</p>'
+                yield f'{meta}{txt}'
                 flag ^= 1 # on change flag en son complémentaire
         ## Fin du traitement ##
         # Bouton retour au menu
@@ -157,7 +159,7 @@ class Composeur(object):
                 <form action="/affiche_menu" method = POST>
                 <input type = "submit" class ="gros_bout"\
                 value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
-        yield '{}{}'.format(meta, bouton)
+        yield f'{meta}{bouton}'
 
 
 ########################################################
@@ -178,7 +180,7 @@ class Composeur(object):
                 return self.menu_comm(qui, fichiers_utilises)
         else: # qui = None, application lancée en mode test
             # TODO : n'est plus utile avec l'option -jury
-            page = self.genere_entete('{}.'.format(self.titre))
+            page = self.genere_entete(f'{self.titre}.')
             page += Composeur.html['PageAccueil']
             page += '</html>'
             return page # menu 'TEST' : admin ou jury ?
@@ -188,16 +190,15 @@ class Composeur(object):
         Fichiers utilisés est une liste des fichiers déjà choisis par un jury
         Ces fichiers sont inaccessibles (bouton disabled) """
         ## entête
-        page = self.genere_entete('{} - Accès {}.'\
-                .format(self.titre, qui.get_droits()))
+        page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
         ## Contenu = liste de fichiers
         # Recherche des fichiers destinés à la commission
         list_fich = glob.glob(os.path.join(os.curdir, "data", "comm_*.xml"))
         txt = ''
         # Chaque fichier apparaîtra sous la forme d'un bouton
         for fich in list_fich:
-            txt += '<input type="submit" class = "fichier" name="fichier"\
-                    id = "{}" value="{}"'.format(fich, fich)
+            txt += f'<input type="submit" class = "fichier" name="fichier"\
+                    id = "{fich}" value="{fich}"'
             # Si un fichier est déjà traité par un AUTRE jury,
             # son bouton est disabled...
             if (fich in fichiers_utilises.values()\
@@ -227,8 +228,7 @@ class Composeur(object):
                 tableaux récapitulatifs. """
         data = {}
         ## entête
-        page = self.genere_entete('{} - Accès {}.'\
-                .format(self.titre, qui.get_droits()))
+        page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
         list_fich_comm = glob.glob(os.path.join(os.curdir,"data","comm_*.xml"))
         patron = 'menu_admin_'
         if len(list_fich_comm) > 0: # phase 2 ou 3
@@ -238,8 +238,8 @@ class Composeur(object):
                 patron += 'pendant'
                 txt = ''
                 for fich in fichiers_utilises.values():
-                    txt += '<input type = "submit" class ="fichier" \
-                            name = "fichier" value = "{}"/><br>'.format(fich)
+                    txt += f'<input type = "submit" class ="fichier" \
+                            name = "fichier" value = "{fich}"/><br>'
                 data['liste_jurys'] = txt
             else: # phase 3
                 patron += 'apres'
@@ -285,7 +285,7 @@ class Composeur(object):
                 affich = ''
                 if (alertes):
                     affich = 'disabled'
-                txt += 'onclick = "genere_wait();" {}/>'.format(affich)
+                txt += f'onclick = "genere_wait();" {fich}/>'
             data['bout_etap3'] = txt
         # Envoyez le menu
         contenu = Composeur.html[patron].format(**data)
@@ -299,14 +299,14 @@ class Composeur(object):
         """ Sous-fonction pour le menu admin : liste des .csv trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.csv")):
-            txt += '{}<br>'.format(fich)
+            txt += f'{fich}<br>'
         return txt
     
     def genere_liste_pdf(self):
         """ Sous-fonction pour le menu admin : liste des .pdf trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
-            txt += '{}<br>'.format(fich)
+            txt += f'{fich}<br>'
         return txt
     
     def genere_liste_admin(self):
@@ -316,8 +316,8 @@ class Composeur(object):
         if len(list_fich) > 0:
             txt = '<h2>Choisissez le fichier que vous souhaitez compléter</h2>'
         for fich in list_fich:
-            txt += '<input type="submit" class = "fichier" name="fichier" \
-                    value="{}"/>'.format(fich)
+            txt += f'<input type="submit" class = "fichier" name="fichier" \
+                    value="{fich}"/>'
             txt += '<br>'
         return txt
     
@@ -340,15 +340,14 @@ class Composeur(object):
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
-            liste_stat = '<h4>Statistiques : {} candidats dont {} ayant validé.\
-                    </h4>'.format(stat['nb_cand'], 
-                    stat['nb_cand_valid'])
+            liste_stat = f"<h4>Statistiques : {stat['nb_cand']} candidats \
+                    dont {stat['nb_cand_valid']} ayant validé.</h4>"
             # Pour commencer les sommes par filières
             liste_stat += '<ul style = "margin-top:-5%">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
             for i in range(len(filieres)):
-                liste_stat += '<li>{} dossiers {} validés</li>'\
-                        .format(stat[2**i], filieres[i].upper())
+                liste_stat += f'<li>{stat[2**i]} dossiers \
+                        {filieres[i].upper()} validés</li>'
                 deja_fait.append(2**i)
             # Ensuite les requêtes croisées
             liste_stat += 'dont :<ul>'
@@ -359,13 +358,12 @@ class Composeur(object):
                     bina = bin(i)[2:] # bin revoie une chaine qui commence \
                             # par 'Ob' : on vire !
                     while len(bina) < len(filieres):
-                        bina = '0{}'.format(bina) # les 0 de poids fort sont \
-                                # restaurés
+                        bina = f'0{bina}' # les 0 de poids fort sont restaurés
                     for char in range(len(bina)):
                         if bina[char] == '1':
                             seq.append(filieres[len(filieres)-char-1].upper())
                     txt = ' + '.join(seq)
-                    liste_stat += '<li>{} dossiers {}</li>'.format(stat[i], txt)
+                    liste_stat += f'<li>{stat[i]} dossiers {txt}</li>'
             liste_stat += '</ul></ul>'
         return liste_stat
 
@@ -377,7 +375,7 @@ class Composeur(object):
                 decompt = pickle.load(fich)
                 txt = ''
             for a in decompt.keys():
-                txt += '{} : {} dossiers classés<br>'.format(a, decompt[a])
+                txt += f'{a} : {decompt[a]} dossiers classés<br>'
         except:# aucun dossier n'a encore été traité...
             txt = ''
         return txt
@@ -389,8 +387,8 @@ class Composeur(object):
         if len(list_fich) > 0:
             txt = '<h2>Choisissez le fichier que vous souhaitez imprimer</h2>'
             for fich in list_fich:
-                txt += '<input type = "submit" class ="fichier" \
-                        name = "fichier" value = "{}"/>'.format(fich)
+                txt += f'<input type = "submit" class ="fichier" \
+                        name = "fichier" value = "{fich}"/>'
                 txt +='<br>'
             txt +='<h3> Les tableaux récapitulatifs sont dans le dossier \
                     "./tableaux"</h3>'
@@ -402,12 +400,11 @@ class Composeur(object):
     def page_dossier(self, qui, mem_scroll):
         """ construction du code html constitutif de la page dossier """
         ## entête
-        page = self.genere_entete('{} - Accès {}.'\
-                .format(self.titre, qui.get_droits()))
-        # construire ensuite les parties dossier, action de client puis \
-                # liste des dossiers;
-        # La partie dossier est créée par la fonction genere_dossier; \
-                # infos données par client.fichier
+        page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
+        # construire ensuite les parties dossier, action de client puis liste 
+        # des dossiers;
+        # La partie dossier est créée par la fonction genere_dossier; infos 
+        # données par client.fichier
         dossier = Composeur.html['contenu_dossier'].format(\
                 **self.genere_dossier(qui, qui.get_cand(), \
                 isinstance(qui, Admin)))
@@ -456,8 +453,7 @@ class Composeur(object):
         # défaut...
         fil = qui.fichier.filiere()
         data['ref_fich'] = os.path.join('data', 'docs_candidats', \
-                '{}'.format(fil.lower()), \
-                'docs_{}.pdf'.format(cand.get('Num ParcoursSup')))
+                f'{fil.lower()}', f'docs_{cand.get("Num ParcoursSup")}.pdf')
         if not os.path.isfile(data['ref_fich']):
             data['ref_fich'] = os.path.join('utils', 'pdf_error.html')
         # Formatage des champs de notes et de classe actuelle en fonction de 
@@ -484,7 +480,7 @@ class Composeur(object):
         for cl in classe:
             for mat in matiere:
                 for da in date:
-                    key = '{} {} {}'.format(mat, cl, da)
+                    key = f'{mat} {cl} {da}'
                     data[key] = formateur_note\
                         .format(key, key, note=self.format_mark(cand.get(key)))
         # Autres notes
@@ -509,8 +505,8 @@ class Composeur(object):
         if isinstance(client, Jury): # seulement pour les jurys.
             rg_fin = client.get_rgfinal(cand)
             visib = '' # est visible pour les jurys
-        rang_final = '<td style = "display:{};">Estimation du rang final : \
-                {}</td>'.format(visib, rg_fin)
+        rang_final = f'<td style = "display:{visib};">\
+                Estimation du rang final : {rg_fin}</td>'
         ### Partie correction :
         # récupération correction
         cor = cand.get('Correction')
@@ -539,8 +535,8 @@ class Composeur(object):
         """ Génère la partie liste de la page HTML"""
         # Construction de la chaine lis : code html de la liste des dossiers.
         lis = '<form id = "form_liste" action = "click_list" method=POST>'
-        lis += '<input type="hidden" name = "scroll_mem" value = "{}"/>'\
-                .format(mem_scroll)
+        lis += f'<input type="hidden" name = "scroll_mem" \
+                value = "{mem_scroll}"/>'
         ## Gestion des ex-aequo (score final seulement). On va construire une 
         ## liste des scores finals concernés. Puis, dans la boucle suivante, on
         ## mettra en évidence les dossiers pour le jury...
@@ -588,8 +584,8 @@ class Composeur(object):
                 if "Pupilles de l'Air" in cand.get('Établissement'):
                     clas += ' doss_epa'
                 ### fin dossiers à mettre en évidence
-                lis += 'class = "{}"'.format(clas)
-                nom = '{}, {}'.format(cand.get('Nom'), cand.get('Prénom'))
+                lis += f'class = "{clas}"'
+                nom = f"{cand.get('Nom')}, {cand.get('Prénom')}"
                 # La variable txt qui suit est le texte du bouton. Attention, 
                 # ses 3 premiers caractères doivent être le numéro du dossier 
                 # dans la liste des dossiers (client_get_dossiers())... Cela 
@@ -597,9 +593,8 @@ class Composeur(object):
                 # une police monospace est utilisée pour l'esthétique et la 
                 # largeur affectée au nom est fixée. Ainsi, les informations de 
                 # candidatures multiples sont alignées.
-                txt = '{:3d}) {: <30}{}'\
-                        .format(index+1, nom[:29], cand.get('Candidatures'))
-                lis += ' value="{}"></input><br>'.format(txt)
+                txt = f"{index+1:3d}) {nom[:29]: <30}{cand.get('Candidatures')}"
+                lis += f' value="{txt}"></input><br>'
         lis += '-'*7 + ' fin de liste ' + '-'*7
         lis = lis + '</form>'
         return lis
@@ -609,8 +604,8 @@ class Composeur(object):
         """ Fabrication de la page 'impression des fiches bilan' """
         cand = qui.get_cand()
         fich = qui.fichier
-        entete = '<h1 align="center" class="titre">{} - {}.</h1>'\
-                .format(self.titre, fich.filiere().upper())
+        entete = f'<h1 align="center" class="titre">{self.titre} - \
+            {fich.filiere().upper()}.</h1>'
         txt = ''
         # on saute une page entre chaque candidat :
         saut = '<div style = "page-break-after: always;"></div>'
@@ -631,8 +626,8 @@ class Composeur(object):
                 # seulement les classés dont le rang est inférieur à la limite 
                 # fixée
                 txt += entete
-                txt += '<div class = encadre>Candidat classé : \
-                {}</div>'.format(cand.get('Rang final'))
+                txt += f"<div class = encadre>Candidat classé : \
+                {cand.get('Rang final')}</div>"
                 txt += Composeur.html['contenu_dossier']\
                         .format(**self.genere_dossier(qui, cand))
                 txt += Composeur.html['contenu_action']\

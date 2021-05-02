@@ -65,7 +65,7 @@ def format_candidatures(candidatures):
     # (on enlève les 2 premiers caract. : '0b')
     bina = bin(candidatures)[2:]
     while len(bina) < len(filieres):
-        bina = '0{}'.format(bina) # on complète pour qu'il y ait le bon nb de digits.
+        bina = f"0{bina}" # on complète pour qu'il y ait le bon nb de digits.
     res = ''
     for i, filiere in enumerate(filieres):
         if bina[-1-i] == '1':

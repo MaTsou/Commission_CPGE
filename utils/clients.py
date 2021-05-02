@@ -62,7 +62,7 @@ class Client():
         # fich est une instance Fichier.
         self.fichier = fich
         r = parse('{}_{}.xml', fich.nom)
-        self._droits = '{} {}'.format(self.type, r[1])
+        self._droits = f"{self.type} {r[1]}"
         self.num_doss = 0 # on commence par le premier dossier !
 
 #################################################################################
@@ -215,7 +215,7 @@ class Admin(Client):
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
         for mat in matiere:
             for da in date:
-                key = '{} Première {}'.format(mat, da)
+                key = f"{mat} Première {da}"
                 if cand.get(key) != str_to_num(normalize_mark(kwargs[key])):
                     # si note modifiée 
                     self.journal.debug(f"{cand.get('Nom')} {cand.get('Prénom')} : admin a saisi '{kwargs[key]}' comme note de {key}")
@@ -228,7 +228,7 @@ class Admin(Client):
         date = ['trimestre 1', 'trimestre 2', 'trimestre 3']
         for mat in matiere:
             for da in date:
-                key = '{} Terminale {}'.format(mat, da)
+                key = f"{mat} Terminale {da}"
                 if cand.get(key) != str_to_num(normalize_mark(kwargs[key])):
                     # si note modifiée
                     self.journal.debug(f"{cand.get('Nom')} {cand.get('Prénom')} : admin a saisi '{kwargs[key]}' comme note de {key}")
@@ -258,7 +258,7 @@ class Admin(Client):
         # commentaire soit considéré comme une motivation de jury.
         motif = kwargs['motif']
         if not('- Admin :' in motif or motif == '' or '- Alerte :' in motif):
-            motif = '- Admin : {}'.format(motif)
+            motif = f"- Admin : {motif}"
 
         # Récupération de la correction. On en fait qqc seulement si elle est 
         # minimale (NC), puis calcul du score final
@@ -297,9 +297,9 @@ class Admin(Client):
                 # Attention pour être traité, le nom du fichier csv doit 
                 # contenir la filière...
                 if fil in source.lower():
-                    dest = os.path.join(os.curdir, "data", "admin_{}.xml"\
-                            .format(fil.upper())) # nom du fichier produit
-                    yield "Fichier {} ... ".format(fil.upper())
+                    dest = os.path.join(os.curdir, "data", \
+                            f"admin_{fil.upper()}.xml") # nom du fichier produit
+                    yield f"Fichier {fil.upper()} ... "
                     # première lecture brute
                     contenu_xml = lire(source)
                     # nettoyage doux, filtrage des dossiers invalides + Alertes
@@ -322,11 +322,11 @@ class Admin(Client):
                 #  un fichier n'est traité que si son nom contient une filière 
                 #  connue.
                 if fil in fich.lower():
-                    yield "Fichier {} ... ".format(fil.upper())
+                    yield f"Fichier {fil.upper()} ... "
                     desti = os.path.join(dest, fil)
                     os.mkdir(desti) # un dossier par filière
                     decoup(fich, desti) # fonction de découpage du pdf
-                    yield "traité.".format(parse("{}_{4s}.pdf", fich)[1])
+                    yield "traité."
 
     def appel_stat(self):
         """ Appelée par le serveur après que l'Admin ait appuyé sur le bouton 
@@ -448,8 +448,8 @@ class Admin(Client):
                 # Sauvegarde dans un fichier comm_XXXX.xml
                 res = etree.Element('candidats')
                 [res.append(cand.get_node()) for cand in dossier]
-                nom = os.path.join(os.curdir, "data", "comm_{}{}.xml"\
-                        .format(fich.filiere().upper(), j+1))
+                nom = os.path.join(os.curdir, "data", \
+                        f"comm_{fich.filiere().upper()}{j+1}.xml")
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, \
                             encoding='utf-8'))
@@ -458,7 +458,7 @@ class Admin(Client):
         # créé et initialisé. Il contient un dictionnaire {'filière' : nb, ...}
         decompt = {}
         for fil in filieres:
-            decompt['{}'.format(fil.upper())] = 0
+            decompt[f"{fil.upper()}"] = 0
         with open(os.path.join(os.curdir, "data", "decomptes"), 'wb') \
                 as stat_fich:
             pickle.dump(decompt, stat_fich)
@@ -471,8 +471,7 @@ class Admin(Client):
         # tableaux *.csv nécessaires à la suite du traitement administratif du 
         # recrutement (ces tableaux sont définis dans config.py)
         for fil in filieres: # pour chaque filière
-            path = os.path.join(os.curdir, "data", "comm_{}*.xml"\
-                    .format(fil.upper()))
+            path = os.path.join(os.curdir, "data", f"comm_{fil.upper()}*.xml")
             # récupération des fichiers comm de la filière
             list_fich = [Fichier(fich) for fich in glob.glob(path)]
 
@@ -526,8 +525,7 @@ class Admin(Client):
                 [res.append(c.get_node()) for c in doss_fin]
 
                 # Sauvegarde du fichier class...
-                nom = os.path.join(os.curdir, "data", "class_{}.xml"\
-                        .format(fil.upper()))
+                nom = os.path.join(os.curdir, "data", f"class_{fil.upper()}.xml")
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, \
                             encoding='utf-8'))
@@ -550,8 +548,8 @@ class Admin(Client):
             # Tableaux candidats classés
             for name in tableaux_candidats_classes.keys():
                 # Création du fichier csv
-                nom = os.path.join(os.curdir, "tableaux", "{}_{}.csv"\
-                        .format(fich.filiere(), name))
+                nom = os.path.join(os.curdir, "tableaux", \
+                        f"{fich.filiere()}_{name}.csv")
                 cw = csv.writer(open(nom, 'w'))
                 entetes = tableaux_candidats_classes[name]
                 cw.writerow(entetes)
@@ -581,8 +579,8 @@ class Admin(Client):
             # candidats.
             for name in tableaux_tous_candidats:
                 # Création du fichier csv
-                nom = os.path.join(os.curdir, "tableaux", "{}_{}.csv"\
-                        .format(fich.filiere(), name))
+                nom = os.path.join(os.curdir, "tableaux", \
+                        f"{fich.filiere()}_{name}.csv")
                 cw = csv.writer(open(nom, 'w'))
                 entetes = tableaux_tous_candidats[name]
                 cw.writerow(entetes)
