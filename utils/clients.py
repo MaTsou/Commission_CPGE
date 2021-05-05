@@ -550,7 +550,7 @@ class Admin(Client):
                 # Création du fichier csv
                 nom = os.path.join(os.curdir, "tableaux", \
                         f"{fich.filiere()}_{name}.csv")
-                cw = csv.writer(open(nom, 'w'))
+                cw = csv.writer(open(nom, 'w', newline=''))
                 entetes = tableaux_candidats_classes[name]
                 cw.writerow(entetes)
 
@@ -581,7 +581,7 @@ class Admin(Client):
                 # Création du fichier csv
                 nom = os.path.join(os.curdir, "tableaux", \
                         f"{fich.filiere()}_{name}.csv")
-                cw = csv.writer(open(nom, 'w'))
+                cw = csv.writer(open(nom, 'w', newline=''))
                 entetes = tableaux_tous_candidats[name]
                 cw.writerow(entetes)
                 for cand in fich.ordonne(Fichier.Critere.NOM):
