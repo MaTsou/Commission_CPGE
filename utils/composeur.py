@@ -116,9 +116,7 @@ class Composeur(object):
 
     def genere_entete(self, titre):
         """ Génère le code html de l'entête de page """
-        page = '<!DOCTYPE html><html>'
-        page += Composeur.html['Entete'].format(**{'titre' : titre})
-        return page
+        return Composeur.html['Entete'].format(**{'titre' : titre})
 
 ########################################################
 ##### Ici, le code de la page 'barre d'avancement' #####
