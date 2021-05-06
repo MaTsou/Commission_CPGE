@@ -12,7 +12,7 @@ from utils.parametres import min_correc, max_correc, nb_correc
 from config import filieres, motivations, nb_classes
 from utils.fichier import Fichier
 from utils.clients import Jury, Admin
-from utils.toolbox import get_file_name_from_cursus, extract_cursus
+from utils.toolbox import division_to_xml, xml_to_division
 
 #################################################################################
 #                               Composeur                                       #
@@ -194,11 +194,11 @@ class Composeur(object):
         page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
         ## Contenu = liste de fichiers
         # Recherche des fichiers destinés à la commission
-        list_fich = glob.glob(get_file_name_from_cursus('jury', '*'))
+        list_fich = glob.glob(division_to_xml('jury', '*'))
         txt = ''
         # Chaque fichier apparaîtra sous la forme d'un bouton
         for fich in list_fich:
-            cursus = extract_cursus(fich)
+            cursus = xml_to_division(fich)
             txt += f'<input type="submit" class = "fichier" name="fichier"\
                     id = "{cursus}" value="{cursus}"'
             # Si un fichier est déjà traité par un AUTRE jury,
@@ -231,7 +231,7 @@ class Composeur(object):
         data = {}
         ## entête
         page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
-        list_fich_comm = glob.glob(get_file_name_from_cursus('jury' ,'*'))
+        list_fich_comm = glob.glob(division_to_xml('jury' ,'*'))
         patron = 'menu_admin_'
         if len(list_fich_comm) > 0: # phase 2 ou 3
             data['decompt'] = self.genere_liste_decompte()
@@ -240,7 +240,7 @@ class Composeur(object):
                 patron += 'pendant'
                 txt = ''
                 for fich in fichiers_utilises.values():
-                    cursus = extract_cursus(fich)
+                    cursus = xml_to_division(fich)
                     txt += f'<input type = "submit" class ="fichier" \
                             name = "fichier" value = "{cursus}"/><br>'
                 data['liste_jurys'] = txt
@@ -252,7 +252,7 @@ class Composeur(object):
                         onclick = "recolt_wait();"/>'
                 # Etape 5 bouton et Etape 6
                 list_fich_class = \
-                glob.glob(get_file_name_from_cursus('classement_final', '*'))
+                glob.glob(division_to_xml('classement_final', '*'))
                 data['liste_impression'] = ''
                 if len(list_fich_class) > 0:
                     data['liste_impression'] = self.genere_liste_impression()
@@ -273,7 +273,7 @@ class Composeur(object):
             # Récupération des fichiers admin
             list_fich = {Fichier(fich) \
                     for fich in glob.glob(\
-                    get_file_name_from_cursus('admin', '*'))}
+                    division_to_xml('admin', '*'))}
             alertes = False
             while not(alertes) and len(list_fich) > 0:
                 # à la première alerte détectée alertes = True
@@ -316,13 +316,13 @@ class Composeur(object):
     
     def genere_liste_admin(self):
         """ Sous-fonction pour le menu admin : liste des filières à traiter """
-        list_fich = glob.glob(get_file_name_from_cursus('admin', '*'))
+        list_fich = glob.glob(division_to_xml('admin', '*'))
         txt = ''
         if len(list_fich) > 0:
             txt = '<h3>Choisissez la filière que vous souhaitez traiter</h3>'
         for fich in list_fich:
             txt += f'<input type="submit" class = "fichier" name="fichier" \
-                    value="{extract_cursus(fich)}"/>'
+                    value="{xml_to_division(fich)}"/>'
             txt += '<br>'
         return txt
     
@@ -330,7 +330,7 @@ class Composeur(object):
         """ Sous-fonction pour le menu admin :
             affichage des statistiques de candidatures """
         liste_stat = ''
-        if len(glob.glob(get_file_name_from_cursus('admin', '*'))) > 0:
+        if len(glob.glob(division_to_xml('admin', '*'))) > 0:
             # si les fichiers admin existent
             # lecture du fichier stat
             chem = os.path.join(os.curdir, "data", "stat")
@@ -339,7 +339,7 @@ class Composeur(object):
                 # on le créé
                 list_fich = [Fichier(fich) \
                         for fich in glob.glob(\
-                        get_file_name_from_cursus('admin', '*'))]
+                        division_to_xml('admin', '*'))]
                 qui.stat()
             # maintenant on peut effectivement lire le fichier stat
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
@@ -387,13 +387,13 @@ class Composeur(object):
 
     def genere_liste_impression(self):
         """ Sous-fonction pour le menu admin : liste des boutons class_*.xml """
-        list_fich = glob.glob(get_file_name_from_cursus('classement_final', '*'))
+        list_fich = glob.glob(division_to_xml('classement_final', '*'))
         txt = ''
         if len(list_fich) > 0:
             txt = '<h2>Choisissez une filière.</h2>'
             for fich in list_fich:
                 txt += f'<input type = "submit" class ="fichier" \
-                        name = "fichier" value = "{extract_cursus(fich)}"/>'
+                        name = "fichier" value = "{xml_to_division(fich)}"/>'
                 txt +='<br>'
             txt +='<h3> Les tableaux récapitulatifs sont dans le dossier \
                     "./tableaux"</h3>'

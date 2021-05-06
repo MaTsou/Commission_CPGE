@@ -147,11 +147,11 @@ naming = {
 
 pattern = os.path.join(os.curdir, "data", "{}_{}.xml")
 
-def extract_cursus(file_name):
+def xml_to_division(file_name):
     """ Récupération du nom de filière dans un nom de fichier xml """
     return parse(pattern, file_name)[1]
 
-def get_file_name_from_cursus(key, cursus):
+def division_to_xml(key, cursus):
     """ Construction du nom de fichier xml à partir de la filière et d'une clé 
     du dictionnaire naming """
     return pattern.format(naming[key], cursus)

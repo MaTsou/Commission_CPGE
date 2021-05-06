@@ -42,7 +42,7 @@ from utils.parametres import entete
 from utils.clients import Jury, Admin
 from utils.fichier import Fichier
 from utils.composeur import Composeur
-from utils.toolbox import get_file_name_from_cursus, extract_cursus
+from utils.toolbox import division_to_xml, xml_to_division
 
 
 ########################################################################
@@ -117,7 +117,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 self.fichiers_utilises.pop(client)
                 # émission d'un SSE : un fichier se libère
                 self.add_sse_message('free', \
-                        extract_cursus(client.fichier.nom))
+                        xml_to_division(client.fichier.nom))
                 client.fichier = None
         # On affiche le menu du client
         return self.affiche_menu()
@@ -143,7 +143,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         """ Pendant la commission, l'administrateur peut rendre de nouveau 
         accessible le fichier qu'un jury avait préalablement choisi. Si un 
         ordinateur plante, cela peut éviter un redémarrage du serveur """
-        file_name = get_file_name_from_cursus('jury', kwargs["fichier"])
+        file_name = division_to_xml('jury', kwargs["fichier"])
         page = """<div style='align:center;'>"""
         try: 
             # recherche du client concerné
@@ -222,7 +222,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # au cookie)
         client = self.get_client_cour()
         # Teste si le fichier n'a pas été choisi par un autre jury
-        file_name = get_file_name_from_cursus('jury', kwargs['fichier'])
+        file_name = division_to_xml('jury', kwargs['fichier'])
         a = file_name in self.fichiers_utilises.values()
         b = file_name != self.fichiers_utilises.get(client, 'rien')
         if (a and b):
@@ -255,7 +255,7 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Mise à jour des attributs du client : l'attribut fichier du client va 
         # recevoir une instance d'un objet Fichier, construit à partir du nom de 
         # fichier.
-        file_name = get_file_name_from_cursus('admin', kwargs['fichier'])
+        file_name = division_to_xml('admin', kwargs['fichier'])
         client.set_fichier(Fichier(file_name))
         ## Initialisation des paramètres
         # mem_scroll : cookie qui stocke la position de l'ascenseur dans la 
@@ -335,7 +335,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         client = self.get_client_cour() # récupère le client (c'est un admin !)
         # Mise à jour des attributs du client
         # son fichier courant devient celui qu'il vient de choisir
-        file_name = get_file_name_from_cursus('classement_final',\
-                kwargs['fichier'])
+        file_name = division_to_xml('classement_final', kwargs['fichier'])
         client.set_fichier(Fichier(file_name))
         return self.html_compose.page_impression(client)
