@@ -1,17 +1,20 @@
 [*Entete*]
 <head> 
-	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" cache-control="no-cache, no-store, must-revalidate"> 
-	<link rel="stylesheet" type="text/css" media="screen" href="/utils/fichiers_css/style.css">
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" 
+	cache-control="no-cache, no-store, must-revalidate"> 
+	<link rel="stylesheet" type="text/css" media="screen" 
+	href="/utils/fichiers_css/style.css">
 	<title>Gestion Commission</title>
 	<div id = "header">
-    <h1 align="center">{titre}</h1>
-  </div>
+		<h1 align="center">{titre}</h1>
+	</div>
 </head> 
 ##########
 [*PageAccueil*] 
 <div class = "menu">
   <form action="/identification" method=POST> 
-    <input type=submit class="bouton_menu" name="acces" value="Accès administrateur"/><br> 
+    <input type=submit class="bouton_menu" name="acces" 
+	value="Accès administrateur"/><br> 
     <input type=submit class="bouton_menu" name="acces" value="Accès jury"/> 
   </form> 
 </div>
@@ -38,14 +41,20 @@
 <div id = "csv" class = "sous_menu">
   <div class = "etape">&nbsp;- 1e étape : digérer les données ParcoursSUP :</div>
   <form id = "traiter" action = "/traiter_parcourssup" method = POST>
-    <div class = "liste_csv">Fichiers csv présents : <br>{liste_csv}</div><!--
-    --><div class = "bout_csv_div"><input type = "button" class = "fichier" value = "VÉRIFIER / TRAITER" onclick = "verif_wait();"></div><!--
-    --><div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
+    <div class = "liste_csv">
+		Fichiers csv présents : <br>{liste_csv}
+	</div><!-- -->
+	<div class = "bout_csv_div"><input type = "button" class = "fichier" 
+		value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
+	</div><!-- -->
+	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
   </form>	
 </div>
 <br>
 <div id = "admin" class = "sous_menu">
-  <div class = "etape">&nbsp;- 2e étape : compléter les dossiers qui le nécessitent...</div>
+  <div class = "etape">
+	  &nbsp;- 2e étape : compléter les dossiers qui le nécessitent...
+  </div>
   <div class = "liste_admin">
     <form action = "/choix_admin" method = POST> {liste_admin} </form>	
   </div>
@@ -53,14 +62,18 @@
 </div>
 <br>
 <div id = "comm" class = "sous_menu">
-  <div class = "etape">&nbsp;- 3e étape : générer les fichiers pour la commission...</div>
+  <div class = "etape">
+	  &nbsp;- 3e étape : générer les fichiers pour la commission...
+  </div>
   <form id ='genere' action = '/genere_fichiers_comm' method = POST>
     {bout_etap3}
   </form>	
 </div>
 <div id ="patience">
   <h1>Traitement en cours...</h1>
-  <div class = "loader"><p><img id = "gif" src = "/utils/ajax-loader.gif"></p></div>
+  <div class = "loader">
+	  <p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
+  </div>
   <h1>...Veuillez Patienter</h1>
 </div>
 ##########
@@ -75,28 +88,40 @@
 </div>
 <br>
 <div id = "imprim" class = "sous_menu">
-  <div class = "etape">&nbsp;Jurys connectés : (cliquez pour libérer le fichier)</div>
-  <form id = "impress" action = "/libere_fichier" method = "POST"> {liste_jurys} </form>			
+  <div class = "etape">
+	  &nbsp;Jurys connectés : (cliquez pour libérer le fichier)
+  </div>
+  <form id = "impress" action = "/libere_fichier" method = "POST">
+	  {liste_jurys} 
+  </form>			
 </div>
 ##########
 [*menu_admin_apres*]
 <div id = "admin" class = "sous_menu">
-  <div class = "etape">&nbsp;- 4e étape : récolter le travail de la commission...</div>
+  <div class = "etape">
+	  &nbsp;- 4e étape : récolter le travail de la commission...
+  </div>
   <div class = "liste_admin">
     <br>
     <h2 style = "margin-top:0%;">{decompt}</h2>
-    <form id = "recolte" action = '/clore_commission' method = POST> {bout_etap4} </form>
+    <form id = "recolte" action = '/clore_commission' method = POST>
+		{bout_etap4} 
+	</form>
   </div>
   <div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
 </div>
 <br>
 <div id = "imprim" class = "sous_menu">
   <div class = "etape">&nbsp;- 5e étape : Bilan de la commission :</div>
-  <form id = "impress" action = '/page_impression' method = POST"> {liste_impression} </form>			
+  <form id = "impress" action = '/page_impression' method = POST">
+	  {liste_impression} 
+  </form>			
 </div>
 <div id ="patience">
   <p><h1>Traitement en cours...</h1></p>
-  <div class = "loader"> <p><img id = "gif" src = "/utils/ajax-loader.gif"></p> </div>
+  <div class = "loader">
+	  <p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
+  </div>
   <p><h1>...Veuillez Patienter</h1></p>
 </div>
 ########## 
@@ -104,14 +129,17 @@
 <body onload="javascript:set_scroll();">
   <div>
     <div id = "dossier">
-      <form id = "formulaire" action = "/traiter" method = POST onsubmit="return test_valid();">
+      <form id = "formulaire" action = "/traiter" method = POST 
+		  onsubmit="return test_valid();">
         {dossier}
         {action_client}
       </form>
     </div>
     <div id = "bandeau_lateral">
       <form action="/affiche_menu" method = POST>
-        <div id = "gros_bout_div"><input type = "submit" class ="gros_bout" value = "RETOUR" style = "display:{visibilite}">
+        <div id = "gros_bout_div">
+			<input type = "submit" class ="gros_bout" value = "RETOUR" 
+				   style = "display:{visibilite}">
         </div>
       </form>
       <div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
@@ -130,8 +158,10 @@
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
   <tr>
-    <td class="grossi" align = "left" colspan = "3">Actuellement en {Classe actuelle}, {Établissement} ({Département}, 
-      {Pays})</td>
+    <td class="grossi" align = "left" colspan = "3">
+		Actuellement en {Classe actuelle}, {Établissement} 
+		({Département}, {Pays})
+	</td>
   </tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
   <tr><td colspan = "3"><span class = "espace_impr">&nbsp;</span></td></tr>
@@ -140,7 +170,9 @@
   </tr>
 </table>
 <table align = "center" class = "bord grossi" cols = "4" width = "100%">
-  <caption><a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a></caption>
+  <caption>
+	  <a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a>
+  </caption>
   <tr>
     <td><font size = "0.8"></font></td>
     <td>Classe de Première</td>
@@ -152,20 +184,38 @@
     <td rowspan = "4">
       <table class = "bord" width = "100%">
         <tr><th> Math </th><th> Phys </th></tr>
-        <tr><td> {Mathématiques Spécialité Première trimestre 1} </td><td> {Physique-Chimie Spécialité Première trimestre 1} </td></tr>
-        <tr><td> {Mathématiques Spécialité Première trimestre 2} </td><td> {Physique-Chimie Spécialité Première trimestre 2} </td></tr>
-        <tr><td> {Mathématiques Spécialité Première trimestre 3} </td><td> {Physique-Chimie Spécialité Première trimestre 3} </td></tr>
+        <tr>
+			<td> {Mathématiques Spécialité Première trimestre 1} </td>
+			<td> {Physique-Chimie Spécialité Première trimestre 1} </td>
+		</tr>
+        <tr>
+			<td> {Mathématiques Spécialité Première trimestre 2} </td>
+			<td> {Physique-Chimie Spécialité Première trimestre 2} </td>
+		</tr>
+        <tr>
+			<td> {Mathématiques Spécialité Première trimestre 3} </td>
+			<td> {Physique-Chimie Spécialité Première trimestre 3} </td>
+		</tr>
       </table>
     </td>
     <td rowspan = "4" align = "right">
       <table class = "bord" width = "100%">
         <tr><th> Math </th><th> M.Exp </th><th> Phys </th></tr>
-        <tr><td> {Mathématiques Spécialité Terminale trimestre 1} </td>
-			<td> {Mathématiques Expertes Terminale trimestre 1} </td><td> {Physique-Chimie Spécialité Terminale trimestre 1} </td></tr>
-        <tr><td> {Mathématiques Spécialité Terminale trimestre 2} </td>
-			<td> {Mathématiques Expertes Terminale trimestre 2} </td><td> {Physique-Chimie Spécialité Terminale trimestre 2} </td></tr>
-        <tr><td> {Mathématiques Spécialité Terminale trimestre 3} </td>
-			<td> {Mathématiques Expertes Terminale trimestre 3} </td><td> {Physique-Chimie Spécialité Terminale trimestre 3} </td></tr>
+        <tr>
+			<td> {Mathématiques Spécialité Terminale trimestre 1} </td>
+			<td> {Mathématiques Expertes Terminale trimestre 1} </td>
+			<td> {Physique-Chimie Spécialité Terminale trimestre 1} </td>
+		</tr>
+        <tr>
+			<td> {Mathématiques Spécialité Terminale trimestre 2} </td>
+			<td> {Mathématiques Expertes Terminale trimestre 2} </td>
+			<td> {Physique-Chimie Spécialité Terminale trimestre 2} </td>
+		</tr>
+        <tr>
+			<td> {Mathématiques Spécialité Terminale trimestre 3} </td>
+			<td> {Mathématiques Expertes Terminale trimestre 3} </td>
+			<td> {Physique-Chimie Spécialité Terminale trimestre 3} </td>
+		</tr>
       </table>
     </td>
     <td rowspan = "2">
@@ -230,7 +280,10 @@
     <td class = "valid">
       <table>
         <tr>
-          <td><input type = "submit" id = "valid" class = "valid_bouton" value = "Valider"></td>
+          <td>
+			  <input type = "submit" id = "valid" class = "valid_bouton" 
+			  value = "Valider">
+		  </td>
         </tr>
         <tr>
           {rg_fin}
@@ -243,8 +296,10 @@
 <!DOCTYPE html>
 <head style="display:none;">
   <meta content = "text/html; charset = utf-8" http-equiv = "Content-Type">
-  <link rel = "stylesheet" type = "text/css" media = "print" href = "/utils/fichiers_css/style_impr.css">
-  <link rel = "stylesheet" type = "text/css" media = "screen" href = "/utils/fichiers_css/style_html_impr.css">
+  <link rel = "stylesheet" type = "text/css" media = "print" 
+  href = "/utils/fichiers_css/style_impr.css">
+  <link rel = "stylesheet" type = "text/css" media = "screen" 
+  href = "/utils/fichiers_css/style_html_impr.css">
   <title>Impression-commission</title>
 </head>
 <body width = "50vw" onload = "window.print();">
