@@ -196,6 +196,7 @@ div.breakafter
 	{
 		width : 100%;
 		font-family : Courier, monospace; /* Pour la présentation : police monospace */
+		font-size : .8vw;
 		color : black;
 		text-align : left;
 		box-sizing : border-box;
