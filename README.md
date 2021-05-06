@@ -88,7 +88,7 @@ ParcoursSUP :
 	 indiquant la progression est proposée. Pour chaque filière, cette 
 	 exploitation consiste en :
 	 * la récupération des données utiles contenues dans le fichier .csv, suivie 
-	   de la création d'un fichier `admin_XXXX.xml` (XXXX désignant la filière),
+	   de la création d'un fichier .xml par filière,
 	 * une analyse rapide de la validité de certaines candidatures (filière 
 	   d'origine et validation du dossier sur ParcoursSup) ainsi que le repérage 
 	   des dossiers incomplets,
@@ -98,15 +98,15 @@ ParcoursSUP :
   À la fin de cette opération, un bouton propose le retour au menu.
 
   2. Le menu est alors enrichi. Les décomptes de candidatures sont affichés 
-	 ainsi que les fichiers `admin_XXXX.xml` créés. Cette deuxième étape va 
-	 consister pour l'administrateur à préparer les dossiers pour la commission.  
-	 Grâce à chaque bouton `admin_XXXX.xml`, il accède à une page qui lui permet 
-	 de visualiser chacune des candidatures.  Dans la liste à droite figurent 
-	 sur fond gris les candidatures éliminées par l'analyse précédante 
-	 (candidature non validée ou filière inadéquate) et sur fond rouge les 
-	 candidatures qui nécessitent son regard avant d'être soumise à la 
-	 commission.  Pour chacune des candidatures sur fond rouge, le motif de 
-	 l'alerte ainsi donnée à l'administrateur peut être :
+	 ainsi que les fichiers .xml créés. Cette deuxième étape va consister pour 
+	 l'administrateur à préparer les dossiers pour la commission.  Grâce à 
+	 chaque bouton, il accède aux dossiers relatifs à chaque filière et peut
+	 visualiser chacune des candidatures.  Dans la liste à droite figurent sur 
+	 fond gris les candidatures éliminées par l'analyse précédente (candidature 
+	 non validée ou filière inadéquate) et sur fond rouge les candidatures qui 
+	 nécessitent son regard avant d'être soumise à la commission.  Pour chacune 
+	 des candidatures sur fond rouge, le motif de l'alerte ainsi donnée à 
+	 l'administrateur peut être :
 	 * dossier incomplet : il s'agit d'une sitation ou les données nécessaires 
 	   au calcul du score brut n'ont pas pû être trouvées dans le fichier .csv.  
 	   Dans ce cas, l'administrateur peut, en consultant le dossier (lien 
@@ -137,12 +137,12 @@ ParcoursSUP :
 ### Phase 2 :
   Cette phase a lieu en réseau. Toutes les machines (1 par jury + 1 pour le 
   serveur) doivent être sur un même réseau.  La machine hébergeant le serveur 
-  doit disposer de la présente application. Le lancement de l'application est 
-  particulier car celle-ci doit être servie sur l'adresse ip (x.x.x.x) de la 
-  machine serveur sur le réseau local. Le lancement a lieu en ligne de commande :
-  `python commission.py -comm
+  doit disposer de la présente application. 
+
   Les clients (jurys) accèdent alors à l'application avec le navigateur de leur 
-  choix à l'url `x.x.x.x:8080`
+  choix à l'url `x.x.x.x:8080`, x.x.x.x étant l'adresse ip de la machine 
+  serveur.
+
   Chaque jury trouve une page d'accueil sur laquelle tous les fichiers à traiter 
   sont listés. Chaque jury choisit le fichier qui lui a été attribué par 
   l'administrateur et commence son traitement. Les dossiers exlus par 
@@ -171,7 +171,7 @@ ParcoursSUP :
 
   Puis, pour chaque filière, à reconstituer (voir le principe exposé plus haut) 
   une liste unique à partir des listes ordonnées. Enfin, enregistrement de ces 
-  listes dans les fichiers `class_XXXX.xml` et création des tableaux bilans 
+  listes dans des fichiers .xml et création des tableaux bilans 
   (disponibles dans le répertoire `tableaux`).
 
   Est alors proposée à l'administrateur une 5e étape qui consiste à imprimer, 
