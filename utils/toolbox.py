@@ -136,3 +136,22 @@ def restaure_virginite(chem): #  amélioration : shutil a une fonction
     if os.path.exists(chem):
         efface_dest(chem) # on efface chem (s'il existe)
     os.mkdir(chem) # on le (re)-créé
+
+############## manipulation des noms de fichiers xml
+# dictionnaire encapsulant les choix de nommage
+naming = {
+        'admin' : 'admin',
+        'jury' : 'jury',
+        'classement_final' : 'class',
+        }
+
+pattern = os.path.join(os.curdir, "data", "{}_{}.xml")
+
+def extract_cursus(file_name):
+    """ Récupération du nom de filière dans un nom de fichier xml """
+    return parse(pattern, file_name)[1]
+
+def get_file_name_from_cursus(key, cursus):
+    """ Construction du nom de fichier xml à partir de la filière et d'une clé 
+    du dictionnaire naming """
+    return pattern.format(naming[key], cursus)

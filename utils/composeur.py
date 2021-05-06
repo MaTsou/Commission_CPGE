@@ -12,6 +12,7 @@ from utils.parametres import min_correc, max_correc, nb_correc
 from config import filieres, motivations, nb_classes
 from utils.fichier import Fichier
 from utils.clients import Jury, Admin
+from utils.toolbox import get_file_name_from_cursus, extract_cursus
 
 #################################################################################
 #                               Composeur                                       #
@@ -193,12 +194,13 @@ class Composeur(object):
         page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
         ## Contenu = liste de fichiers
         # Recherche des fichiers destinés à la commission
-        list_fich = glob.glob(os.path.join(os.curdir, "data", "comm_*.xml"))
+        list_fich = glob.glob(get_file_name_from_cursus('jury', '*'))
         txt = ''
         # Chaque fichier apparaîtra sous la forme d'un bouton
         for fich in list_fich:
+            cursus = extract_cursus(fich)
             txt += f'<input type="submit" class = "fichier" name="fichier"\
-                    id = "{fich}" value="{fich}"'
+                    id = "{cursus}" value="{cursus}"'
             # Si un fichier est déjà traité par un AUTRE jury,
             # son bouton est disabled...
             if (fich in fichiers_utilises.values()\
@@ -207,7 +209,7 @@ class Composeur(object):
             txt += '/><br>'
         # On n'affiche le texte ci-dessous que s'il y a des fichiers à traiter.
         if txt != '':
-            txt = '<h2>Veuillez sélectionner le fichier que vous souhaitez \
+            txt = '<h2>Veuillez sélectionner la filière que vous souhaitez \
                     traiter.</h2>' + txt
         ## Fabrication de la page
         page += Composeur.html["menu_comm"]\
@@ -229,7 +231,7 @@ class Composeur(object):
         data = {}
         ## entête
         page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
-        list_fich_comm = glob.glob(os.path.join(os.curdir,"data","comm_*.xml"))
+        list_fich_comm = glob.glob(get_file_name_from_cursus('jury' ,'*'))
         patron = 'menu_admin_'
         if len(list_fich_comm) > 0: # phase 2 ou 3
             data['decompt'] = self.genere_liste_decompte()
@@ -238,8 +240,9 @@ class Composeur(object):
                 patron += 'pendant'
                 txt = ''
                 for fich in fichiers_utilises.values():
+                    cursus = extract_cursus(fich)
                     txt += f'<input type = "submit" class ="fichier" \
-                            name = "fichier" value = "{fich}"/><br>'
+                            name = "fichier" value = "{cursus}"/><br>'
                 data['liste_jurys'] = txt
             else: # phase 3
                 patron += 'apres'
@@ -248,8 +251,8 @@ class Composeur(object):
                 data['bout_etap4'] += ' value = "Récolter les fichiers" \
                         onclick = "recolt_wait();"/>'
                 # Etape 5 bouton et Etape 6
-                list_fich_class = glob.glob(os.path.join(os.curdir,"data",\
-                        "class_*.xml"))
+                list_fich_class = \
+                glob.glob(get_file_name_from_cursus('classement_final', '*'))
                 data['liste_impression'] = ''
                 if len(list_fich_class) > 0:
                     data['liste_impression'] = self.genere_liste_impression()
@@ -269,8 +272,8 @@ class Composeur(object):
             ### Testons s'il reste encore des alertes dans les fichiers admin
             # Récupération des fichiers admin
             list_fich = {Fichier(fich) \
-                    for fich in glob.glob(os.path.join(os.curdir, "data", \
-                    "admin_*.xml"))}
+                    for fich in glob.glob(\
+                    get_file_name_from_cursus('admin', '*'))}
             alertes = False
             while not(alertes) and len(list_fich) > 0:
                 # à la première alerte détectée alertes = True
@@ -285,7 +288,7 @@ class Composeur(object):
                 affich = ''
                 if (alertes):
                     affich = 'disabled'
-                txt += f'onclick = "genere_wait();" {fich}/>'
+                txt += f'onclick = "genere_wait();" {affich}/>'
             data['bout_etap3'] = txt
         # Envoyez le menu
         contenu = Composeur.html[patron].format(**data)
@@ -299,25 +302,27 @@ class Composeur(object):
         """ Sous-fonction pour le menu admin : liste des .csv trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.csv")):
-            txt += f'{fich}<br>'
+            pattern = os.path.join(os.curdir, "data", "{}")
+            txt += f'{parse(pattern, fich)[0]}<br>'
         return txt
     
     def genere_liste_pdf(self):
         """ Sous-fonction pour le menu admin : liste des .pdf trouvés """
         txt = ''
         for fich in glob.glob(os.path.join(os.curdir,"data","*.pdf")):
-            txt += f'{fich}<br>'
+            pattern = os.path.join(os.curdir, "data", "{}")
+            txt += f'{parse(pattern, fich)[0]}<br>'
         return txt
     
     def genere_liste_admin(self):
-        """ Sous-fonction pour le menu admin : liste des boutons admin_*.xml """
-        list_fich = glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))
+        """ Sous-fonction pour le menu admin : liste des filières à traiter """
+        list_fich = glob.glob(get_file_name_from_cursus('admin', '*'))
         txt = ''
         if len(list_fich) > 0:
-            txt = '<h2>Choisissez le fichier que vous souhaitez compléter</h2>'
+            txt = '<h3>Choisissez la filière que vous souhaitez traiter</h3>'
         for fich in list_fich:
             txt += f'<input type="submit" class = "fichier" name="fichier" \
-                    value="{fich}"/>'
+                    value="{extract_cursus(fich)}"/>'
             txt += '<br>'
         return txt
     
@@ -325,7 +330,7 @@ class Composeur(object):
         """ Sous-fonction pour le menu admin :
             affichage des statistiques de candidatures """
         liste_stat = ''
-        if len(glob.glob(os.path.join(os.curdir,"data","admin_*.xml"))) > 0:
+        if len(glob.glob(get_file_name_from_cursus('admin', '*'))) > 0:
             # si les fichiers admin existent
             # lecture du fichier stat
             chem = os.path.join(os.curdir, "data", "stat")
@@ -333,15 +338,15 @@ class Composeur(object):
                 # le fichier stat n'existe pas (cela ne devrait pas arriver)
                 # on le créé
                 list_fich = [Fichier(fich) \
-                        for fich in glob.glob(os.path.join(os.curdir, "data",\
-                        "admin_*.xml"))]
+                        for fich in glob.glob(\
+                        get_file_name_from_cursus('admin', '*'))]
                 qui.stat()
             # maintenant on peut effectivement lire le fichier stat
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
-            liste_stat = f"<h4>Statistiques : {stat['nb_cand']} candidats \
-                    dont {stat['nb_cand_valid']} ayant validé.</h4>"
+            liste_stat = f"<h5>Statistiques : {stat['nb_cand']} candidats \
+                    dont {stat['nb_cand_valid']} ayant validé.</h5>"
             # Pour commencer les sommes par filières
             liste_stat += '<ul style = "margin-top:-5%">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
@@ -382,13 +387,13 @@ class Composeur(object):
 
     def genere_liste_impression(self):
         """ Sous-fonction pour le menu admin : liste des boutons class_*.xml """
-        list_fich = glob.glob(os.path.join(os.curdir,"data","class_*.xml"))
+        list_fich = glob.glob(get_file_name_from_cursus('classement_final', '*'))
         txt = ''
         if len(list_fich) > 0:
-            txt = '<h2>Choisissez le fichier que vous souhaitez imprimer</h2>'
+            txt = '<h2>Choisissez une filière.</h2>'
             for fich in list_fich:
                 txt += f'<input type = "submit" class ="fichier" \
-                        name = "fichier" value = "{fich}"/>'
+                        name = "fichier" value = "{extract_cursus(fich)}"/>'
                 txt +='<br>'
             txt +='<h3> Les tableaux récapitulatifs sont dans le dossier \
                     "./tableaux"</h3>'

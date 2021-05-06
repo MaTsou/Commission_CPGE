@@ -25,7 +25,8 @@ from utils.fichier import Fichier
 from utils.csv_parcourssup import lire, ecrire
 from utils.nettoie_xml import nettoie
 from config import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
-from utils.toolbox import decoup, restaure_virginite, str_to_num, normalize_mark
+from utils.toolbox import decoup, restaure_virginite, str_to_num, \
+        normalize_mark, get_file_name_from_cursus
 from utils.parametres import min_correc
 
 #################################################################################
@@ -422,9 +423,9 @@ class Admin(Client):
         # qu'ils contiennent des candidatures également solides.
         # Récupération des fichiers admin
         list_fich = [Fichier(fich) \
-                for fich in glob.glob(os.path.join(os.curdir, "data", \
-                "admin_*.xml"))]
-        # Pour chaque fichier "admin_*.xml"
+                for fich in glob.glob(
+                    get_file_name_from_cursus('admin', '*'))]
+        # Pour chaque fichier trouvé
         for fich in list_fich:
             # Tout d'abord, calculer (et renseigner le noeud) le score brut de 
             # chaque candidat 
@@ -448,8 +449,8 @@ class Admin(Client):
                 # Sauvegarde dans un fichier comm_XXXX.xml
                 res = etree.Element('candidats')
                 [res.append(cand.get_node()) for cand in dossier]
-                nom = os.path.join(os.curdir, "data", \
-                        f"comm_{fich.filiere().upper()}{j+1}.xml")
+                nom = get_file_name_from_cursus('jury',\
+                        f'{fich.filiere().upper()}{j+1}')
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, \
                             encoding='utf-8'))
@@ -471,7 +472,7 @@ class Admin(Client):
         # tableaux *.csv nécessaires à la suite du traitement administratif du 
         # recrutement (ces tableaux sont définis dans config.py)
         for fil in filieres: # pour chaque filière
-            path = os.path.join(os.curdir, "data", f"comm_{fil.upper()}*.xml")
+            path = get_file_name_from_cursus('jury', f"{fil.upper()}*")
             # récupération des fichiers comm de la filière
             list_fich = [Fichier(fich) for fich in glob.glob(path)]
 
@@ -525,15 +526,15 @@ class Admin(Client):
                 [res.append(c.get_node()) for c in doss_fin]
 
                 # Sauvegarde du fichier class...
-                nom = os.path.join(os.curdir, "data", f"class_{fil.upper()}.xml")
+                nom = get_file_name_from_cursus('classement_final', fil.upper())
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, \
                             encoding='utf-8'))
 
         # On lance la génération des tableaux bilan de commission
         list_fich = [Fichier(fich) \
-                for fich in glob.glob(os.path.join(os.curdir, "data", \
-                "class_*.xml"))]
+                for fich in glob.glob(\
+                get_file_name_from_cursus('classement_final', '*'))]
         self.tableaux_bilan(list_fich)
 
     def tableaux_bilan(self, list_fich):
