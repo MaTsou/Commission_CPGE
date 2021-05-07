@@ -186,32 +186,28 @@ class Composeur(object):
         """ compose le menu du jury 'qui'
         Fichiers utilisés est une liste des fichiers déjà choisis par un jury
         Ces fichiers sont inaccessibles (bouton disabled) """
-        ## entête
-        page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
+        page_content = {}
+        page_content['title'] = f'{self.titre} - Accès {qui.get_droits()}.'
         ## Contenu = liste de fichiers
         # Recherche des fichiers destinés à la commission
         list_fich = glob.glob(division_to_xml('jury', '*'))
+        # Tout d'abord, on supprime de cette liste les fichiers qu'un jury a 
+        # déjà choisi
+        list_fich = [ fich for fich in list_fich \
+                if not fich in fichiers_utilises.values() \
+                    or fich == fichiers_utilises.get(qui, 'rien') ]
+
         txt = ''
         # Chaque fichier apparaîtra sous la forme d'un bouton
-        for fich in list_fich:
-            cursus = xml_to_division(fich)
-            txt += f'<input type="submit" class = "fichier" name="fichier"\
-                    id = "{cursus}" value="{cursus}"'
-            # Si un fichier est déjà traité par un AUTRE jury,
-            # son bouton est disabled...
-            if (fich in fichiers_utilises.values()\
-                    and fich != fichiers_utilises.get(qui, 'rien')):
-                txt += ' disabled'
-            txt += '/><br>'
-        # On n'affiche le texte ci-dessous que s'il y a des fichiers à traiter.
-        if txt != '':
-            txt = '<h2>Veuillez sélectionner la filière que vous souhaitez \
-                    traiter.</h2>' + txt
+        if (len(list_fich) > 0):
+            txt = self.buttons_wrapper(\
+                    'Veuillez sélectionner la filière que vous souhaitez \
+                        traiter.', list_fich)
         ## Fabrication de la page
-        page += Composeur.html["menu_comm"]\
+        page_content['main_content'] = Composeur.html["menu_comm"]\
                 .format(**{'liste' : txt, 'script' : qui.script_menu})
-        page += '</html>'
-        return page
+        page_content['script'] = qui.script_menu
+        return Composeur.html["Page"].format(**page_content)
 
     def make_sous_menu(self, sous_menu_id, title, data):
         content = Composeur.html[f'sous_menu_content_{sous_menu_id}']\
@@ -224,7 +220,7 @@ class Composeur(object):
         contenu : selon l'état (phase 1, 2 ou 3) du traitement
         phase 1 : avant la commission, l'admin gère ce qui provient de \
                 ParcoursSup, commente et/ou complète les dossiers
-        phase 2 : l'admin a généré les fichiers *_comm_* destinés à la \
+        phase 2 : l'admin a généré les fichiers destinés à la \
                 commission. Les différents jurys doivent se prononcer sur \
                 les dossiers. C'est le coeur de l'opération de sélection.
         phase 3 : commission terminée. L'admin doit gérer "l'après sélection" :\
@@ -233,20 +229,26 @@ class Composeur(object):
         page_content = {}
         page_content['title'] = f'{self.titre} - Accès {qui.get_droits()}.'
         sous_menus = ""
+
         list_fich_comm = glob.glob(division_to_xml('jury' ,'*'))
+        # On teste l'existence de fichiers destinés aux jurys.
         if len(list_fich_comm) > 0: # phase 2 ou 3
             data = {}
             data['decompt'] = self.genere_liste_decompte()
             data['liste_stat'] = self.genere_liste_stat(qui)
+
+            # comm_en_cours est un booléen qui est True si des jurys sont 
+            # connectés.
             if comm_en_cours: # phase 2
+                title = 'Commission en cours...'
                 txt = ''
-                for fich in fichiers_utilises.values():
-                    cursus = xml_to_division(fich)
-                    txt += f'<input type = "submit" class ="fichier" \
-                            name = "fichier" value = "{cursus}"/><br>'
+                txt = self.buttons_wrapper('', fichiers_utilises.values())
                 data['liste_jurys'] = txt
                 sous_menus += self.make_sous_menu('comm', title, data)
+
             else: # phase 3
+                # Des fichiers jurys existent, mais aucun jury connecté. On 
+                # propose à l'admin un menu de fin de commission.
                 ######## 4e sous-menu
                 title = """- 4e étape : récolter le travail de la 
                 commission..."""
@@ -336,18 +338,6 @@ class Composeur(object):
             txt += f'{parse(pattern, fich)[0]}<br>'
         return txt
     
-    def genere_liste_admin(self):
-        """ Sous-fonction pour le menu admin : liste des filières à traiter """
-        list_fich = glob.glob(division_to_xml('admin', '*'))
-        txt = ''
-        if len(list_fich) > 0:
-            txt = '<h3>Choisissez la filière que vous souhaitez traiter</h3>'
-        for fich in list_fich:
-            txt += f'<input type="submit" class = "fichier" name="fichier" \
-                    value="{xml_to_division(fich)}"/>'
-            txt += '<br>'
-        return txt
-    
     def genere_liste_stat(self, qui):
         """ Sous-fonction pour le menu admin :
             affichage des statistiques de candidatures """
@@ -395,6 +385,25 @@ class Composeur(object):
             liste_stat += '</ul></ul>'
         return liste_stat
 
+    def buttons_wrapper(self, title, list_fich): 
+        txt = f""" <h3>{title}</h3> <div class='wrapper'> """
+        for fich in list_fich:
+            txt += f"""<div>
+            <input type="submit" class = "fichier" name="fichier" \
+                    value="{xml_to_division(fich)}"/>
+                    </div>"""
+        return txt + '</div>'
+
+    def genere_liste_admin(self):
+        """ Sous-fonction pour le menu admin : liste des filières à traiter """
+        list_fich = glob.glob(division_to_xml('admin', '*'))
+        txt = ''
+        if len(list_fich) > 0:
+            txt = self.buttons_wrapper(\
+                    'Choisissez la filière que vous souhaitez traiter',
+                    list_fich)
+        return txt
+    
     def genere_liste_decompte(self):
         """ Sous-fonction pour le menu admin (pendant commission) :
             avancement de la commission """
@@ -413,11 +422,10 @@ class Composeur(object):
         list_fich = glob.glob(division_to_xml('classement_final', '*'))
         txt = ''
         if len(list_fich) > 0:
-            txt = '<h2>Choisissez une filière.</h2>'
-            for fich in list_fich:
-                txt += f'<input type = "submit" class ="fichier" \
-                        name = "fichier" value = "{xml_to_division(fich)}"/>'
-                txt +='<br>'
+            txt = self.buttons_wrapper(\
+                    'Choisissez une filière pour imprimer les fiches \
+                    récapitulatives de commission',
+                    list_fich)
             txt +='<h3> Les tableaux récapitulatifs sont dans le dossier \
                     "./tableaux"</h3>'
         return txt

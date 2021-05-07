@@ -21,7 +21,7 @@
 ##########
 [*sous_menu*]
 <div class = "sous_menu">
-	<div class = "etape"> &nbsp;{title} </div>
+	<div class = "etape"> {title} </div>
 	{sous_menu_content}
 	<div id ="patience">
 		<p><h1>Traitement en cours...</h1></p>
@@ -57,9 +57,9 @@
 ##########
 [*sous_menu_content_comm*]
 <div class = "liste_admin">
-	<h2 style = "margin-top:0%;">{decompt}</h2>
+	<h2>{decompt}</h2>
 </div>
-<div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
+<div class = "stat">{liste_stat}</div>
 <div id = "imprim" class = "sous_menu">
 	<div class = "etape">
 		&nbsp;Jurys connectés : (cliquez pour libérer le fichier)
@@ -71,7 +71,7 @@
 ##########
 [*sous_menu_content_4*]
 <div class = "liste_admin">
-	<h3 style = "margin-top:0%;">{decompt}</h3>
+	<h2>{decompt}</h2>
 	<form id = "recolte" action = '/clore_commission' method = POST>
 		{bout_etap4} 
 	</form>
@@ -84,16 +84,11 @@
 </form>			
 ##########
 [*menu_comm*]
-<body>
-	<div id = "mep_menu">
-		<form action="/choix_comm" method=POST> 
-			<div class = "sous_menu">
-				{liste}
-			</div>
-		</form>
-	</div>
-	<script type="text/javascript" src="{script}"></script>
-</body>
+	<form action="/choix_comm" method=POST> 
+		<div class = "sous_menu">
+			{liste}
+		</div>
+	</form>
 ########## 
 [*MEP_DOSSIER*] 
 <div id = "dossier">

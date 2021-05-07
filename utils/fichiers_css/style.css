@@ -71,86 +71,100 @@ html {
 	MENUS (général, admin, comm)
 ************************************/
 
-.menu  /* Le menu principal (Admin ou Comm ?) */
-	{
-		position : absolute;
-		top : 25vh;
-		left : 19%;
-		margin:0%;
-		padding:0%;
-		padding-left : 5%;
-		text-align: center;
-		width : 60%;
-		
-	}
+/*
+.menu {
 
-.bouton_menu /* Les boutons du menu principal */
-	{
-		width: 100%;
-		padding-top : 2ex;
-		padding-bottom:2ex;
-		margin : 1%;
-		border-radius: .4em .4em .4em .4em ;
-		background-color: #cccccc;
-		font-size : 3em;
-		cursor: pointer;
-	}
-	
-.sous_menu /*  Sous-menu (dans le cas admin, contient les étapes) */
-	{
-		position : static;
-		text-align : center;
-		border:1px solid black;
-		padding-top : .5vw;
-		margin-left : 5%;
-		margin-bottom : 2ex;
-		width:90%;
-	}
+	position : absolute;
+	top : 25vh;
+	left : 19%;
+	margin:0%;
+	padding:0%;
+	padding-left : 5%;
+	text-align: center;
+	width : 60%;
 
-.fichier /* Les boutons contenant un nom de fichier (intervient dans tous les menus)*/
-	{
-		padding-top : .7ex;
-		padding-bottom: .7ex;
-		padding-left : 1em;
-		padding-right: 1em;
-		margin-bottom : .5em;
+}
+*/
+
+/* Les boutons du menu principal */
+.bouton_menu {
+
+	width: 100%;
+	padding-top : 2ex;
+	padding-bottom:2ex;
+	margin : 1%;
+	border-radius: .4em .4em .4em .4em ;
+	background-color: #cccccc;
+	font-size : 3em;
+	cursor: pointer;
+}
 	
-		border-radius: .4em .4em .4em .4em ;
-		background-color: #cccccc;
-		font-size : 1.3em;
-	
-		cursor: pointer;
-	}
+/*  Sous-menu (dans le cas admin, contient les étapes) */
+.sous_menu {
+
+	position : static;
+	text-align : center;
+	border:1px solid black;
+	padding-top : .5vw;
+	margin-left : 5%;
+	margin-bottom : 2ex;
+	width:90%;
+}
+
+/* Les boutons contenant un nom de fichier (intervient dans tous les menus)*/
+.fichier {
+
+	padding-top : .7ex;
+	padding-bottom: .7ex;
+	padding-left : 1em;
+	padding-right: 1em;
+	margin-bottom : .5em;
+
+	border-radius: .4em .4em .4em .4em ;
+	background-color: #cccccc;
+	font-size : 1.3em;
+
+	cursor: pointer;
+}
 
 /* Sous-menu admin */
 
-.etape	/* div : étape */
-	{
-		text-align : left;
-		font-size : 1.5vw;
-		font-weight: bold;
-		margin-bottom : 1ex;
-	}
+.etape {
+	text-align : left;
+	padding-left : 1em;
+	font-size : 1.5vw;
+	font-weight: bold;
+	margin-bottom : 1ex;
+}
 
-.liste_admin /*  div : liste des fichiers epa_admin */
-	{
-		display : inline-block;
-		margin-right: 5%;
-		vertical-align : middle;
-		width : 45%;
-	}
+/*  div : liste des fichiers epa_admin */
+.liste_admin {
 
-.stat /* div : statistiques */
+	display : inline-block;
+	margin-right: 5%;
+	vertical-align : top;
+	width : 45%;
+}
+
+.wrapper {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, 32%);
+	gap: 10px;
+}
+
+/* div : statistiques */
+.stat 
 	{
 		display : inline-block;
 		text-align : left;
 		margin-left: 5%;
 		width : 40%;
-		vertical-align : middle;
+		vertical-align : top;
 		font-size: 1.2em;
 	}
 
-.liste_csv /* div : liste des csv */
+/* div : liste des csv */
+.liste_csv 
 	{
 		position : relative;
 		display : inline-block;
@@ -159,7 +173,8 @@ html {
 		font-size : 1.3vw;
 	}
 
-.liste_pdf	/* div : liste des pdf */
+/* div : liste des pdf */
+.liste_pdf	
 	{
 		position : relative;
 		display : inline-block;
@@ -169,7 +184,8 @@ html {
 		font-size : 1.3vw;
 	}
 
-.bout_csv_div /* Le bouton Vérifier / Traiter */
+/* Le bouton Vérifier / Traiter */
+.bout_csv_div 
 	{
 		position : relative;
 		display : inline-block;
@@ -182,12 +198,14 @@ html {
 			IMPRESSION
 ************************************/
 
-.espace_impr /* Rajoute des espaces dans l'impression ...*/
+/* Rajoute des espaces dans l'impression ...*/
+.espace_impr 
 	{
 		display: none;
 	}
 
-.correc_impr /* La correction : on imprime mais n'affiche pas*/
+/* La correction : on imprime mais n'affiche pas*/
+.correc_impr 
 	{
 		display : none;
 	}
@@ -206,10 +224,12 @@ div.breakafter
 		LISTE DES DOSSIERS
 ************************************/
 
-.doss /* format type d'un bouton de cette liste */
+/* format type d'un bouton de cette liste */
+.doss 
 	{
 		width : 100%;
-		font-family : Courier, monospace; /* Pour la présentation : police monospace */
+		/* Pour la présentation : police monospace */
+		font-family : Courier, monospace; 
 		font-size : .8vw;
 		color : black;
 		text-align : left;
@@ -219,21 +239,29 @@ div.breakafter
 		background-color : rgba( 255, 255, 255, .9 );
 	}
 
-.doss:hover{border: 2px solid SkyBlue;} /* on passe dessus avec la souris */
+/* on passe dessus avec la souris */
+.doss:hover{border: 2px solid SkyBlue;} 
 	
-.doss_traite{background-color:LimeGreen;} /* a été traité --> vert */
+/* a été traité --> vert */
+.doss_traite{background-color:LimeGreen;} 
 
-.doss_courant{border: 2px solid Blue; color : red;} /* est sélectionné : bordure bleue */
+/* est sélectionné : bordure bleue */
+.doss_courant{border: 2px solid Blue; color : red;} 
 
-.doss_epa{border: 3px dashed Blue;} /* est de l'epa : bordure bleue */
+/* est de l'epa : bordure bleue */
+.doss_epa{border: 3px dashed Blue;} 
 
-.doss_incomplet{background-color:LightCoral;} /* admin : alerte / jury : commentaire admin */
+/* admin : alerte / jury : commentaire admin */
+.doss_incomplet{background-color:LightCoral;} 
 
-.doss_commente{background-color:Yellow;} /* admin : déposé un commentaire mais classable */
+/* admin : déposé un commentaire mais classable */
+.doss_commente{background-color:Yellow;} 
 
-.doss_rejete{background-color:DimGray;} /* admin seulement : rejeté */
+/* admin seulement : rejeté */
+.doss_rejete{background-color:DimGray;} 
 
-.doss_doublon_sf{background-color:Purple;} /* ex-aequo score final */
+/* ex-aequo score final */
+.doss_doublon_sf{background-color:Purple;} 
 
 /***********************************
 			PAGE DOSSIERS
@@ -241,7 +269,8 @@ div.breakafter
 
 /************ 1/ Les div ***********/
 
-#dossier /* Style de la colonne dossier*/
+/* Style de la colonne dossier*/
+#dossier 
 	{
 		display : inline-block;
 		padding-left : 1%;
@@ -249,7 +278,8 @@ div.breakafter
 		vertical-align : top;
 	}
 
-#bandeau_lateral /* Style du bandeau latéral qui contient gros_bout_div et liste */
+/* Style du bandeau latéral qui contient gros_bout_div et liste */
+#bandeau_lateral 
 	{
 		display : inline-block;
 		width : 23%;
@@ -257,19 +287,23 @@ div.breakafter
 		vertical-align : top;
 	}
 
-#liste /* Style de la colonne Liste des dossiers */
+/* Style de la colonne Liste des dossiers */
+#liste 
 	{
-		overflow-y : scroll; /* sert pour que l'évènement onscroll soit généré... */
+		/* sert pour que l'évènement onscroll soit généré... */
+		overflow-y : scroll; 
 		height : 75vh; /* sinon pas de scroll ! */
 	}
 
-#gros_bout_div /* La div en haut de la page dossier : contient le bouton retour */
+/* La div en haut de la page dossier : contient le bouton retour */
+#gros_bout_div 
 	{
 		text-align : center;
 		height : 10vh;
 	}
 
-.gros_bout /* Le bouton qui va dans la div gros_bout_div */
+/* Le bouton qui va dans la div gros_bout_div */
+.gros_bout 
 	{
 		width: 80%;
 		font-size: 2em;
@@ -295,7 +329,8 @@ caption
 		margin : .25em; /* espace avec le tableau !*/
 	}
 	
-.bord /* pour les tableaux */
+/* pour les tableaux */
+.bord 
 	{
 		border : 1px solid black;
 	}
@@ -335,20 +370,23 @@ caption
 	
 /********** 4/ Action de la commission : correction + motivation *********/
 
-.volet3  /* Volet 3 : Motivations + boutons */ 
+/* Volet 3 : Motivations + boutons */ 
+.volet3  
 	{
 		align : center;
 		width : 73vw;
 	}
 	
-.motiv /* Cellule titre = Motivations(s) de la commission */
+/* Cellule titre = Motivations(s) de la commission */
+.motiv 
 	{
 		width : 73vw;
 		text-align : left;
 		font-size : 1.2em;
 	}
 
-.motif /* Bouton "motifs" commission */
+/* Bouton "motifs" commission */
+.motif 
 	{
 		width : 21vw; /* la moitié de 60% de 70% de vw */
 		height : 2em;
@@ -357,7 +395,8 @@ caption
 		background-color : LightGrey;
 	}
 
-.txt_motifs /* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
+/* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
+.txt_motifs 
 	{
 		width : 42vw; /* 60% de 70% de vw */
 		height : 2em;
@@ -366,7 +405,8 @@ caption
 		background-color : white;
 	}
 
-.NC	/* Bouton NC */
+/* Bouton NC */
+.NC	
 	{
 		text-align : center;
 		vertical-align : center;
@@ -381,14 +421,16 @@ caption
 		margin-right : .25em;
 	}
 
-.valid /* div du bouton valider */
+/* div du bouton valider */
+.valid 
 	{
 		width : 18vw; /* 40% de 70% de vw */
 		text-align : center;
 		vertical-align : center;
 	}
 	
-.valid_bouton /* bouton valider */
+/* bouton valider */
+.valid_bouton 
 	{
 		padding-top : .7ex;
 		padding-bottom: .7ex;
