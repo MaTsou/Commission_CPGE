@@ -276,11 +276,6 @@ class Composeur(object):
             # liste pdf
             data['liste_pdf'] = self.genere_liste_pdf()
             sous_menus += self.make_sous_menu('1', title, data)
-            sous_menu_content = Composeur.html['sous_menu_content_1']\
-                    .format(**data)
-            sous_menus += Composeur.html['sous_menu']\
-                    .format(**{'title' : title, 
-                        'sous_menu_content' : sous_menu_content})
 
             ######## 2e sous-menu
             title = """- 2e étape : compléter les dossiers qui le 
