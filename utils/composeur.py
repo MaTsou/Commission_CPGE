@@ -372,6 +372,7 @@ class Composeur(object):
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
+            print(stat)
             liste_stat = f"<h5>Statistiques : {stat['nb_cand']} candidats \
                     dont {stat['nb_cand_valid']} ayant validé.</h5>"
             # Pour commencer les sommes par filières
@@ -387,15 +388,16 @@ class Composeur(object):
                 if not(i in deja_fait):
                     # avec la fonction math.log2 ce test serait facile !!!
                     seq = []
-                    bina = bin(i)[2:] # bin revoie une chaine qui commence \
-                            # par 'Ob' : on vire !
-                    while len(bina) < len(filieres):
-                        bina = f'0{bina}' # les 0 de poids fort sont restaurés
+                    # bina est la représentation binaire de i sur un nombre de 
+                    # bits égal au nombre de filières
+                    pattern = "{" + f"0:0{len(filieres)}b" + "}"
+                    bina = pattern.format(i)
                     for char in range(len(bina)):
-                        if bina[char] == '1':
-                            seq.append(filieres[len(filieres)-char-1].upper())
+                        if bina[-char-1] == '1':
+                            seq.append(filieres[char].upper())
                     txt = ' + '.join(seq)
-                    liste_stat += f'<li>{stat[i]} dossiers {txt}</li>'
+                    if stat[i]:
+                        liste_stat += f'<li>{stat[i]} dossiers {txt}</li>'
             liste_stat += '</ul></ul>'
         return liste_stat
 

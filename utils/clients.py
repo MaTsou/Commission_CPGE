@@ -363,7 +363,8 @@ class Admin(Client):
         candidats = 0
         candidats_ayant_valide = 0
 
-        # Recherche des candidatures # je suis très fier de cet algorithme !!
+        # Recherche des candidatures
+        # je suis très fier de cet algorithme !!
         # Construction des éléments de recherche
 
         # # liste de dicos 
@@ -402,9 +403,11 @@ class Admin(Client):
                         candid[2**j]+= 1
                         if flag:
                             candidats_ayant_valide += 1
+                            if len(liste) > 1:
+                                # si candidat dans plus d'une filière
+                                # incrémentation du compteur correspondant
+                                candid[cc] += 1
                             flag = False
-                if len(liste) > 1: # si candidat dans plus d'une filière
-                    candid[cc] += 1 # incrémentation du compteur correspondant
         # Sauvegarder
         [fich.sauvegarde() for fich in list_fich]
         # Ajouter deux éléments dans le dictionnaire candid
