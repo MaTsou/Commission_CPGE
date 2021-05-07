@@ -112,14 +112,14 @@ def configure_loggers(log_path):
     return journaux
 
 # Obtenir l'adresse ip sur le réseau local
-def get_ip(ip):
+def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # doesn't even have to be reachable
         s.connect(('10.255.255.255', 1))
         IP = s.getsockname()[0]
     except Exception:
-        IP = ip
+        IP = '127.0.0.1'
     finally:
         s.close()
     return IP
@@ -128,9 +128,7 @@ def get_ip(ip):
 # pour servir sur le réseau local)
 jury = '-jury' in sys.argv
 
-ip = '127.0.0.1' # ip socket_host par défaut...
-if '-comm' in sys.argv:
-    ip = get_ip(ip)
+ip = get_ip()
 
 log_path = os.path.join("utils", "logs")
 if '-clean-logs' in sys.argv:
