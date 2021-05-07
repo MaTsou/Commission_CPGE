@@ -148,17 +148,17 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         try: 
             # recherche du client concerné
             client = [cli for cli in self.fichiers_utilises.keys() if 
-                    self.fichiers_utilises[cli] == fichier][0]
+                    self.fichiers_utilises[cli] == file_name][0]
             # on fait du ménage, le fichier redevient disponible aux autres 
             # jurys
             self.fichiers_utilises.pop(client)
             client.fichier = None
             page += f"""<div style='align:center;padding-top:2cm;'><h2>Le fichier 
-            {fichier} est maintenant libre.</h2></div> """
+            {file_name} est maintenant libre.</h2></div> """
 
         except:
             page = f""" <div style='align:center;padding-top:2cm;'><h2>Une erreur 
-            est survenue. Le fichier {fichier} n'est pas reconnu.</h2></div> 
+            est survenue. Le fichier {file_name} n'est pas reconnu.</h2></div> 
             """
         page += """
         <div style='align:center;'><form action='/affiche_menu' method = POST> 
