@@ -1,152 +1,117 @@
-[*Entete*]
-<head> 
-	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" 
-	cache-control="no-cache, no-store, must-revalidate"> 
-	<link rel="stylesheet" type="text/css" media="screen" 
-	href="/utils/fichiers_css/style.css">
-	<title>Gestion Commission</title>
-	<div id = "header">
-		<h1 align="center">{titre}</h1>
-	</div>
-</head> 
+[*Page*]
+<!DOCTYPE html>
+<html>
+	<head onload="hide_loader();> 
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type" 
+			 cache-control="no-cache, no-store, must-revalidate"> 
+		<link rel="stylesheet" type="text/css" media="screen" 
+			   href="/utils/fichiers_css/style.css">
+		<title>Gestion Commission</title>
+	</head> 
+	<body class="body" onload="javascript:set_scroll();">
+		<div class="header">
+			<h2 align="center">{title}</h2>
+		</div>
+		<div class="main_container">
+			{main_content}
+		</div>
+		<script type="text/javascript" src="{script}"></script>
+	</body>
+</html>
 ##########
-[*PageAccueil*] 
-<div class = "menu">
-  <form action="/identification" method=POST> 
-    <input type=submit class="bouton_menu" name="acces" 
-	value="Accès administrateur"/><br> 
-    <input type=submit class="bouton_menu" name="acces" value="Accès jury"/> 
-  </form> 
+[*sous_menu*]
+<div class = "sous_menu">
+	<div class = "etape"> &nbsp;{title} </div>
+	{sous_menu_content}
+	<div id ="patience">
+		<p><h1>Traitement en cours...</h1></p>
+		<div class = "loader">
+			<p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
+		</div>
+		<p><h1>...Veuillez Patienter</h1></p>
+	</div>
 </div>
+##########
+[*sous_menu_content_1*]
+<form id="traiter" action = "/traiter_parcourssup" method = POST>
+	<div class = "liste_csv">
+		Fichiers csv présents : <br>{liste_csv}
+	</div><!-- -->
+	<div class = "bout_csv_div">
+		<input type = "button" class = "fichier" 
+		 value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
+	</div><!-- -->
+	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
+</form>	
+##########
+[*sous_menu_content_2*]
+<div class = "liste_admin">
+  <form action = "/choix_admin" method = POST> {liste_admin} </form>	
+</div>
+<div class = "stat">{liste_stat}</div>
+##########
+[*sous_menu_content_3*]
+<form id="genere" action = '/genere_fichiers_comm' method = POST>
+	{bout_etap3}
+</form>	
+##########
+[*sous_menu_content_comm*]
+<div class = "liste_admin">
+	<h2 style = "margin-top:0%;">{decompt}</h2>
+</div>
+<div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
+<div id = "imprim" class = "sous_menu">
+	<div class = "etape">
+		&nbsp;Jurys connectés : (cliquez pour libérer le fichier)
+	</div>
+	<form id = "impress" action = "/libere_fichier" method = "POST">
+		{liste_jurys} 
+	</form>			
+</div>
+##########
+[*sous_menu_content_4*]
+<div class = "liste_admin">
+	<h3 style = "margin-top:0%;">{decompt}</h3>
+	<form id = "recolte" action = '/clore_commission' method = POST>
+		{bout_etap4} 
+	</form>
+</div>
+<div class = "stat" >{liste_stat}</div>
+##########
+[*sous_menu_content_5*]
+<form id = "impress" action = '/page_impression' method = POST">
+	{liste_impression} 
+</form>			
 ##########
 [*menu_comm*]
 <body>
-  <div id = "mep_menu">
-    <form action="/choix_comm" method=POST> 
-      <div class = "sous_menu">
-        {liste}
-      </div>
-    </form>
-  </div>
-  <script type="text/javascript" src="{script}"></script>
+	<div id = "mep_menu">
+		<form action="/choix_comm" method=POST> 
+			<div class = "sous_menu">
+				{liste}
+			</div>
+		</form>
+	</div>
+	<script type="text/javascript" src="{script}"></script>
 </body>
-##########
-[*MEP_MENU*]
-<body onload="hide_loader();">
-  <div id = "mep_menu">{contenu}</div>
-  <script type="text/javascript" src="{script}"></script>
-</body>
-##########
-[*menu_admin_avant*]
-<div id = "csv" class = "sous_menu">
-  <div class = "etape">&nbsp;- 1e étape : digérer les données ParcoursSUP :</div>
-  <form id = "traiter" action = "/traiter_parcourssup" method = POST>
-    <div class = "liste_csv">
-		Fichiers csv présents : <br>{liste_csv}
-	</div><!-- -->
-	<div class = "bout_csv_div"><input type = "button" class = "fichier" 
-		value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
-	</div><!-- -->
-	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
-  </form>	
-</div>
-<br>
-<div id = "admin" class = "sous_menu">
-  <div class = "etape">
-	  &nbsp;- 2e étape : compléter les dossiers qui le nécessitent...
-  </div>
-  <div class = "liste_admin">
-    <form action = "/choix_admin" method = POST> {liste_admin} </form>	
-  </div>
-  <div class = "stat">{liste_stat}</div>
-</div>
-<br>
-<div id = "comm" class = "sous_menu">
-  <div class = "etape">
-	  &nbsp;- 3e étape : générer les fichiers pour la commission...
-  </div>
-  <form id ='genere' action = '/genere_fichiers_comm' method = POST>
-    {bout_etap3}
-  </form>	
-</div>
-<div id ="patience">
-  <h1>Traitement en cours...</h1>
-  <div class = "loader">
-	  <p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
-  </div>
-  <h1>...Veuillez Patienter</h1>
-</div>
-##########
-[*menu_admin_pendant*]
-<div id = "admin" class = "sous_menu">
-  <div class = "etape">&nbsp;Commission en cours...</div>
-  <div class = "liste_admin">
-    <br>
-    <h2 style = "margin-top:0%;">{decompt}</h2>
-  </div>
-  <div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
-</div>
-<br>
-<div id = "imprim" class = "sous_menu">
-  <div class = "etape">
-	  &nbsp;Jurys connectés : (cliquez pour libérer le fichier)
-  </div>
-  <form id = "impress" action = "/libere_fichier" method = "POST">
-	  {liste_jurys} 
-  </form>			
-</div>
-##########
-[*menu_admin_apres*]
-<div id = "admin" class = "sous_menu">
-  <div class = "etape">
-	  &nbsp;- 4e étape : récolter le travail de la commission...
-  </div>
-  <div class = "liste_admin">
-    <br>
-    <h2 style = "margin-top:0%;">{decompt}</h2>
-    <form id = "recolte" action = '/clore_commission' method = POST>
-		{bout_etap4} 
-	</form>
-  </div>
-  <div class = "stat" style = "font-size:0.9em;">{liste_stat}</div>
-</div>
-<br>
-<div id = "imprim" class = "sous_menu">
-  <div class = "etape">&nbsp;- 5e étape : Bilan de la commission :</div>
-  <form id = "impress" action = '/page_impression' method = POST">
-	  {liste_impression} 
-  </form>			
-</div>
-<div id ="patience">
-  <p><h1>Traitement en cours...</h1></p>
-  <div class = "loader">
-	  <p><img id = "gif" src = "/utils/ajax-loader.gif"></p>
-  </div>
-  <p><h1>...Veuillez Patienter</h1></p>
-</div>
 ########## 
 [*MEP_DOSSIER*] 
-<body onload="javascript:set_scroll();">
-  <div>
-    <div id = "dossier">
-      <form id = "formulaire" action = "/traiter" method = POST 
+<div id = "dossier">
+	<form id = "formulaire" action = "/traiter" method = POST 
 		  onsubmit="return test_valid();">
-        {dossier}
-        {action_client}
-      </form>
-    </div>
-    <div id = "bandeau_lateral">
-      <form action="/affiche_menu" method = POST>
-        <div id = "gros_bout_div">
+		{dossier}
+		{action_client}
+	</form>
+</div>
+<div id = "bandeau_lateral">
+	<form action="/affiche_menu" method = POST>
+		<div id = "gros_bout_div">
 			<input type = "submit" class ="gros_bout" value = "RETOUR" 
 				   style = "display:{visibilite}">
-        </div>
-      </form>
-      <div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
-    </div>
-    <div>
-  <script type="text/javascript" src="{script}"></script>
-</body>
+		</div>
+	</form>
+	<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
+</div>
 ##########
 [*contenu_dossier*]
 <table width = "100%" align = "center">

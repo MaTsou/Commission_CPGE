@@ -8,24 +8,38 @@
           box-sizing: border-box;
 } /* s'applique à tous les éléments : width est une largeur hors-tout !! */
 
-html {font-size : 1.15vw} /* Taille de base selon la largeur de l'écran (1 = 100 carac/ligne) !*/
-						  /* On aurait pu choisir la hauteur !!!*/
+:root
+{
+	--header-height : 5vw; /* hauteur proportionnelle à la largeur de l'écran 
+	car la taille de police est proportionnelle cette largeur. */
+}
+html {
+	font-size : 1.15vw /* Taille de base selon la largeur de l'écran (1 = 100 
+	carac/ligne) !*/
+	/* On aurait pu choisir la hauteur !!!*/
+}
 
-body
-	{
-		width : 100%;
-		background-color : LightGrey;
-		position : static;
-	}
+.body {
+	width : 100%;
+	background-color : LightGrey;
+}
 
-#header	/* Le header : 1e ligne ; intervient à toutes les pages */
-	{
-		position : static;
-		top : 0px;
-		left : 0px;
-		width :100%;
-	}
+.header {
+	position : fixed;
+	background-color : LightGrey;
+	z-index : 1;
+	top : 0px;
+	width :100%;
+	height : var(--header-height);
+}
 
+.main_container {
+	position : relative;
+	top : var(--header-height);
+	z-index : 0;
+	width : 100%;
+	overflow-y : hidden;
+}
 /***********************************
 	LOADING ... please wait
 ************************************/
@@ -64,6 +78,7 @@ body
 		left : 19%;
 		margin:0%;
 		padding:0%;
+		padding-left : 5%;
 		text-align: center;
 		width : 60%;
 		
@@ -81,18 +96,14 @@ body
 		cursor: pointer;
 	}
 	
-#mep_menu	/* Contient les sous-menus */
-	{
-		margin-left:5%;
-		width : 100%;
-		text-align : center;
-	}
-
 .sous_menu /*  Sous-menu (dans le cas admin, contient les étapes) */
 	{
 		position : static;
 		text-align : center;
 		border:1px solid black;
+		padding-top : .5vw;
+		margin-left : 5%;
+		margin-bottom : 2ex;
 		width:90%;
 	}
 
@@ -116,15 +127,17 @@ body
 .etape	/* div : étape */
 	{
 		text-align : left;
-		font-size : 1.6em;
+		font-size : 1.5vw;
 		font-weight: bold;
+		margin-bottom : 1ex;
 	}
 
 .liste_admin /*  div : liste des fichiers epa_admin */
 	{
 		display : inline-block;
 		margin-right: 5%;
-		vertical-align : top;
+		vertical-align : middle;
+		width : 45%;
 	}
 
 .stat /* div : statistiques */
@@ -132,7 +145,8 @@ body
 		display : inline-block;
 		text-align : left;
 		margin-left: 5%;
-		vertical-align : top;
+		width : 40%;
+		vertical-align : middle;
 		font-size: 1.2em;
 	}
 
@@ -142,7 +156,7 @@ body
 		display : inline-block;
 		left:1%;
 		text-align : left;
-		font-size : 1.5em;
+		font-size : 1.3vw;
 	}
 
 .liste_pdf	/* div : liste des pdf */
@@ -152,7 +166,7 @@ body
 		right : 1%;
 		top : 0%;
 		text-align : right;
-		font-size : 1.5em;
+		font-size : 1.3vw;
 	}
 
 .bout_csv_div /* Le bouton Vérifier / Traiter */

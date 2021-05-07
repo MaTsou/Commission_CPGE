@@ -133,15 +133,18 @@ class Composeur(object):
         # Chaque méthode est un générateur qui renvoie des 'yield' par paires :
         # 'je commence ...' puis 'j ai fini'
         ### On débute par l'entête de page et un titre :
-        # entete est une entête html (meta doit être envoyé avec chaque 'yield',
-        # sinon ça bloque (yields 'bufferisés'!)
-        entete = self.genere_entete('Traitement des données ParcoursSup')
+        page_content = {}
+        page_content['title'] = 'Traitement des données ParcoursSup'
+        page_content['main_content'] = ''
+        page_content['script'] = ''
+        page = Composeur.html['Page'].format(**page_content)
+        # Peut-être pas très propre mais ça fonctionne...
         # On récupère la balise <meta> car elle doit être envoyée avec chaque
         # yield sinon on n'a pas le fonctionnement en 'temps réel'
-        meta_content = parse('{}<meta{}>{}', entete)[1]
+        meta_content = parse('{}<meta{}>{}',page)[1]
         meta = f'<meta{meta_content}>'
         # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
-        yield f'{entete}<div style="padding-left:12%;">'
+        yield f'{page}<div style="padding-left:12%;">'
         # Début du traitement du contenu du dico
         for gen, title in action:
             yield f"{meta}<h2>{title}</h2>" # On envoie le sous-titre
@@ -174,17 +177,10 @@ class Composeur(object):
         sur un même fichier.
         comm_en_cours est un booléen qui permet d'adapter le menu de
         l'administrateur lorsque la commission se déroule. """
-        if qui:
-            if isinstance(qui, Admin):
-                return self.menu_admin(qui, fichiers_utilises, comm_en_cours)
-            else:
-                return self.menu_comm(qui, fichiers_utilises)
-        else: # qui = None, application lancée en mode test
-            # TODO : n'est plus utile avec l'option -jury
-            page = self.genere_entete(f'{self.titre}.')
-            page += Composeur.html['PageAccueil']
-            page += '</html>'
-            return page # menu 'TEST' : admin ou jury ?
+        if isinstance(qui, Admin):
+            return self.menu_admin(qui, fichiers_utilises, comm_en_cours)
+        else:
+            return self.menu_comm(qui, fichiers_utilises)
 
     def menu_comm(self, qui, fichiers_utilises):
         """ compose le menu du jury 'qui'
@@ -217,6 +213,12 @@ class Composeur(object):
         page += '</html>'
         return page
 
+    def make_sous_menu(self, sous_menu_id, title, data):
+        content = Composeur.html[f'sous_menu_content_{sous_menu_id}']\
+                .format(**data)
+        return Composeur.html['sous_menu'].format(**{'title' : title, 
+                    'sous_menu_content' : content})
+
     def menu_admin(self, qui, fichiers_utilises, comm_en_cours):
         """ Compose le menu administrateur
         contenu : selon l'état (phase 1, 2 ou 3) du traitement
@@ -228,52 +230,77 @@ class Composeur(object):
         phase 3 : commission terminée. L'admin doit gérer "l'après sélection" :\
                 recomposer un fichier ordonné par filière, générer tous les \
                 tableaux récapitulatifs. """
-        data = {}
-        ## entête
-        page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
+        page_content = {}
+        page_content['title'] = f'{self.titre} - Accès {qui.get_droits()}.'
+        sous_menus = ""
         list_fich_comm = glob.glob(division_to_xml('jury' ,'*'))
-        patron = 'menu_admin_'
         if len(list_fich_comm) > 0: # phase 2 ou 3
+            data = {}
             data['decompt'] = self.genere_liste_decompte()
             data['liste_stat'] = self.genere_liste_stat(qui)
             if comm_en_cours: # phase 2
-                patron += 'pendant'
                 txt = ''
                 for fich in fichiers_utilises.values():
                     cursus = xml_to_division(fich)
                     txt += f'<input type = "submit" class ="fichier" \
                             name = "fichier" value = "{cursus}"/><br>'
                 data['liste_jurys'] = txt
+                sous_menus += self.make_sous_menu('comm', title, data)
             else: # phase 3
-                patron += 'apres'
+                ######## 4e sous-menu
+                title = """- 4e étape : récolter le travail de la 
+                commission..."""
                 # Etape 4 bouton
-                data['bout_etap4'] = '<input type = "button" class ="fichier"'
-                data['bout_etap4'] += ' value = "Récolter les fichiers" \
-                        onclick = "recolt_wait();"/>'
+                data['bout_etap4'] = """<input type = "button" class ="fichier" 
+                value = "Récolter les fichiers"  onclick = "recolt_wait();"/>"""
+                sous_menus += self.make_sous_menu('4', title, data)
+
+                ######## 5e sous-menu
                 # Etape 5 bouton et Etape 6
+                title = """- 5e étape : Bilan de la commission :"""
+                data = {}
                 list_fich_class = \
-                glob.glob(division_to_xml('classement_final', '*'))
+                        glob.glob(division_to_xml('classement_final', '*'))
                 data['liste_impression'] = ''
                 if len(list_fich_class) > 0:
                     data['liste_impression'] = self.genere_liste_impression()
-            
+                sous_menus += self.make_sous_menu('5', title, data)
+
         else: # avant commission
-            patron += 'avant'
+            ######## 1er sous-menu
+            title = """- 1e étape : digérer les données ParcoursSUP présentes 
+            dans le dossier data :"""
+            data = {}
             # liste csv
             data['liste_csv'] = self.genere_liste_csv()
             # liste pdf
             data['liste_pdf'] = self.genere_liste_pdf()
+            sous_menus += self.make_sous_menu('1', title, data)
+            sous_menu_content = Composeur.html['sous_menu_content_1']\
+                    .format(**data)
+            sous_menus += Composeur.html['sous_menu']\
+                    .format(**{'title' : title, 
+                        'sous_menu_content' : sous_menu_content})
+
+            ######## 2e sous-menu
+            title = """- 2e étape : compléter les dossiers qui le 
+            nécessitent..."""
+            data = {}
             # liste admin
             data['liste_admin'] = self.genere_liste_admin()
             # liste_stat
             data['liste_stat'] = self.genere_liste_stat(qui)
+            sous_menus += self.make_sous_menu('2', title, data)
+
+            ######## 3e sous-menu
+            title = """- 3e étape : générer les fichiers pour la 
+            commission..."""
             # Etape 3 bouton : ce bouton n'est actif que si admin a levé 
             # toutes les alertes.
             ### Testons s'il reste encore des alertes dans les fichiers admin
             # Récupération des fichiers admin
             list_fich = {Fichier(fich) \
-                    for fich in glob.glob(\
-                    division_to_xml('admin', '*'))}
+                    for fich in glob.glob(division_to_xml('admin', '*'))}
             alertes = False
             while not(alertes) and len(list_fich) > 0:
                 # à la première alerte détectée alertes = True
@@ -289,14 +316,14 @@ class Composeur(object):
                 if (alertes):
                     affich = 'disabled'
                 txt += f'onclick = "genere_wait();" {affich}/>'
+            data = {}
             data['bout_etap3'] = txt
+            sous_menus += self.make_sous_menu('3', title, data)
         # Envoyez le menu
-        contenu = Composeur.html[patron].format(**data)
+        page_content['main_content'] = sous_menus
+        page_content['script'] = qui.script_menu
         # Composition de la page
-        page += Composeur.html["MEP_MENU"]\
-                .format(**{'contenu' : contenu, 'script' : qui.script_menu})
-        page += '</html>'
-        return page
+        return Composeur.html["Page"].format(**page_content)
     
     def genere_liste_csv(self):
         """ Sous-fonction pour le menu admin : liste des .csv trouvés """
@@ -404,8 +431,9 @@ class Composeur(object):
 ########################################################
     def page_dossier(self, qui, mem_scroll):
         """ construction du code html constitutif de la page dossier """
+        page_content = {}
         ## entête
-        page = self.genere_entete(f'{self.titre} - Accès {qui.get_droits()}.')
+        page_content['title'] = f'{self.titre} - Accès {qui.get_droits()}.'
         # construire ensuite les parties dossier, action de client puis liste 
         # des dossiers;
         # La partie dossier est créée par la fonction genere_dossier; infos 
@@ -425,15 +453,16 @@ class Composeur(object):
         if isinstance(qui, Jury):
             visib = 'none'
         # dictionnaire directement 'digérable' par la chaîne html["MEP_DOSSIER"]
-        page += Composeur.html['MEP_DOSSIER'].format(**{
+        page_content['main_content'] = Composeur.html['MEP_DOSSIER'].format(**{
             'dossier' : dossier,
             'action_client' : action_client,
             'liste' : liste,
             'script' : qui.script_dossiers,
             'visibilite' : visib
             })
-        page += '</html>'
-        return page
+        page_content['script'] = qui.script_dossiers
+        # Composition de la page
+        return Composeur.html["Page"].format(**page_content)
 
     def genere_dossier(self, qui, cand, format_admin = False):
         """ Renvoie le dictionnaire contenant les infos du dossier en cours"""
