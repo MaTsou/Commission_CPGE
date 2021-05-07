@@ -372,7 +372,6 @@ class Composeur(object):
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
-            print(stat)
             liste_stat = f"<h5>Statistiques : {stat['nb_cand']} candidats \
                     dont {stat['nb_cand_valid']} ayant validé.</h5>"
             # Pour commencer les sommes par filières
