@@ -260,10 +260,12 @@ class Admin(Client):
         motif = kwargs['motif']
         if not('- Admin :' in motif or motif == '' or '- Alerte :' in motif):
             motif = f"- Admin : {motif}"
+        cand.set('Motifs', motif)
 
         # Récupération de la correction. On en fait qqc seulement si elle est 
         # minimale (NC), puis calcul du score final
         cor = kwargs['correc']
+        renew_stat = False
         if float(cor) == float(min_correc):
             # L'admin a validé le formulaire avec la correction NC (le candidat 
             # ne passera pas en commission) Pour ce cas là, on ne recopie pas 
@@ -271,20 +273,24 @@ class Admin(Client):
             # une filière sans l'exclure des autres. Sécurité !
             cand.set('Correction', 'NC') # update_raw_score renverra 0 !
             cand.set('Jury', 'Admin') # exclu par l'admin
-            cand.set('Motifs', motif)
+            # On met à jour les stats
+            renew_stat = True
         else:
+            if cand.get('Correction') == 'NC':
+                # lignes nécessaires si l'admin a NC un candidat, puis a changé 
+                # d'avis.
+                cand.set('Jury', '')
+                # On met à jour les stats
+                renew_stat = True
+            # Correction standard
             cand.set('Correction', '0')
-            # 2 lignes nécessaires si l'admin a NC un candidat, puis a changé 
-            # d'avis.
-            cand.set('Jury', '')
-            for fich in list_fich_cand:
-                fich.get_cand(cand).set('Motifs', motif)
 
         # On (re)calcule le score brut !
         cand.update_raw_score()
         # On sauvegarde tous les fichiers retouchés
         for fich in list_fich_cand:
             fich.sauvegarde()
+        if renew_stat: self.stat()
 
     def traiter_csv(self):
         """ Traiter les fichiers .csv en provenance de ParcoursSup. """
@@ -359,17 +365,18 @@ class Admin(Client):
         # Initialisation du dictionnaire stockant toutes les candidatures
         candid = {i : 0 for i in range(2**len(filieres))}
 
-        # Variables de décompte des candidats (et pas candidatures !)
+        # Variables de décompte des candidats
         candidats = 0
-        candidats_ayant_valide = 0
 
         # Recherche des candidatures
         # je suis très fier de cet algorithme !!
         # Construction des éléments de recherche
 
         # # liste de dicos 
-        l_dict = [ {cand.get('Num ParcoursSup') : cand for cand in fich} \
-                for fich in list_fich ]
+        # À noter : on ne s'intéresse qu'aux candidatures qui n'ont pas été 
+        # rejetées (par nettoie.py ou l'admin..)
+        l_dict = [ {cand.get('Num ParcoursSup') : cand for cand in fich \
+                if cand.get('Correction') != 'NC'} for fich in list_fich ]
         # # liste d'ensembles d'identifiants ParcoursSup
         l_set = [ set(d.keys()) for d in l_dict ]
 
@@ -396,23 +403,17 @@ class Admin(Client):
                 [l_dict[j][a].set('Candidatures', cc) for j in liste]
                 flag = True # pour ne compter qu'une validation par candidat !
                 for j in liste:
-                    # le test ci-dessous pourrait exclure les filières 
-                    # inadéquates (bien ou pas ?)..
-                    if not('non validée' in l_dict[j][a].get('Motifs')):
-                        # ne sont comptés que les candidatures validées
-                        candid[2**j]+= 1
-                        if flag:
-                            candidats_ayant_valide += 1
-                            if len(liste) > 1:
-                                # si candidat dans plus d'une filière
-                                # incrémentation du compteur correspondant
-                                candid[cc] += 1
-                            flag = False
+                    candid[2**j]+= 1
+                    if flag:
+                        if len(liste) > 1:
+                            # si candidat dans plus d'une filière
+                            # incrémentation du compteur correspondant
+                            candid[cc] += 1
+                        flag = False
         # Sauvegarder
         [fich.sauvegarde() for fich in list_fich]
         # Ajouter deux éléments dans le dictionnaire candid
         candid['nb_cand'] = candidats
-        candid['nb_cand_valid'] = candidats_ayant_valide
         # Écrire le fichier stat
         with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
             pickle.dump(candid, stat_fich)

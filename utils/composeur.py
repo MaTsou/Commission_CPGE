@@ -365,17 +365,17 @@ class Composeur(object):
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
-            liste_stat = f"<h5>Statistiques : {stat['nb_cand']} candidats \
-                    dont {stat['nb_cand_valid']} ayant validé.</h5>"
+            liste_stat = f"<h5>Statistiques (dossiers recevables) : \
+                    {stat['nb_cand']} candidats.</h5>"
             # Pour commencer les sommes par filières
             liste_stat += '<ul style = "margin-top:-5%">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
             for i in range(len(filieres)):
                 liste_stat += f'<li>{stat[2**i]} dossiers \
-                        {filieres[i].upper()} validés</li>'
+                        {filieres[i].upper()}</li>'
                 deja_fait.append(2**i)
             # Ensuite les requêtes croisées
-            liste_stat += 'dont :<ul>'
+            liste_stat += 'dont :<ul style="font-size: 80%;">'
             for i in range(2**len(filieres)):
                 if not(i in deja_fait):
                     # avec la fonction math.log2 ce test serait facile !!!
