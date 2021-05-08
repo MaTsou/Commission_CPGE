@@ -169,6 +169,20 @@ class Composeur(object):
 ########################################################
 ##### Ici commence ce qui concerne les pages menus #####
 ########################################################
+    def make_sous_menu(self, sous_menu_id, title, data):
+        content = Composeur.html[f'sous_menu_content_{sous_menu_id}']\
+                .format(**data)
+        return Composeur.html['sous_menu'].format(**{'title' : title, 
+                    'sous_menu_content' : content})
+
+    def buttons_wrapper(self, title, list_fich): 
+        txt = f""" <h3>{title}</h3> <div class='wrapper'> """
+        for fich in list_fich:
+            txt += f"""<div>
+            <input type="submit" class = "fichier" name="fichier" \
+                    value="{xml_to_division(fich)}"/>
+                    </div>"""
+        return txt + '</div>'
 
     def menu(self, qui = None, fichiers_utilises = None, comm_en_cours = False): 
         """ compose le menu du client 'qui'
@@ -208,12 +222,6 @@ class Composeur(object):
                 .format(**{'liste' : txt, 'script' : qui.script_menu})
         page_content['script'] = qui.script_menu
         return Composeur.html["Page"].format(**page_content)
-
-    def make_sous_menu(self, sous_menu_id, title, data):
-        content = Composeur.html[f'sous_menu_content_{sous_menu_id}']\
-                .format(**data)
-        return Composeur.html['sous_menu'].format(**{'title' : title, 
-                    'sous_menu_content' : content})
 
     def menu_admin(self, qui, fichiers_utilises, comm_en_cours):
         """ Compose le menu administrateur
@@ -384,15 +392,6 @@ class Composeur(object):
                         liste_stat += f'<li>{stat[i]} dossiers {txt}</li>'
             liste_stat += '</ul></ul>'
         return liste_stat
-
-    def buttons_wrapper(self, title, list_fich): 
-        txt = f""" <h3>{title}</h3> <div class='wrapper'> """
-        for fich in list_fich:
-            txt += f"""<div>
-            <input type="submit" class = "fichier" name="fichier" \
-                    value="{xml_to_division(fich)}"/>
-                    </div>"""
-        return txt + '</div>'
 
     def genere_liste_admin(self):
         """ Sous-fonction pour le menu admin : liste des filières à traiter """
