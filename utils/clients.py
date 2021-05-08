@@ -425,6 +425,13 @@ class Admin(Client):
         # brut décroissant et générer autant de fichiers qu'il y a de jurys dans 
         # la filière concernée. Ces fichiers sont construits de façon à ce 
         # qu'ils contiennent des candidatures également solides.
+
+        # À noter : on inclut dans ces fichiers les candidats exclus par l'admin 
+        # (mais il ne seront pas affichés aux jurys) de façons qu'ils 
+        # apparaissent bien dans les tableaux bilans (notamment les tableaux 
+        # alphabétiques qui permettent de savoir ce qui est 'arrivé' à chaque 
+        # candidature...
+
         # Récupération des fichiers admin
         list_fich = [Fichier(fich) \
                 for fich in glob.glob(division_to_xml('admin', '*'))]
