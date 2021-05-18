@@ -68,24 +68,8 @@ html {
 
 
 /***********************************
-	MENUS (général, admin, comm)
+	BOUTONS
 ************************************/
-
-/*
-.menu {
-
-	position : absolute;
-	top : 25vh;
-	left : 19%;
-	margin:0%;
-	padding:0%;
-	padding-left : 5%;
-	text-align: center;
-	width : 60%;
-
-}
-*/
-
 /* Les boutons du menu principal */
 .bouton_menu {
 
@@ -98,18 +82,6 @@ html {
 	font-size : 3em;
 	cursor: pointer;
 }
-	
-/*  Sous-menu (dans le cas admin, contient les étapes) */
-.sous_menu {
-
-	position : static;
-	text-align : center;
-	border:1px solid black;
-	padding-top : .5vw;
-	margin-left : 5%;
-	margin-bottom : 2ex;
-	width:90%;
-}
 
 /* Les boutons contenant un nom de fichier (intervient dans tous les menus)*/
 .fichier {
@@ -119,80 +91,87 @@ html {
 	padding-left : 1em;
 	padding-right: 1em;
 	margin-bottom : .5em;
+	margin-left: 1em;
+	margin-right: 1em;
 
 	border-radius: .4em .4em .4em .4em ;
 	background-color: #cccccc;
 	font-size : 1.3em;
+	min-width: 6em;
 
 	cursor: pointer;
 }
 
-/* Sous-menu admin */
+/***********************************
+	MENUS (général, admin, comm)
+************************************/
+/*  Sous-menu (dans le cas admin, contient les étapes) */
+.sous_menu {
+
+	border:1px solid black;
+	padding-top: .5vw;
+	padding-bottom: .5vw;
+	padding-left: 1em;
+	padding-right: 1em;
+	margin-left : 5%;
+	margin-right : 5%;
+	margin-bottom : 2ex;
+}
+
+.flex-row-layout {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+}
 
 .etape {
 	text-align : left;
-	padding-left : 1em;
 	font-size : 1.5vw;
 	font-weight: bold;
 	margin-bottom : 1ex;
 }
 
-/*  div : liste des fichiers epa_admin */
-.liste_admin {
-
-	display : inline-block;
-	margin-right: 5%;
-	vertical-align : top;
-	width : 45%;
-}
-
-.wrapper {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, 32%);
-	gap: 10px;
-}
-
-/* div : statistiques */
-.stat 
-	{
-		display : inline-block;
-		text-align : left;
-		margin-left: 5%;
-		width : 40%;
-		vertical-align : top;
-		font-size: 1.2em;
-	}
-
-/* div : liste des csv */
+/* Premier sous menu admin */
 .liste_csv 
 	{
-		position : relative;
-		display : inline-block;
-		left:1%;
+		width: 40%;
 		text-align : left;
-		font-size : 1.3vw;
+		font-size : 1.4vw;
 	}
 
-/* div : liste des pdf */
 .liste_pdf	
 	{
-		position : relative;
-		display : inline-block;
-		right : 1%;
-		top : 0%;
+		width: 40%;
 		text-align : right;
-		font-size : 1.3vw;
+		font-size : 1.4vw;
 	}
 
 /* Le bouton Vérifier / Traiter */
 .bout_csv_div 
 	{
-		position : relative;
-		display : inline-block;
-		top: 0%;
-		width : 30%;
-		text-align : center;
+		justify-content: center;
 	}
+
+/* 2e sous menu admin */
+.liste_admin {
+
+	text-align: center;
+	width : 45%;
+}
+
+.wrapper {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-evenly;
+}
+
+/* div : statistiques */
+.stat {
+	text-align : left;
+	width : 40%;
+	font-size: 1.2em;
+}
+
 
 /***********************************
 			IMPRESSION

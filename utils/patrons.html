@@ -33,25 +33,27 @@
 </div>
 ##########
 [*sous_menu_content_1*]
-<form id="traiter" action = "/traiter_parcourssup" method = POST>
+<form id="traiter" class="flex-row-layout" 
+				   action = "/traiter_parcourssup" method = POST>
 	<div class = "liste_csv">
 		Fichiers csv présents : <br>{liste_csv}
 	</div><!-- -->
 	<div class = "bout_csv_div">
 		<input type = "button" class = "fichier" 
-		 value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
+			   value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
 	</div><!-- -->
 	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
 </form>	
 ##########
 [*sous_menu_content_2*]
-<div class = "liste_admin">
-  <form action = "/choix_admin" method = POST> {liste_admin} </form>	
-</div>
-<div class = "stat">{liste_stat}</div>
+<form class="flex-row-layout" action = "/choix_admin" method = POST>
+	<div class = "liste_admin"> {liste_admin} </div>
+	<div class = "stat">{liste_stat}</div>
+</form>	
 ##########
 [*sous_menu_content_3*]
-<form id="genere" action = '/genere_fichiers_comm' method = POST>
+<form id="genere" class="flex-row-layout" 
+	action = '/genere_fichiers_comm' method = POST>
 	{bout_etap3}
 </form>	
 ##########
@@ -70,13 +72,14 @@
 </div>
 ##########
 [*sous_menu_content_4*]
-<div class = "liste_admin">
-	<h2>{decompt}</h2>
-	<form id = "recolte" action = '/clore_commission' method = POST>
+<form id = "recolte" class="flex-row-layout" 
+	action = '/clore_commission' method = POST>
+	<div class = "liste_admin">
+		<h2>{decompt}</h2>
 		{bout_etap4} 
-	</form>
-</div>
-<div class = "stat" >{liste_stat}</div>
+	</div>
+	<div class = "stat" >{liste_stat}</div>
+</form>
 ##########
 [*sous_menu_content_5*]
 <form id = "impress" action = '/page_impression' method = POST">
