@@ -40,6 +40,7 @@ html {
 	width : 100%;
 	overflow-y : hidden;
 }
+
 /***********************************
 	LOADING ... please wait
 ************************************/
@@ -133,27 +134,24 @@ html {
 }
 
 /* Premier sous menu admin */
-.liste_csv 
-	{
-		flex:2;
-		text-align : left;
-		font-size : 1.4vw;
-	}
+.liste_csv {
+	flex:2;
+	text-align : left;
+	font-size : 1.4vw;
+}
 
-.liste_pdf	
-	{
-		flex:2;
-		text-align : right;
-		font-size : 1.4vw;
-	}
+.liste_pdf	{
+	flex:2;
+	text-align : right;
+	font-size : 1.4vw;
+}
 
 /* Le bouton Vérifier / Traiter */
-.bout_csv_div 
-	{
-		flex:1;
-		justify-content: center;
-		align-self: center;
-	}
+.bout_csv_div {
+	flex:1;
+	justify-content: center;
+	align-self: center;
+}
 
 /* 2e sous menu admin */
 .liste_admin {
@@ -256,48 +254,69 @@ div.breakafter
 			PAGE DOSSIERS
 ************************************/
 
+.doss_container {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: flex-start;
+}
+
+.doss_column {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-left:1ex;
+	margin-right:1ex;
+}
+
+.pedigre {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	height:5ex;
+	align-content:space-between;
+	margin-bottom:1ex;
+	font-size: 1.6vw;
+}
+
+.doss_score {
+	display:flex;
+	border:1px solid black;
+	margin-top:2ex;
+	margin-bottom:2ex;
+	padding-top:5px;
+	padding-bottom:5px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.score_col {
+	text-align: center;
+	padding-left:5px;
+	padding-right:5px;
+}
+
+
 /************ 1/ Les div ***********/
 
-/* Style de la colonne dossier*/
-#dossier 
-	{
-		display : inline-block;
-		padding-left : 1%;
-		width: 75%;
-		vertical-align : top;
-	}
-
-/* Style du bandeau latéral qui contient gros_bout_div et liste */
-#bandeau_lateral 
-	{
-		display : inline-block;
-		width : 23%;
-		padding-left: 1%;
-		vertical-align : top;
-	}
-
 /* Style de la colonne Liste des dossiers */
-#liste 
-	{
-		/* sert pour que l'évènement onscroll soit généré... */
-		overflow-y : scroll; 
-		height : 75vh; /* sinon pas de scroll ! */
-	}
+#liste {
+	/* sert pour que l'évènement onscroll soit généré... */
+	overflow-y : scroll; 
+	height : 33vw; /* sinon pas de scroll ! */
+}
 
-/* La div en haut de la page dossier : contient le bouton retour */
-#gros_bout_div 
-	{
-		text-align : center;
-		height : 10vh;
-	}
+#form_liste {
+	display: flex;
+	flex-flow: column wrap;
+}
 
 /* Le bouton qui va dans la div gros_bout_div */
 .gros_bout 
 	{
-		width: 80%;
 		font-size: 2em;
-		padding-top : .7ex;
-		padding-bottom: .7ex;
+		padding: 1ex;
+		margin-top: .5ex;
+		margin-bottom: .5ex;
 		border-radius: .2em .2em .2em .2em;
 		background-color: #cccccc;
 		color : Blue;
@@ -330,22 +349,9 @@ caption
 		font-size : 1.4em;
 	}
 
-.candid
-	{
-		font-size : 1.6em;
-	}
-
-.scores
-	{
-		white-space : nowrap;
-		padding-left: .75em;
-		padding-right : .75em;
-	}
-
 .score
 	{
-		font-size : 3em;
-		width : 6em;
+		font-size : 3.5vw;
 	}
 
 .notes
@@ -359,26 +365,28 @@ caption
 	
 /********** 4/ Action de la commission : correction + motivation *********/
 
-/* Volet 3 : Motivations + boutons */ 
-.volet3  
-	{
-		align : center;
-		width : 73vw;
-	}
-	
 /* Cellule titre = Motivations(s) de la commission */
 .motiv 
 	{
-		width : 73vw;
 		text-align : left;
+		padding-left: 5px;
+		padding-bottom: 3px;
 		font-size : 1.2em;
+		font-weight: bold;
 	}
 
 /* Bouton "motifs" commission */
+.motifs
+	{
+		display: flex;
+		flex-flow: row wrap;
+		width : 100%; /* 60% de 70% de vw */
+	}
+
 .motif 
 	{
-		width : 21vw; /* la moitié de 60% de 70% de vw */
 		height : 2em;
+		margin: .2ex;
 		text-align : left;
 		font-size : 1em;
 		background-color : LightGrey;
@@ -387,37 +395,13 @@ caption
 /* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
 .txt_motifs 
 	{
-		width : 42vw; /* 60% de 70% de vw */
+		width : 100%; /* 60% de 70% de vw */
 		height : 2em;
 		text-align : left;
 		font-size : 1em;
 		background-color : white;
 	}
 
-/* Bouton NC */
-.NC	
-	{
-		text-align : center;
-		vertical-align : center;
-		border-radius: .25em .25em .25em .25em;
-		background-color: #cccccc;
-		color : Red;
-		font-size : 2em;
-		padding-top : .7ex;
-		padding-bottom: .7ex;
-		padding-left : .25em;
-		padding-right: .25em;
-		margin-right : .25em;
-	}
-
-/* div du bouton valider */
-.valid 
-	{
-		width : 18vw; /* 40% de 70% de vw */
-		text-align : center;
-		vertical-align : center;
-	}
-	
 /* bouton valider */
 .valid_bouton 
 	{
@@ -425,12 +409,13 @@ caption
 		padding-bottom: .7ex;
 		padding-left : .8em;
 		padding-right: .8em;
-		margin-right : 0em;
+		margin-left: .5em;
+		margin-right: .5em;
+		font-size: 3em;
 	
 		border-radius: .2em .2em .2em .2em;
 		background-color: #cccccc;
 		color : LimeGreen;
-		font-size : 5em;
 	
 		cursor: pointer;
 	}
@@ -508,12 +493,13 @@ input[type=range]::-ms-track {
     width: 100%;
     height: 5px;
     
-    /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
-    background: transparent;
+	/*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper 
+	 * instead */
+	background: transparent;
     
-    /*leave room for the larger thumb to overflow with a transparent border */
-    border-color: transparent;
-    border-width: 6px 0;
+	/*leave room for the larger thumb to overflow with a transparent border */
+	border-color: transparent;
+	border-width: 6px 0;
 
     /*remove default tick marks*/
     color: transparent;

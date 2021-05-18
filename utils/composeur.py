@@ -84,21 +84,16 @@ class Composeur(object):
 
     # Liste des motivations
     # Le premier élément est une zone de texte
-    motifs = '<table style = "align:center;">'
-    motifs += '<tr><td align = "left" colspan = "2">\
-            <input type="text" class = "txt_motifs" name="motif"\
-            id = "motif" value= "{}"/></td></tr>'
+    motifs = """
+            <input type="text" class = "txt_motifs" name="motif"
+            id = "motif" value= "{}"/>"""
     # La suite, les motifs pré-définis dans config.py
     for index, motif in enumerate(motivations):
-        motifs += '<tr>'
-        for j in range(2):
             # cette clé sert au code javascript de la page..
-            key = f"mot_{str(index)}{str(j)}"
-            motifs += f'<td align = "left"><input type="button" name="{key}"'
+            key = f"mot_{str(index)}"
+            motifs += f'<input type="button" name="{key}"'
             motifs += f' id="{key}" onclick="javascript:maj_motif(this.id)"'
-            motifs += f' class = "motif" value ="{motif[j]}"/></td>'
-        motifs += '</tr>'
-    motifs += '</table>'
+            motifs += f' class = "motif" value ="{motif}"/>'
     ### Fin déclaration attributs de classe
 
     def __init__(self, titre):
@@ -501,7 +496,7 @@ class Composeur(object):
         activ = 'disabled'
         if format_admin:
             formateur_clas_actu = '<input type="text" id="Classe actuelle" \
-                    name="Classe actuelle" size="10" value="{}"/>'
+                    name="Classe actuelle" style="font-size:1.5vw;" value="{}"/>'
             formateur_note = '<input type="text" class="notes grossi" id="{}" \
                     name="{}" value="{note}" onfocusout="verif_saisie()"/>'
             activ = ''
@@ -631,7 +626,7 @@ class Composeur(object):
                 # largeur affectée au nom est fixée. Ainsi, les informations de 
                 # candidatures multiples sont alignées.
                 txt = f"{index+1:3d}) {nom[:29]: <30}{cand.get('Candidatures')}"
-                lis += f' value="{txt}"></input><br>'
+                lis += f' value="{txt}"></input>'
         lis += '-'*7 + ' fin de liste ' + '-'*7
         lis = lis + '</form>'
         return lis
