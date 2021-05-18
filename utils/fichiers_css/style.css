@@ -152,6 +152,7 @@ html {
 	{
 		flex:1;
 		justify-content: center;
+		align-self: center;
 	}
 
 /* 2e sous menu admin */
@@ -174,6 +175,13 @@ html {
 	font-size: 1.2em;
 }
 
+/* sous menu jurys */
+.liste_jury {
+
+	margin-left:20%;
+	margin-right:20%;
+	text-align: center;
+}
 
 /***********************************
 			IMPRESSION
