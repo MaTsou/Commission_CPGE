@@ -122,6 +122,7 @@ html {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-evenly;
+	align-items: baseline;
 }
 
 .etape {
@@ -134,14 +135,14 @@ html {
 /* Premier sous menu admin */
 .liste_csv 
 	{
-		width: 40%;
+		flex:2;
 		text-align : left;
 		font-size : 1.4vw;
 	}
 
 .liste_pdf	
 	{
-		width: 40%;
+		flex:2;
 		text-align : right;
 		font-size : 1.4vw;
 	}
@@ -149,6 +150,7 @@ html {
 /* Le bouton Vérifier / Traiter */
 .bout_csv_div 
 	{
+		flex:1;
 		justify-content: center;
 	}
 
