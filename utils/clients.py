@@ -243,14 +243,9 @@ class Admin(Client):
         liste = ['Écrit EAF', 'Oral EAF']
         for li in liste:
             formated_mark = str_to_num(normalize_mark(kwargs[li]))
-            if 'cpes' in li.lower():
-                if (cand.is_cpes() and cand.get(li) != formated_mark):
-                    for fich in list_fich_cand:
-                        fich.get_cand(cand).set(li, kwargs[li])
-            else:
-                if cand.get(li) != formated_mark:
-                    for fich in list_fich_cand:
-                        fich.get_cand(cand).set(li, kwargs[li])
+            if cand.get(li) != formated_mark:
+                for fich in list_fich_cand:
+                    fich.get_cand(cand).set(li, kwargs[li])
 
         # Commentaire éventuel admin + gestion des 'NC'
         # Les commentaires admin sont précédés de '- Admin :' c'est à cela qu'on 
