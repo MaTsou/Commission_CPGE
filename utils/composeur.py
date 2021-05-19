@@ -496,7 +496,7 @@ class Composeur(object):
         activ = 'disabled'
         if format_admin:
             formateur_clas_actu = '<input type="text" id="Classe actuelle" \
-                    name="Classe actuelle" style="font-size:1.5vw;" value="{}"/>'
+                    name="Classe actuelle" style="font-size:100%;" value="{}"/>'
             formateur_note = '<input type="text" class="notes grossi" id="{}" \
                     name="{}" value="{note}" onfocusout="verif_saisie()"/>'
             activ = ''
