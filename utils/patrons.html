@@ -121,72 +121,74 @@
 </div>
 <div class = "impr_seul">Candidatures : {cand}</div>
 
-<table align = "center" class = "bord grossi" cols = "4" width = "100%">
-	<caption>
-		<a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a>
-	</caption>
-	<tr>
-		<td><font size = "0.8"></font></td>
-		<td>Classe de Première</td>
-		<td>Classe de Terminale</td>
-		<td>EAF</td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td rowspan = "4">
-			<table class = "bord" width = "100%">
-				<tr><th> Math </th><th> Phys </th></tr>
-				<tr>
-					<td> {Mathématiques Spécialité Première trimestre 1} </td>
-					<td> {Physique-Chimie Spécialité Première trimestre 1} </td>
-				</tr>
-				<tr>
-					<td> {Mathématiques Spécialité Première trimestre 2} </td>
-					<td> {Physique-Chimie Spécialité Première trimestre 2} </td>
-				</tr>
-				<tr>
-					<td> {Mathématiques Spécialité Première trimestre 3} </td>
-					<td> {Physique-Chimie Spécialité Première trimestre 3} </td>
-				</tr>
-			</table>
-		</td>
-		<td rowspan = "4" align = "right">
-			<table class = "bord" width = "100%">
-				<tr><th> Math </th><th> M.Exp </th><th> Phys </th></tr>
-				<tr>
-					<td> {Mathématiques Spécialité Terminale trimestre 1} </td>
-					<td> {Mathématiques Expertes Terminale trimestre 1} </td>
-					<td> {Physique-Chimie Spécialité Terminale trimestre 1} </td>
-				</tr>
-				<tr>
-					<td> {Mathématiques Spécialité Terminale trimestre 2} </td>
-					<td> {Mathématiques Expertes Terminale trimestre 2} </td>
-					<td> {Physique-Chimie Spécialité Terminale trimestre 2} </td>
-				</tr>
-				<tr>
-					<td> {Mathématiques Spécialité Terminale trimestre 3} </td>
-					<td> {Mathématiques Expertes Terminale trimestre 3} </td>
-					<td> {Physique-Chimie Spécialité Terminale trimestre 3} </td>
-				</tr>
-			</table>
-		</td>
-		<td rowspan = "2">
-			<table class = "bord" width = "100%">
-				<tr><th> &Eacute;crit </th><th> Oral </th></tr>
-				<tr><td> {Écrit EAF} </td><td> {Oral EAF} </td></tr>
-			</table>
-		</td>
-	</tr>
-	<tr>
-		<td rowspan = "3" align = "right">
-			<table>
-				<tr><td>1e trimestre</td></tr>
-				<tr><td>2e trimestre</td></tr>
-				<tr><td>3e trimestre</td></tr>
-			</table>
-		</td>
-	</tr>
-</table>
+<div class="caption">
+	<a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a>
+</div>
+
+<div class="row bordered" style="padding:4px;">
+	<div class="col" style="flex: 2; justify-content: flex-end;">
+		<div class="row" style="flex-wrap:wrap;padding-bottom:4px;">
+			<div class="trimestre">1e trimestre</div>
+			<div class="trimestre">2e trimestre</div>
+			<div class="trimestre">3e trimestre</div>
+		</div>
+	</div>
+	<div class="col" style="flex: 3;">
+		<div class="caption">Classe de Première</div>
+		<div class="row bordered" style="flex-wrap:wrap;margin-left:4px;">
+			<div class="note2" style="font-weight: bold;">Math</div>
+			<div class="note2" style="font-weight: bold;">Phys</div>
+			<div class="note2">
+				{Mathématiques Spécialité Première trimestre 1} </div>
+			<div class="note2">
+				{Physique-Chimie Spécialité Première trimestre 1} </div>
+			<div class="note2">
+				{Mathématiques Spécialité Première trimestre 2} </div>
+			<div class="note2">
+				{Physique-Chimie Spécialité Première trimestre 2} </div>
+			<div class="note2">
+				{Mathématiques Spécialité Première trimestre 3} </div>
+			<div class="note2">
+				{Physique-Chimie Spécialité Première trimestre 3} </div>
+		</div>
+	</div>
+	<div class="col" style="flex: 3;">
+		<div class="caption">Classe de Terminale</div>
+		<div class="row bordered" style="flex-wrap:wrap;margin-left:4px;">
+			<div class="note3" style="font-weight: bold;">Math</div>
+			<div class="note3" style="font-weight: bold;">M.Exp</div>
+			<div class="note3" style="font-weight: bold;">Phys</div>
+			<div class="note3">
+				{Mathématiques Spécialité Terminale trimestre 1} </div>
+			<div class="note3">
+				{Mathématiques Expertes Terminale trimestre 1} </div>
+			<div class="note3">
+				{Physique-Chimie Spécialité Terminale trimestre 1} </div>
+			<div class="note3">
+				{Mathématiques Spécialité Terminale trimestre 2} </div>
+			<div class="note3">
+				{Mathématiques Expertes Terminale trimestre 2} </div>
+			<div class="note3">
+				{Physique-Chimie Spécialité Terminale trimestre 2} </div>
+			<div class="note3">
+				{Mathématiques Spécialité Terminale trimestre 3} </div>
+			<div class="note3">
+				{Mathématiques Expertes Terminale trimestre 3} </div>
+			<div class="note3">
+				{Physique-Chimie Spécialité Terminale trimestre 3} </div>
+		</div>
+	</div>
+	<div class="col" style="flex: 2; align-content: flex-start;">
+		<div class="caption">EAF</div>
+		<div class="row bordered" style="flex-wrap:wrap;margin-left:4px;">
+			<div class="note2" style="font-weight: bold;">Écrit</div>
+			<div class="note2" style="font-weight: bold;">Oral</div>
+			<div class="note2"> {Écrit EAF} </div>
+			<div class="note2"> {Oral EAF} </div>
+		</div>
+	</div>
+</div>
+
 ########## 
 [*contenu_action*]
 <div class="doss_score">
@@ -210,7 +212,7 @@
 	</div>
 	<div class="score_col" style="width:30%;">
 		<input type = "submit" id = "valid" class = "valid_bouton" 
-			   value = "Valider">
+		value = "Valider">
 		<div>{rg_fin}</div>
 	</div>
 </div>
@@ -222,7 +224,7 @@
 	<link rel = "stylesheet" type = "text/css" media = "print" 
 		  href = "/utils/fichiers_css/style_impr.css">
 	<link rel = "stylesheet" type = "text/css" media = "screen" 
-		  href = "/utils/fichiers_css/style_html_impr.css">
+	href = "/utils/fichiers_css/style_html_impr.css">
 	<title>Impression-commission</title>
 </head>
 <body width = "50vw" onload = "window.print();">

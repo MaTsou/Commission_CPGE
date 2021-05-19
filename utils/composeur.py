@@ -497,7 +497,7 @@ class Composeur(object):
         if format_admin:
             formateur_clas_actu = '<input type="text" id="Classe actuelle" \
                     name="Classe actuelle" style="font-size:100%;" value="{}"/>'
-            formateur_note = '<input type="text" class="notes grossi" id="{}" \
+            formateur_note = '<input type="text" class="notes" id="{}" \
                     name="{}" value="{note}" onfocusout="verif_saisie()"/>'
             activ = ''
         ### Suite de la création du dictionnaire

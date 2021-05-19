@@ -42,6 +42,20 @@ html {
 }
 
 /***********************************
+	classes génériques
+************************************/
+.row { display: flex; }
+
+.col {
+	display: flex;
+	flex-direction: column;
+}
+
+.bordered {
+	border: 1px solid black;
+}
+
+/***********************************
 	LOADING ... please wait
 ************************************/
 
@@ -322,106 +336,95 @@ div.breakafter
 		color : Blue;
 	}
 	
-/********** 2/ Les tableaux *********/
-		
-table
-	{
-		text-align : center;
-		vertical-align : center;
-		font-size : 1em;
-		margin: 0px;
-		margin-bottom: .4ex;
-		margin-top: .4ex;
-	}
-
-caption
-	{
-		font-size : 1em;
-		margin : .25em; /* espace avec le tableau !*/
-	}
-	
-/* pour les tableaux */
-.bord 
-	{
-		border : 1px solid black;
-	}
-
 /********** 3/ Mise en forme du texte *********/
-.grossi
-	{
-		font-size : 140%;
-	}
+.grossi { font-size : 140%; }
 
-.score
-	{
-		font-size : 300%;
-	}
+.score { font-size : 300%; }
 
-.notes
-	{
-		width : 3em;
-		border : 0px;
-		font-size: 100%;
-		text-align : center;
-		background-color : LightGrey;
-	}
+.caption {
+	width: 100%;
+	text-align: center;
+	font-size: 140%;
+	margin-bottom: 6px;
+}
+
+.trimestre {
+	width: 100%;
+	font-size: 140%;
+	text-align : right;
+}
+
+.note2 {
+	width: 50%;
+	font-size: 140%;
+	text-align : center;
+}
+
+.note3 {
+	width: 33%;
+	font-size: 140%;
+	text-align : center;
+}
+
+.notes {
+	width : 100%;
+	border : 0px;
+	font-size: inherit;
+	text-align : center;
+	background-color : LightGrey;
+}
 	
 /********** 4/ Action de la commission : correction + motivation *********/
 
 /* Cellule titre = Motivations(s) de la commission */
-.motiv 
-	{
-		text-align : left;
-		padding-left: 5px;
-		padding-bottom: 3px;
-		font-size : larger;
-		font-weight: bold;
-	}
+.motiv {
+	text-align : left;
+	padding-left: 5px;
+	padding-bottom: 3px;
+	font-size : larger;
+	font-weight: bold;
+}
 
 /* Bouton "motifs" commission */
-.motifs
-	{
-		display: flex;
-		flex-flow: row wrap;
-	}
+.motifs {
+	display: flex;
+	flex-flow: row wrap;
+}
 
-.motif 
-	{
-		height : 2em;
-		margin: .2ex;
-		text-align : center;
-		font-size : 100%;
-		background-color : LightGrey;
-		flex: 1;
-	}
+.motif {
+	height : 2em;
+	margin: .2ex;
+	text-align : center;
+	font-size : 100%;
+	background-color : LightGrey;
+	flex: 1;
+}
 
 /* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
-.txt_motifs 
-	{
-		width : 100%;
-		height : 2em;
-		text-align : left;
-		font-size : 100%;
-		background-color : white;
-	}
+.txt_motifs {
+	width : 100%;
+	height : 2em;
+	text-align : left;
+	font-size : 100%;
+	background-color : white;
+}
 
 /* bouton valider */
-.valid_bouton 
-	{
-		padding-top : .7ex;
-		padding-bottom: .7ex;
-		padding-left : .8em;
-		padding-right: .8em;
-		margin-left: .5em;
-		margin-right: .5em;
-		font-size: 300%;
-	
-		border-radius: .2em .2em .2em .2em;
-		background-color: #cccccc;
-		color : LimeGreen;
-	
-		cursor: pointer;
-	}
+.valid_bouton {
+	padding-top : .7ex;
+	padding-bottom: .7ex;
+	padding-left : .8em;
+	padding-right: .8em;
+	margin-left: .5em;
+	margin-right: .5em;
+	font-size: 300%;
+
+	border-radius: .2em .2em .2em .2em;
+	background-color: #cccccc;
+	color : LimeGreen;
+
+	cursor: pointer;
+}
 
 /********** 4/ L'objet range de sélection de la correction *********/
 /* Compatibilité avec tous les navigateurs ?? */
