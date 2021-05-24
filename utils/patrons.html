@@ -9,8 +9,8 @@
 		<title>Gestion Commission</title>
 	</head> 
 	<body class="body" onload="javascript:set_scroll();">
-		<div class="header">
-			<h2 align="center">{title}</h2>
+		<div class="header taille1">
+			<h2>{title}</h2>
 		</div>
 		<div class="main_container">
 			{main_content}
@@ -39,7 +39,7 @@
 		Fichiers csv présents : <br>{liste_csv}
 	</div><!-- -->
 	<div class = "bout_csv_div">
-		<input type = "button" class = "fichier" 
+		<input type = "button" class = "bouton taille1 fichier" 
 			   value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
 	</div><!-- -->
 	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
@@ -104,15 +104,15 @@
 	</div>
 	<div class="doss_column" style="flex: 1;">
 		<form action="/affiche_menu" method = POST>
-			<input type = "submit" class ="gros_bout" value = "RETOUR" 
-				   style = "display:{visibilite}">
+			<input type = "submit" class ="bouton taille2 bleu" value = "Retour" 
+				   style = "visibility:{visibilite}">
 		</form>
 		<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
 	</div>
 </div>
 ##########
 [*contenu_dossier*]
-<div class="pedigre">
+<div class="row pedigre taille1">
 	<div>{Nom}, {Prénom}</div>
 	<div> né(e) le {Date de naissance}</div>
 	<div>[Id]-INE : [{Num ParcoursSup}]-{INE}</div>
@@ -121,70 +121,82 @@
 </div>
 <div class = "impr_seul">Candidatures : {cand}</div>
 
-<div class="caption">
+<div class="taille1 centre">
 	<a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a>
 </div>
 
-<div class="row bordered" style="padding:4px;">
-	<div class="col" style="flex: 2; justify-content: flex-end;">
-		<div class="row" style="flex-wrap:wrap;padding-bottom:4px;">
-			<div class="trimestre">1e trimestre</div>
-			<div class="trimestre">2e trimestre</div>
-			<div class="trimestre">3e trimestre</div>
+<div class="row bordered">
+	<div class="col taille1 doss_trim">
+			<div>1e trimestre</div>
+			<div>2e trimestre</div>
+			<div>3e trimestre</div>
+	</div>
+	<div class="col gapleft" style="flex: 2;">
+		<div class="centre taille1">Classe de Première</div>
+		<div class="row bordered">
+			<div class="col">
+				<div class="note bold">Math</div>
+				<div class="note">
+					{Mathématiques Spécialité Première trimestre 1} </div>
+				<div class="note">
+					{Mathématiques Spécialité Première trimestre 2} </div>
+				<div class="note">
+					{Mathématiques Spécialité Première trimestre 3} </div>
+			</div>
+			<div class="col">
+				<div class="note bold">Phys</div>
+				<div class="note">
+					{Physique-Chimie Spécialité Première trimestre 1} </div>
+				<div class="note">
+					{Physique-Chimie Spécialité Première trimestre 2} </div>
+				<div class="note">
+					{Physique-Chimie Spécialité Première trimestre 3} </div>
+			</div>
 		</div>
 	</div>
-	<div class="col" style="flex: 3;">
-		<div class="caption">Classe de Première</div>
-		<div class="row bordered" style="flex-wrap:wrap;margin-left:4px;">
-			<div class="note2" style="font-weight: bold;">Math</div>
-			<div class="note2" style="font-weight: bold;">Phys</div>
-			<div class="note2">
-				{Mathématiques Spécialité Première trimestre 1} </div>
-			<div class="note2">
-				{Physique-Chimie Spécialité Première trimestre 1} </div>
-			<div class="note2">
-				{Mathématiques Spécialité Première trimestre 2} </div>
-			<div class="note2">
-				{Physique-Chimie Spécialité Première trimestre 2} </div>
-			<div class="note2">
-				{Mathématiques Spécialité Première trimestre 3} </div>
-			<div class="note2">
-				{Physique-Chimie Spécialité Première trimestre 3} </div>
+	<div class="col gapleft" style="flex: 3;">
+		<div class="centre taille1">Classe de Terminale</div>
+		<div class="row bordered">
+			<div class="col">
+				<div class="note bold">Math</div>
+				<div class="note">
+					{Mathématiques Spécialité Terminale trimestre 1} </div>
+				<div class="note">
+					{Mathématiques Spécialité Terminale trimestre 2} </div>
+				<div class="note">
+					{Mathématiques Spécialité Terminale trimestre 3} </div>
+			</div>
+			<div class="col">
+				<div class="note bold">M.Exp</div>
+				<div class="note">
+					{Mathématiques Expertes Terminale trimestre 1} </div>
+				<div class="note">
+					{Mathématiques Expertes Terminale trimestre 2} </div>
+				<div class="note">
+					{Mathématiques Expertes Terminale trimestre 3} </div>
+			</div>
+			<div class="col">
+				<div class="note bold">Phys</div>
+				<div class="note">
+					{Physique-Chimie Spécialité Terminale trimestre 1} </div>
+				<div class="note">
+					{Physique-Chimie Spécialité Terminale trimestre 2} </div>
+				<div class="note">
+					{Physique-Chimie Spécialité Terminale trimestre 3} </div>
+			</div>
 		</div>
 	</div>
-	<div class="col" style="flex: 3;">
-		<div class="caption">Classe de Terminale</div>
-		<div class="row bordered" style="flex-wrap:wrap;margin-left:4px;">
-			<div class="note3" style="font-weight: bold;">Math</div>
-			<div class="note3" style="font-weight: bold;">M.Exp</div>
-			<div class="note3" style="font-weight: bold;">Phys</div>
-			<div class="note3">
-				{Mathématiques Spécialité Terminale trimestre 1} </div>
-			<div class="note3">
-				{Mathématiques Expertes Terminale trimestre 1} </div>
-			<div class="note3">
-				{Physique-Chimie Spécialité Terminale trimestre 1} </div>
-			<div class="note3">
-				{Mathématiques Spécialité Terminale trimestre 2} </div>
-			<div class="note3">
-				{Mathématiques Expertes Terminale trimestre 2} </div>
-			<div class="note3">
-				{Physique-Chimie Spécialité Terminale trimestre 2} </div>
-			<div class="note3">
-				{Mathématiques Spécialité Terminale trimestre 3} </div>
-			<div class="note3">
-				{Mathématiques Expertes Terminale trimestre 3} </div>
-			<div class="note3">
-				{Physique-Chimie Spécialité Terminale trimestre 3} </div>
-		</div>
-	</div>
-	<div class="col" style="flex: 2; align-content: flex-start;">
-		<div class="caption">EAF</div>
-		<div class="row bordered" style="flex-wrap:wrap;margin-left:4px;">
-			<div class="note2" style="font-weight: bold;">Écrit</div>
-			<div class="note2" style="font-weight: bold;">Oral</div>
-			<div class="note2"> {Écrit EAF} </div>
-			<div class="note2"> {Oral EAF} </div>
+	<div class="col gapleft" style="align-content: flex-start; flex:2;">
+		<div class="centre taille1">EAF</div>
+		<div class="row bordered">
+			<div class="col">
+				<div class="note bold">Écrit</div>
+				<div class="note"> {Écrit EAF} </div>
+			</div>
+			<div class="col">
+				<div class="note bold">Oral</div>
+				<div class="note"> {Oral EAF} </div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -194,7 +206,7 @@
 <div class="doss_score">
 	<div class="score_col">
 		<div>SCORE BRUT</div>
-		<div class="score">{scoreb}</div>
+		<div class="taille2">{scoreb}</div>
 	</div>
 	<div class="score_col" style="flex: 5;">
 		<div>CORRECTION DE LA COMMISSION</div>
@@ -202,7 +214,7 @@
 	</div>
 	<div class="score_col">
 		<div>SCORE FINAL</div>
-		<div class="score">{scoref}</div>
+		<div class="taille2">{scoref}</div>
 	</div>
 </div>
 <div class="doss_score">
@@ -211,7 +223,7 @@
 		<div class="motifs">{motifs}</div>
 	</div>
 	<div class="score_col" style="width:30%;">
-		<input type = "submit" id = "valid" class = "valid_bouton" 
+		<input type = "submit" id = "valid" class = "bouton taille2 vert" 
 		value = "Valider">
 		<div>{rg_fin}</div>
 	</div>

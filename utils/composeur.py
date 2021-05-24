@@ -60,27 +60,23 @@ class Composeur(object):
     # Barre de correction :
     # Elle s'inscrit dans une 'table' html à 3 colonnes
     # (score brut | barre | score final)
-    barre = '<tr><td width = "2.5%"></td>' # un peu d'espace
-    barre += f"""<td><input type = "range" class = "range" min="{min_correc}"
+    barre = f"""<input type = "range" class = "range" min="{min_correc}"
             max = "{max_correc}" step = "{1/float(nb_correc)}" 
             name = "correc" id = "correc" onchange="javascript:maj_note();"
             onmousemove="javascript:maj_note();" onclick="click_range();"
             """
-    barre += ' value = "{}"/></td>' # champ rempli dans la
-            # fonction 'genere_action'
-    barre += '<td width = "2.5%"></td></tr>' # on termine par un peu d'espace
-    txt = '' # on construit maintenant la liste des valeurs...
+    barre += ' value = "{}"/>' # champ rempli dans la fonction 'genere_action'
+    # on construit maintenant la liste des valeurs...
+    barre += '<div class="row" style="justify-content: space-between;\
+            margin-left:-8px;">'
     for index, valeur in enumerate(corrections):
         if index == 0: # on remplace la valeur min par NC.
-            txt += '<td width = "7%">NC</td>'
+            barre += '<div class="tick">NC</div>'
         elif (index % 2 == 0):
-            txt += f'<td width = "7%">{valeur:+3.1f}</td>'
-    barre += f"""<tr><td align = "center" colspan = "3">
-            <table width = "100%"><tr class ="correc_notimpr">{txt}</tr></table>'
-            """
+            barre += f'<div class="tick">{valeur:+3.1f}</div>'
+    barre += "</div>"
     barre += '<span class = "correc_impr">{} : {}</span>' # champs remplis
     # dans la fonction 'genere_action'
-    barre += '</td></tr>'
 
     # Liste des motivations
     # Le premier élément est une zone de texte
@@ -174,8 +170,8 @@ class Composeur(object):
         txt = f""" <h3>{title}</h3> <div class='wrapper'> """
         for fich in list_fich:
             txt += f"""<div>
-            <input type="submit" class = "fichier" name="fichier" \
-                    value="{xml_to_division(fich)}"/>
+            <input type="submit" class = "bouton taille1 fichier" \
+                    name="fichier" value="{xml_to_division(fich)}"/>
                     </div>"""
         return txt + '</div>'
 
@@ -256,8 +252,9 @@ class Composeur(object):
                 title = """- 4e étape : récolter le travail de la 
                 commission..."""
                 # Etape 4 bouton
-                data['bout_etap4'] = """<input type = "button" class ="fichier" 
-                value = "Récolter les fichiers"  onclick = "recolt_wait();"/>"""
+                data['bout_etap4'] = """<input type = "button" 
+                class ="bouton taille1 fichier" value = "Récolter les fichiers" 
+                onclick = "recolt_wait();"/>"""
                 sous_menus += self.make_sous_menu('4', title, data)
 
                 ######## 5e sous-menu
@@ -310,7 +307,7 @@ class Composeur(object):
             ### Suite
             txt = ''
             if len(data['liste_admin']) > 0: # si les fichiers admin existent :
-                txt = '<input type = "button" class ="fichier" \
+                txt = '<input type = "button" class ="bouton taille1 fichier" \
                         value = "Générer les fichiers commission"'
                 affich = ''
                 if (alertes):
@@ -449,7 +446,7 @@ class Composeur(object):
         # Affichage d'un bouton RETOUR 'admin uniquement'
         visib = ''
         if isinstance(qui, Jury):
-            visib = 'none'
+            visib = 'hidden'
         # dictionnaire directement 'digérable' par la chaîne html["MEP_DOSSIER"]
         page_content['main_content'] = Composeur.html['MEP_DOSSIER'].format(**{
             'dossier' : dossier,
@@ -493,13 +490,13 @@ class Composeur(object):
         # alors que Jury est en lecture seule.
         formateur_clas_actu = '{}'
         formateur_note = '{note}'
-        activ = 'disabled'
+        #activ = 'disabled'
         if format_admin:
             formateur_clas_actu = '<input type="text" id="Classe actuelle" \
                     name="Classe actuelle" style="font-size:100%;" value="{}"/>'
             formateur_note = '<input type="text" class="notes" id="{}" \
                     name="{}" value="{note}" onfocusout="verif_saisie()"/>'
-            activ = ''
+            #activ = ''
         ### Suite de la création du dictionnaire
         # classe actuelle
         data['Classe actuelle'] = formateur_clas_actu\
@@ -537,8 +534,8 @@ class Composeur(object):
         if isinstance(client, Jury): # seulement pour les jurys.
             rg_fin = client.get_rgfinal(cand)
             visib = '' # est visible pour les jurys
-        rang_final = f'<td style = "display:{visib};">\
-                Estimation du rang final : {rg_fin}</td>'
+        rang_final = f'<div style = "display:{visib};">\
+                Estimation du rang final : {rg_fin}</div>'
         ### Partie correction :
         # récupération correction
         cor = cand.get('Correction')

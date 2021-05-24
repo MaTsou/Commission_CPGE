@@ -15,8 +15,8 @@ nombre_de_candidats_classes  = ['160', '300', 'tous']
 ############################################################################
 motivations = [
     "Niveau en LV",
-    "Harmonisation de la notation",
     "Niveau en sport",
+    "Harmonisation de la notation",
     "Comportement",
     "Aptitude/Attitude face au travail",
     "Age",

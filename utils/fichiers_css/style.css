@@ -6,45 +6,47 @@
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
-} /* s'applique à tous les éléments : width est une largeur hors-tout !! */
+}
 
 :root
 {
 	--header-height : 5vw; /* hauteur proportionnelle à la largeur de l'écran 
 	car la taille de police est proportionnelle cette largeur. */
 }
-html {
-}
 
 .body {
 	width : 100%;
 	background-color : LightGrey;
-	font-size : 1.15vw /* Taille de base selon la largeur de l'écran (1 = 100 
+	text-align: center;
+	font-size : 1.15vw /* Taille de base selon la largeur de la vue (1 = 100 
 	carac/ligne) !*/
-	/* On aurait pu choisir la hauteur !!!*/
 }
 
 .header {
 	position : fixed;
-	background-color : LightGrey;
 	z-index : 1;
 	top : 0px;
 	width :100%;
 	height : var(--header-height);
+	background-color : LightGrey;
 }
 
 .main_container {
 	position : relative;
-	top : var(--header-height);
-	z-index : 0;
-	width : 100%;
+	z-index : 0; /* inférieur à z-index du header : passe dessous ! */
 	overflow-y : hidden;
+	top : var(--header-height); /* juste sous le header */
+	width : 100%;
 }
 
 /***********************************
 	classes génériques
 ************************************/
-.row { display: flex; }
+.row {
+	display: flex;
+	justify-content: space-around;
+	padding: 4px;
+}
 
 .col {
 	display: flex;
@@ -52,8 +54,13 @@ html {
 }
 
 .bordered {
-	border: 1px solid black;
+	border: 1px solid black; 
+	margin-top: 4px;
 }
+
+.bold { font-weight: bold; }
+
+.gapleft { margin-left: 4px; }
 
 /***********************************
 	LOADING ... please wait
@@ -85,39 +92,44 @@ html {
 /***********************************
 	BOUTONS
 ************************************/
-/* Les boutons du menu principal */
-.bouton_menu {
-
-	width: 100%;
-	padding-top : 2ex;
-	padding-bottom:2ex;
-	margin : 1%;
-	border-radius: .4em .4em .4em .4em ;
-	background-color: #cccccc;
-	font-size : 3em;
-	cursor: pointer;
-}
-
-/* Les boutons contenant un nom de fichier (intervient dans tous les menus)*/
-.fichier {
-
+.bouton {
 	padding-top : .7ex;
 	padding-bottom: .7ex;
 	padding-left : 1em;
 	padding-right: 1em;
-	margin-bottom : .5em;
-	margin-left: 1em;
-	margin-right: 1em;
-
-	border-radius: .4em .4em .4em .4em ;
+	margin-left: .5em;
+	margin-right: .5em;
+	margin-bottom : .5vw;
+	border-radius: .3em .3em .3em .3em ;
 	background-color: #cccccc;
-	font-size : 1.3em;
-	min-width: 6em;
-
 	cursor: pointer;
 }
 
 /***********************************
+	TEXTE
+************************************/
+.taille1 {
+
+	font-size : 130%;
+
+}
+
+.taille2 {
+	font-size: 300%;
+}
+
+.centre { text-align: center; }
+
+
+.bleu {
+	color : Blue;
+}
+
+.vert {
+	color : LimeGreen;
+}
+
+/**********************************
 	MENUS (général, admin, comm)
 ************************************/
 /*  Sous-menu (dans le cas admin, contient les étapes) */
@@ -170,7 +182,6 @@ html {
 /* 2e sous menu admin */
 .liste_admin {
 
-	text-align: center;
 	width : 45%;
 }
 
@@ -192,7 +203,6 @@ html {
 
 	margin-left:20%;
 	margin-right:20%;
-	text-align: center;
 }
 
 /***********************************
@@ -282,13 +292,10 @@ div.breakafter
 }
 
 .pedigre {
-	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
-	height:5ex;
-	align-content:space-between;
-	margin-bottom:1ex;
-	font-size: larger;
+	min-height:8ex;
+	align-content:space-evenly;
 }
 
 .doss_score {
@@ -303,11 +310,16 @@ div.breakafter
 }
 
 .score_col {
-	text-align: center;
 	padding-left:5px;
 	padding-right:5px;
 }
 
+.doss_trim {
+	justify-content: flex-end;
+	align-items: flex-end;
+	min-width:8em;
+	margin-bottom:10px;
+}
 
 /************ 1/ Les div ***********/
 
@@ -315,7 +327,7 @@ div.breakafter
 #liste {
 	/* sert pour que l'évènement onscroll soit généré... */
 	overflow-y : scroll; 
-	height : 33vw; /* sinon pas de scroll ! */
+	height : 67vh;/* sinon pas de scroll ! */
 }
 
 #form_liste {
@@ -323,54 +335,17 @@ div.breakafter
 	flex-flow: column wrap;
 }
 
-/* Le bouton retour (admin uniquement)*/
-.gros_bout 
-	{
-		font-size: 220%;
-		padding: 1ex;
-		padding-left: auto;
-		padding-right: auto;
-		margin-bottom: .5ex;
-		border-radius: .2em .2em .2em .2em;
-		background-color: #cccccc;
-		color : Blue;
-	}
-	
 /********** 3/ Mise en forme du texte *********/
-.grossi { font-size : 140%; }
 
-.score { font-size : 300%; }
-
-.caption {
-	width: 100%;
-	text-align: center;
+.note {
 	font-size: 140%;
-	margin-bottom: 6px;
 }
 
-.trimestre {
-	width: 100%;
-	font-size: 140%;
-	text-align : right;
-}
-
-.note2 {
-	width: 50%;
-	font-size: 140%;
-	text-align : center;
-}
-
-.note3 {
-	width: 33%;
-	font-size: 140%;
-	text-align : center;
-}
-
-.notes {
+.notes {/* champ de saisie pour l'admin */
 	width : 100%;
 	border : 0px;
-	font-size: inherit;
-	text-align : center;
+	text-align: center;
+	font-size: 100%;
 	background-color : LightGrey;
 }
 	
@@ -393,8 +368,8 @@ div.breakafter
 
 .motif {
 	height : 2em;
-	margin: .2ex;
-	text-align : center;
+	margin-top: 4px;
+	margin-right: 4px;
 	font-size : 100%;
 	background-color : LightGrey;
 	flex: 1;
@@ -409,24 +384,10 @@ div.breakafter
 	background-color : white;
 }
 
-/* bouton valider */
-.valid_bouton {
-	padding-top : .7ex;
-	padding-bottom: .7ex;
-	padding-left : .8em;
-	padding-right: .8em;
-	margin-left: .5em;
-	margin-right: .5em;
-	font-size: 300%;
-
-	border-radius: .2em .2em .2em .2em;
-	background-color: #cccccc;
-	color : LimeGreen;
-
-	cursor: pointer;
-}
-
 /********** 4/ L'objet range de sélection de la correction *********/
+.tick { /* les valeurs des graduations */
+	width: 2em;
+}
 /* Compatibilité avec tous les navigateurs ?? */
 
 input[type=range] {
@@ -439,19 +400,27 @@ input[type=range] {
     /*required for proper track sizing in FF*/
     width: 99%;
 }
+
+/*------------------*/
+/* chrome et safari */
+/*------------------*/
+
+/* la piste */
 input[type=range]::-webkit-slider-runnable-track {
     width: 99%;
     height: 5px;
     background-color: LightGrey;
 		background-image:
 			linear-gradient(90deg, black 4px, transparent 2px),
-			linear-gradient(90deg, black 3px, transparent 2px);
-		background-size: 16.48% 16.48%, 16.48% 16.48%;
+			linear-gradient(90deg, black 2px, transparent 2px);
+		background-size: 7.07% 7.07%, 7.07% 7.07%;
 		background-origin : 0 0, 0 0;
-		background-position: 4px 2px, 10.5% 10.5%;
+		background-position: 2px 8px, 50% 50%;
     border: none;
     border-radius: 3px;
 }
+
+/* le curseur */
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
     border: none;
@@ -464,77 +433,31 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]:focus {
     outline: none;
 }
-input[type=range]:focus::-webkit-slider-runnable-track {
-    background: #ccc;
-}
 
+/*---------*/
+/* firefox */
+/*---------*/
+
+/* la piste */
 input[type=range]::-moz-range-track {
     width: 99%;
-    height: 5px;
+    height: 8px;
     background-color: LightGrey;
 		background-image:
 			linear-gradient(90deg, black 4px, transparent 2px),
-			linear-gradient(90deg, black 3px, transparent 2px);
-		background-size: 16.48% 16.48%, 16.48% 16.48%;
+			linear-gradient(90deg, black 2px, transparent 2px);
+		background-size: 7.10% 7.10%, 7.10% 7.10%;
 		background-origin : 0 0, 0 0;
-		background-position: 2px 2px, 10.5% 10.5%;
+		background-position: 0px 2px, 50% 50%;
     border: none;
-    border-radius: 3px;
+    border-radius: 2px;
 }
+
+/* le curseur */
 input[type=range]::-moz-range-thumb {
     border: none;
     height: 16px;
     width: 8px;
     border-radius: 30%;
     background: Black;
-}
-
-/*hide the outline behind the border*/
-input[type=range]:-moz-focusring{
-    outline: 1px solid white;
-    outline-offset: -1px;
-}
-
-input[type=range]::-ms-track {
-    width: 99%;
-    height: 5px;
-    
-	/*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper 
-	 * instead */
-	background: transparent;
-    
-	/*leave room for the larger thumb to overflow with a transparent border */
-	border-color: transparent;
-	border-width: 6px 0;
-
-    /*remove default tick marks*/
-    color: transparent;
-}
-input[type=range]::-ms-fill-lower {
-    background: #777;
-    border-radius: 3px;
-}
-input[type=range]::-ms-fill-upper {
-    background-color: LightGrey;
-		background-image:
-			linear-gradient(90deg, black 4px, transparent 2px),
-			linear-gradient(90deg, black 3px, transparent 2px);
-		background-size: 16.48% 16.48%, 16.48% 16.48%;
-		background-origin : 0 0, 0 0;
-		background-position: 2px 2px, 10.5% 10.5%;
-    border: none;
-    border-radius: 3px;
-}
-input[type=range]::-ms-thumb {
-    border: none;
-    height: 16px;
-    width: 8px;
-    border-radius: 30%;
-    background: Black;
-}
-input[type=range]:focus::-ms-fill-lower {
-    background: #888;
-}
-input[type=range]:focus::-ms-fill-upper {
-    background: #ccc;
 }
