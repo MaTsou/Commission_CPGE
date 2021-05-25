@@ -97,12 +97,18 @@
 	padding-bottom: .7ex;
 	padding-left : 1em;
 	padding-right: 1em;
-	margin-left: .5em;
-	margin-right: .5em;
-	margin-bottom : .5vw;
+	margin-bottom : .5ex;
 	border-radius: .3em .3em .3em .3em ;
 	background-color: #cccccc;
 	cursor: pointer;
+}
+
+.petit {
+	margin-left: .5em;
+	margin-right: .5em;
+}
+
+.grand {
 }
 
 /***********************************
@@ -327,7 +333,7 @@ div.breakafter
 #liste {
 	/* sert pour que l'évènement onscroll soit généré... */
 	overflow-y : scroll; 
-	height : 67vh;/* sinon pas de scroll ! */
+	height : 33vw;/*67vh;/* sinon pas de scroll ! */
 }
 
 #form_liste {

@@ -39,7 +39,7 @@
 		Fichiers csv présents : <br>{liste_csv}
 	</div><!-- -->
 	<div class = "bout_csv_div">
-		<input type = "button" class = "bouton taille1 fichier" 
+		<input type = "button" class = "petit bouton taille1" 
 			   value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
 	</div><!-- -->
 	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
@@ -104,8 +104,8 @@
 	</div>
 	<div class="doss_column" style="flex: 1;">
 		<form action="/affiche_menu" method = POST>
-			<input type = "submit" class ="bouton taille2 bleu" value = "Retour" 
-				   style = "visibility:{visibilite}">
+			<input type = "submit" class ="grand bouton taille2 bleu" 
+				   value = "Retour" style = "visibility:{visibilite}">
 		</form>
 		<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
 	</div>
@@ -223,7 +223,7 @@
 		<div class="motifs">{motifs}</div>
 	</div>
 	<div class="score_col" style="width:30%;">
-		<input type = "submit" id = "valid" class = "bouton taille2 vert" 
+		<input type = "submit" id = "valid" class = "grand bouton taille2 vert" 
 		value = "Valider">
 		<div>{rg_fin}</div>
 	</div>

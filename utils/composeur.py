@@ -168,9 +168,10 @@ class Composeur(object):
 
     def buttons_wrapper(self, title, list_fich): 
         txt = f""" <h3>{title}</h3> <div class='wrapper'> """
+        list_fich.sort()
         for fich in list_fich:
             txt += f"""<div>
-            <input type="submit" class = "bouton taille1 fichier" \
+            <input type="submit" class = "petit bouton taille1 fichier" \
                     name="fichier" value="{xml_to_division(fich)}"/>
                     </div>"""
         return txt + '</div>'
@@ -253,7 +254,7 @@ class Composeur(object):
                 commission..."""
                 # Etape 4 bouton
                 data['bout_etap4'] = """<input type = "button" 
-                class ="bouton taille1 fichier" value = "Récolter les fichiers" 
+                class ="petit bouton taille1 fichier" value = "Récolter les fichiers" 
                 onclick = "recolt_wait();"/>"""
                 sous_menus += self.make_sous_menu('4', title, data)
 
@@ -307,7 +308,7 @@ class Composeur(object):
             ### Suite
             txt = ''
             if len(data['liste_admin']) > 0: # si les fichiers admin existent :
-                txt = '<input type = "button" class ="bouton taille1 fichier" \
+                txt = '<input type = "button" class ="petit bouton taille1" \
                         value = "Générer les fichiers commission"'
                 affich = ''
                 if (alertes):
