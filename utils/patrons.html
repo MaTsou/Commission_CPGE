@@ -9,7 +9,7 @@
 		<title>Gestion Commission</title>
 	</head> 
 	<body class="body" onload="javascript:set_scroll();">
-		<div class="header taille1">
+		<div class="header taille1 ">
 			<h2>{title}</h2>
 		</div>
 		<div class="main_container">
@@ -107,7 +107,8 @@
 			<input type = "submit" class ="grand bouton taille2 bleu" 
 				   value = "Retour" style = "visibility:{visibilite}">
 		</form>
-		<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
+		<div id = "liste" class="" 
+			onscroll="javascript:get_scroll();">{liste}</div>
 	</div>
 </div>
 ##########
@@ -121,19 +122,19 @@
 </div>
 <div class = "impr_seul">Candidatures : {cand}</div>
 
-<div class="taille1 centre">
+<div class="taille1 centre no_imp">
 	<a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a>
 </div>
 
-<div class="row bordered">
+<div class="row bordered ">
 	<div class="col taille1 doss_trim">
 			<div>1e trimestre</div>
 			<div>2e trimestre</div>
 			<div>3e trimestre</div>
 	</div>
-	<div class="col gapleft" style="flex: 2;">
+	<div class="col gapleft " style="flex: 2;">
 		<div class="centre taille1">Classe de Première</div>
-		<div class="row bordered">
+		<div class="row bordered ">
 			<div class="col">
 				<div class="note bold">Math</div>
 				<div class="note">
@@ -231,21 +232,22 @@
 ########## 
 [*page_impress*]
 <!DOCTYPE html>
-<head style="display:none;">
-	<meta content = "text/html; charset = utf-8" http-equiv = "Content-Type">
-	<link rel = "stylesheet" type = "text/css" media = "print" 
-		  href = "/utils/fichiers_css/style_impr.css">
-	<link rel = "stylesheet" type = "text/css" media = "screen" 
-	href = "/utils/fichiers_css/style_html_impr.css">
-	<title>Impression-commission</title>
-</head>
-<body width = "50vw" onload = "window.print();">
-	<form action = "/affiche_menu" method = POST>
-		<div id = "gros_bout_div">
-			<input type = "submit" class ="gros_bout" value = "RETOUR"/>
-		</div>
-	</form>
-	{pages}
-</body>
+<html>
+	<head class="">
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"> 
+		<link rel = "stylesheet" type = "text/css" media = "print" 
+			  href = "/utils/fichiers_css/style_impr.css">
+		<link rel = "stylesheet" type = "text/css" media = "screen" 
+			  href = "/utils/fichiers_css/style_html_impr.css">
+		<title>Impression-commission</title>
+	</head> 
+	<body class="body" onload="window.print();">
+		<form action = "/affiche_menu" method = POST>
+			<input type = "submit" class ="grand bouton bleu taille2" 
+				   value = "RETOUR"/>
+		</form>
+		{pages}
+	</body>
+</html>
 ###########
 

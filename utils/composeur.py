@@ -634,7 +634,7 @@ class Composeur(object):
         """ Fabrication de la page 'impression des fiches bilan' """
         cand = qui.get_cand()
         fich = qui.fichier
-        entete = f'<h1 align="center" class="titre">{self.titre} - \
+        entete = f'<h1 align="center" class="titre no_imp">{self.titre} - \
             {fich.filiere().upper()}.</h1>'
         txt = ''
         # on saute une page entre chaque candidat :
