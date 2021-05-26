@@ -1,3 +1,6 @@
+/* Code css relatif au media "print" : on gère ici ce qui est affiché sur les 
+ * fiches bilan de la commission
+ */
 /***********************************
 	 ÉLÉMENTS GÉNÉRAUX
 ************************************/
@@ -8,216 +11,163 @@
           box-sizing: border-box;
 } /* s'applique à tous les éléments : width est une largeur hors-tout !! */
 
-html {font-size : 1.15vw} /* Taille de base selon la largeur de l'écran (1 = 100 carac/ligne) !*/
-						  /* On aurait pu choisir la hauteur !!!*/
+:root
+{
+	--header-height : 5vw; /* hauteur proportionnelle à la largeur de l'écran 
+	car la taille de police est proportionnelle cette largeur. */
+}
 
-body
-	{
-		page : size = A4;
-		width : 85%;
-		padding-top : 0cm;
-		margin-left: auto;
-		margin-right: auto;
-		position : static;
-	}
+@page { size: A4; }
+body {
+	width : 85%;
+	padding-top : 0cm;
+	margin-left: auto;
+	margin-right: auto;
+	position : static;
+	font-size : 1.15vw 
+}
 
-#header	/* Le header : 1e ligne ; intervient à toutes les pages */
-	{
-		position : static;
-		top : 0px;
-		left : 0px;
-		width :100%;
-	}
+/***********************************
+	classes génériques
+************************************/
+.row {
+	display: flex;
+	justify-content: space-between;
+	align-content: center;
+	padding: 4px;
+}
+
+.col {
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+}
+
+.wrap { flex-wrap: wrap; }
+.justAround { justify-content: space-around; }
+.justCenter { justify-content: center; }
+.aligCenter { align-self: center; }
+.aligBaseline { align-self: baseline; }
+
+.flex1 { flex: 1; }
+.flex2 { flex: 2; }
+.flex3 { flex: 3; }
+.flex4 { flex: 4; }
+.flex5 { flex: 5; }
+
+.bordered {
+	border: 1px solid black; 
+	margin-top: 4px;
+	margin-left: 4px;
+}
+
+.extraTopMarg { margin-top: 2ex; }
+.extraTopMarg1 { margin-top: 1ex; }
+.extraRightMarg { margin-right: 2ex; }
+.noMargin { margin: 0; }
+
+/***********************************
+	BOUTONS
+************************************/
+.bouton {
+	padding-top : .7ex;
+	padding-bottom: .7ex;
+	padding-left : 1em;
+	padding-right: 1em;
+	margin-bottom : .5ex;
+	border-radius: .3em .3em .3em .3em ;
+	background-color: #cccccc;
+	cursor: pointer;
+	display: none;
+}
+
+.petit {
+	margin-left: .5em;
+	margin-right: .5em;
+}
+
+.grand {
+}
+
+/***********************************
+	TEXTE
+************************************/
+.taille-1 { font-size : 80%; }
+
+.taille0 { font-size : 100%; }
+
+.taille1 { font-size : 130%; }
+
+.taille2 { font-size: 300%; }
+
+.textCentre { text-align: center; }
+
+.textAgauche { text-align: left; }
+
+.textAdroite { text-align: right; }
+
+.bold { font-weight: bold; }
+
+.bleu { color : Blue; }
+
+.vert { color : LimeGreen; }
+
+/**********************************
+	MENUS (général, admin, comm)
+************************************/
 
 /***********************************
 			IMPRESSION
 ************************************/
-
-.espace_impr /* Rajoute des espaces dans l'impression ...*/
-	{
-		margin-top :0;
-	}
-
-.correc_notimpr /* La liste des corrections : on affiche mais n'imprime pas*/
-	{
-		display : none;
-	}
-
-.correc_impr
-	{
-		font-size : 1.5em;
-	}
-
-.impr_seul
-	{
-		font-size : 1.3em;
-	}
+.impr { visibility: visible; }
+.no_impr { display: none; }
 
 div.breakafter
 	{ 
   		page-break-after: always; 
 	}
 
-.encadre /* Pour le texte candidat classé ... ou candidat non classé*/
-	{
-		font-size : 1.5em;
-		border : 1px solid black;
-		padding-top : .5em;
-		padding-bottom: .5em;
-		padding-left: 1em;
-		padding-right 1em;
-		text-align : center;
-		margin-bottom: 1em;
-	}
-
 /***********************************
 		LISTE DES DOSSIERS
 ************************************/
-
-.doss /* format type d'un bouton de cette liste */
-	{
-		width : 100%;
-		font-family : Courier, monospace; /* Pour la présentation : police monospace */
-		color : black;
-		text-align : left;
-		box-sizing : border-box;
-		margin-top : 0ex;
-		margin-bottom : 0ex;
-		background-color : rgba( 255, 255, 255, .9 );
-	}
-
-.doss:hover{border: 2px solid SkyBlue;} /* on passe dessus avec la souris */
-	
-.doss_traite{background-color:LimeGreen;} /* a été traité --> vert */
-
-.doss_courant{border: 2px solid Blue;} /* est sélectionné : bordure bleue */
-
-.doss_incomplet{background-color:LightCoral;} /* admin seulement : incomplet */
 
 /***********************************
 			PAGE DOSSIERS
 ************************************/
 
-/************ 1/ Les div ***********/
+.doss_trim {
+	justify-content: flex-end;
+	align-items: flex-end;
+	min-width:8em;
+	margin-bottom:10px;
+}
 
-#dossier /* Style de la colonne dossier*/
-	{
-		padding-left: 1%;
-		padding-right: 24%;
-	}
-
-#gros_bout_div /* La div en haut de la page dossier : contient le bouton retour */
-	{
-		display: none;
-	}
-
-.gros_bout /* Le bouton qui va dans la div gros_bout_div */
-	{
-		display: none;
-	}
-	
-/********** 2/ Les tableaux *********/
-		
-table
-	{
-		text-align : center;
-		vertical-align : center;
-		font-size : 1em;
-	}
-
-caption
-	{
-		display : none;
-		font-size : 1em;
-		margin : .25em; /* espace avec le tableau !*/
-	}
-		
-.bord /* pour les tableaux */
-	{
-		border : 1px solid black;
-	}
-
-/********** 3/ Mise en forme du texte *********/
-.grossi
-	{
-		font-size : 1.4em;
-	}
-
-.candid
-	{
-		font-size : 1.6em;
-	}
-
-.scores
-	{
-		white-space : nowrap;
-		padding-left: .75em;
-		padding-right : .75em;
-	}
-
-.score
-	{
-		font-size : 3em;
-		width : 6em;
-	}
-
-.notes
-	{
-		width : 3em;
-		border : 0px;
-		font-size: 1em;
-		text-align : center;
-		background-color : LightGrey;
-	}
+.notes {/* champ de saisie pour l'admin */
+	width : 100%;
+	border : 0px;
+	text-align: center;
+	font-size: 100%;
+	background-color : LightGrey;
+}
 	
 /********** 4/ Action de la commission : correction + motivation *********/
 
-.volet3  /* Volet 3 : Motivations + boutons */ 
-	{
-		align : center;
-		width : 73vw;
-	}
-	
+/* Bouton "motifs" commission */
+.motif {
+	height : 2em;
+	margin-top: 4px;
+	margin-right: 4px;
+	font-size : 100%;
+	background-color : LightGrey;
+	flex: 1;
+}
 
-.motiv /* Cellule titre = Motivations(s) de la commission */
-	{
-		width : 42vw;
-		text-align : left;
-		font-size : 1.2em;
-	}
+/* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
+.txt_motifs {
+	width : 100%;
+	height : 2em;
+	text-align : left;
+	font-size : 100%;
+	background-color : white;
+}
 
-.motif /* Bouton "motifs" commission */
-	{
-		display : none;
-	}
-
-.txt_motifs /* Texte bilan des motifs */
-	{
-		width : 65vw; /* 60% de 70% de vw */
-		height : 2em;
-		text-align : left;
-		font-size : 1em;
-	}
-
-.NC
-	{
-		display : none;
-	}
-
-.valid
-	{
-		width : 25vw; /* 40% de 70% de vw */
-		text-align : center;
-		vertical-align : center;
-	}
-	
-.valid_bouton
-	{
-		display : none;
-	}
-
-/* L'objet range */ 
-input[type=range]
-	{
-		display : none;
-	}

@@ -12,14 +12,16 @@ nombre_de_candidats_classes  = ['160', '300', 'tous']
 
 ############################################################################
 # Liste des motivations de la commission ...                               #
-# Sous la forme d'un tableau à 2 colonnes.                                 #
-# Ne pas dépasser 7 lignes pour que l'affichage sur navigateur soit beau   # 
 ############################################################################
 motivations = [
-    ["Niveau en LV", "Harmonisation de la notation"],
-    ["Niveau en sport", "Aptitude/Attitude face au travail"],
-    ["Age", "Évolution"],
-    ["Établissement", "Comportement"],
+    "Niveau en LV",
+    "Niveau en sport",
+    "Aptitude/Attitude face au travail",
+    "Age",
+    "Harmonisation de la notation",
+    "Comportement",
+    "Évolution",
+    "Établissement",
     ]
 
 ############################################################################

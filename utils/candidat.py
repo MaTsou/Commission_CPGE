@@ -87,7 +87,7 @@ def _init_acces():
                                    'pre' : str,
                                    'post' : str_to_num},
         'Score final'           : {'query' : 'diagnostic/scoref',
-                                   'default' : '',
+                                   'default' : '0.0',
                                    'pre' : str,
                                    'post' : str_to_num},
         'Rang brut'             : {'query' : 'diagnostic/rangb',

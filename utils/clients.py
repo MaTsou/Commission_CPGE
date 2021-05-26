@@ -25,7 +25,8 @@ from utils.fichier import Fichier
 from utils.csv_parcourssup import lire, ecrire
 from utils.nettoie_xml import nettoie
 from config import filieres, nb_jurys, nb_classes, tableaux_candidats_classes, tableaux_tous_candidats
-from utils.toolbox import decoup, restaure_virginite, str_to_num, normalize_mark
+from utils.toolbox import decoup, restaure_virginite, str_to_num, \
+        normalize_mark, division_to_xml
 from utils.parametres import min_correc
 
 #################################################################################
@@ -242,14 +243,9 @@ class Admin(Client):
         liste = ['Écrit EAF', 'Oral EAF']
         for li in liste:
             formated_mark = str_to_num(normalize_mark(kwargs[li]))
-            if 'cpes' in li.lower():
-                if (cand.is_cpes() and cand.get(li) != formated_mark):
-                    for fich in list_fich_cand:
-                        fich.get_cand(cand).set(li, kwargs[li])
-            else:
-                if cand.get(li) != formated_mark:
-                    for fich in list_fich_cand:
-                        fich.get_cand(cand).set(li, kwargs[li])
+            if cand.get(li) != formated_mark:
+                for fich in list_fich_cand:
+                    fich.get_cand(cand).set(li, kwargs[li])
 
         # Commentaire éventuel admin + gestion des 'NC'
         # Les commentaires admin sont précédés de '- Admin :' c'est à cela qu'on 
@@ -259,10 +255,12 @@ class Admin(Client):
         motif = kwargs['motif']
         if not('- Admin :' in motif or motif == '' or '- Alerte :' in motif):
             motif = f"- Admin : {motif}"
+        cand.set('Motifs', motif)
 
         # Récupération de la correction. On en fait qqc seulement si elle est 
         # minimale (NC), puis calcul du score final
         cor = kwargs['correc']
+        renew_stat = False
         if float(cor) == float(min_correc):
             # L'admin a validé le formulaire avec la correction NC (le candidat 
             # ne passera pas en commission) Pour ce cas là, on ne recopie pas 
@@ -270,20 +268,24 @@ class Admin(Client):
             # une filière sans l'exclure des autres. Sécurité !
             cand.set('Correction', 'NC') # update_raw_score renverra 0 !
             cand.set('Jury', 'Admin') # exclu par l'admin
-            cand.set('Motifs', motif)
+            # On met à jour les stats
+            renew_stat = True
         else:
+            if cand.get('Correction') == 'NC':
+                # lignes nécessaires si l'admin a NC un candidat, puis a changé 
+                # d'avis.
+                cand.set('Jury', '')
+                # On met à jour les stats
+                renew_stat = True
+            # Correction standard
             cand.set('Correction', '0')
-            # 2 lignes nécessaires si l'admin a NC un candidat, puis a changé 
-            # d'avis.
-            cand.set('Jury', '')
-            for fich in list_fich_cand:
-                fich.get_cand(cand).set('Motifs', motif)
 
         # On (re)calcule le score brut !
         cand.update_raw_score()
         # On sauvegarde tous les fichiers retouchés
         for fich in list_fich_cand:
             fich.sauvegarde()
+        if renew_stat: self.stat()
 
     def traiter_csv(self):
         """ Traiter les fichiers .csv en provenance de ParcoursSup. """
@@ -358,16 +360,18 @@ class Admin(Client):
         # Initialisation du dictionnaire stockant toutes les candidatures
         candid = {i : 0 for i in range(2**len(filieres))}
 
-        # Variables de décompte des candidats (et pas candidatures !)
+        # Variables de décompte des candidats
         candidats = 0
-        candidats_ayant_valide = 0
 
-        # Recherche des candidatures # je suis très fier de cet algorithme !!
+        # Recherche des candidatures
+        # je suis très fier de cet algorithme !!
         # Construction des éléments de recherche
 
         # # liste de dicos 
-        l_dict = [ {cand.get('Num ParcoursSup') : cand for cand in fich} \
-                for fich in list_fich ]
+        # À noter : on ne s'intéresse qu'aux candidatures qui n'ont pas été 
+        # rejetées (par nettoie.py ou l'admin..)
+        l_dict = [ {cand.get('Num ParcoursSup') : cand for cand in fich \
+                if cand.get('Correction') != 'NC'} for fich in list_fich ]
         # # liste d'ensembles d'identifiants ParcoursSup
         l_set = [ set(d.keys()) for d in l_dict ]
 
@@ -394,21 +398,17 @@ class Admin(Client):
                 [l_dict[j][a].set('Candidatures', cc) for j in liste]
                 flag = True # pour ne compter qu'une validation par candidat !
                 for j in liste:
-                    # le test ci-dessous pourrait exclure les filières 
-                    # inadéquates (bien ou pas ?)..
-                    if not('non validée' in l_dict[j][a].get('Motifs')):
-                        # ne sont comptés que les candidatures validées
-                        candid[2**j]+= 1
-                        if flag:
-                            candidats_ayant_valide += 1
-                            flag = False
-                if len(liste) > 1: # si candidat dans plus d'une filière
-                    candid[cc] += 1 # incrémentation du compteur correspondant
+                    candid[2**j]+= 1
+                    if flag:
+                        if len(liste) > 1:
+                            # si candidat dans plus d'une filière
+                            # incrémentation du compteur correspondant
+                            candid[cc] += 1
+                        flag = False
         # Sauvegarder
         [fich.sauvegarde() for fich in list_fich]
         # Ajouter deux éléments dans le dictionnaire candid
         candid['nb_cand'] = candidats
-        candid['nb_cand_valid'] = candidats_ayant_valide
         # Écrire le fichier stat
         with open(os.path.join(os.curdir, "data", "stat"), 'wb') as stat_fich:
             pickle.dump(candid, stat_fich)
@@ -420,11 +420,17 @@ class Admin(Client):
         # brut décroissant et générer autant de fichiers qu'il y a de jurys dans 
         # la filière concernée. Ces fichiers sont construits de façon à ce 
         # qu'ils contiennent des candidatures également solides.
+
+        # À noter : on inclut dans ces fichiers les candidats exclus par l'admin 
+        # (mais il ne seront pas affichés aux jurys) de façons qu'ils 
+        # apparaissent bien dans les tableaux bilans (notamment les tableaux 
+        # alphabétiques qui permettent de savoir ce qui est 'arrivé' à chaque 
+        # candidature...
+
         # Récupération des fichiers admin
         list_fich = [Fichier(fich) \
-                for fich in glob.glob(os.path.join(os.curdir, "data", \
-                "admin_*.xml"))]
-        # Pour chaque fichier "admin_*.xml"
+                for fich in glob.glob(division_to_xml('admin', '*'))]
+        # Pour chaque fichier trouvé
         for fich in list_fich:
             # Tout d'abord, calculer (et renseigner le noeud) le score brut de 
             # chaque candidat 
@@ -448,8 +454,7 @@ class Admin(Client):
                 # Sauvegarde dans un fichier comm_XXXX.xml
                 res = etree.Element('candidats')
                 [res.append(cand.get_node()) for cand in dossier]
-                nom = os.path.join(os.curdir, "data", \
-                        f"comm_{fich.filiere().upper()}{j+1}.xml")
+                nom = division_to_xml('jury', f'{fich.filiere().upper()}{j+1}')
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, \
                             encoding='utf-8'))
@@ -471,7 +476,7 @@ class Admin(Client):
         # tableaux *.csv nécessaires à la suite du traitement administratif du 
         # recrutement (ces tableaux sont définis dans config.py)
         for fil in filieres: # pour chaque filière
-            path = os.path.join(os.curdir, "data", f"comm_{fil.upper()}*.xml")
+            path = division_to_xml('jury', f"{fil.upper()}*")
             # récupération des fichiers comm de la filière
             list_fich = [Fichier(fich) for fich in glob.glob(path)]
 
@@ -525,15 +530,15 @@ class Admin(Client):
                 [res.append(c.get_node()) for c in doss_fin]
 
                 # Sauvegarde du fichier class...
-                nom = os.path.join(os.curdir, "data", f"class_{fil.upper()}.xml")
+                nom = division_to_xml('classement_final', fil.upper())
                 with open(nom, 'wb') as fichier:
                     fichier.write(etree.tostring(res, pretty_print=True, \
                             encoding='utf-8'))
 
         # On lance la génération des tableaux bilan de commission
         list_fich = [Fichier(fich) \
-                for fich in glob.glob(os.path.join(os.curdir, "data", \
-                "class_*.xml"))]
+                for fich in glob.glob(\
+                division_to_xml('classement_final', '*'))]
         self.tableaux_bilan(list_fich)
 
     def tableaux_bilan(self, list_fich):

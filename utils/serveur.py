@@ -42,6 +42,7 @@ from utils.parametres import entete
 from utils.clients import Jury, Admin
 from utils.fichier import Fichier
 from utils.composeur import Composeur
+from utils.toolbox import division_to_xml, xml_to_division
 
 
 ########################################################################
@@ -115,7 +116,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
                 # autres jurys
                 self.fichiers_utilises.pop(client)
                 # émission d'un SSE : un fichier se libère
-                self.add_sse_message('free', client.fichier.nom)
+                self.add_sse_message('free', \
+                        xml_to_division(client.fichier.nom))
                 client.fichier = None
         # On affiche le menu du client
         return self.affiche_menu()
@@ -141,22 +143,22 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         """ Pendant la commission, l'administrateur peut rendre de nouveau 
         accessible le fichier qu'un jury avait préalablement choisi. Si un 
         ordinateur plante, cela peut éviter un redémarrage du serveur """
-        fichier = kwargs["fichier"]
+        file_name = division_to_xml('jury', kwargs["fichier"])
         page = """<div style='align:center;'>"""
         try: 
             # recherche du client concerné
             client = [cli for cli in self.fichiers_utilises.keys() if 
-                    self.fichiers_utilises[cli] == fichier][0]
+                    self.fichiers_utilises[cli] == file_name][0]
             # on fait du ménage, le fichier redevient disponible aux autres 
             # jurys
             self.fichiers_utilises.pop(client)
             client.fichier = None
             page += f"""<div style='align:center;padding-top:2cm;'><h2>Le fichier 
-            {fichier} est maintenant libre.</h2></div> """
+            {file_name} est maintenant libre.</h2></div> """
 
         except:
             page = f""" <div style='align:center;padding-top:2cm;'><h2>Une erreur 
-            est survenue. Le fichier {fichier} n'est pas reconnu.</h2></div> 
+            est survenue. Le fichier {file_name} n'est pas reconnu.</h2></div> 
             """
         page += """
         <div style='align:center;'><form action='/affiche_menu' method = POST> 
@@ -220,9 +222,9 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # au cookie)
         client = self.get_client_cour()
         # Teste si le fichier n'a pas été choisi par un autre jury
-        fichier = kwargs.get("fichier") # nom du fichier sélectionné par le jury
-        a = fichier in self.fichiers_utilises.values()
-        b = fichier != self.fichiers_utilises.get(client, 'rien')
+        file_name = division_to_xml('jury', kwargs['fichier'])
+        a = file_name in self.fichiers_utilises.values()
+        b = file_name != self.fichiers_utilises.get(client, 'rien')
         if (a and b):
             # Si oui, retour menu
             return self.affiche_menu()
@@ -230,12 +232,12 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
             # sinon, mise à jour des attributs du client : l'attribut fichier du 
             # client va recevoir une instance d'un objet Fichier, construit à 
             # partir du nom de fichier.
-            client.set_fichier(Fichier(fichier))
+            client.set_fichier(Fichier(file_name))
             # Mise à jour de la liste des fichiers utilisés
-            self.fichiers_utilises[client] = fichier
+            self.fichiers_utilises[client] = file_name
             # On émet un message SSE : ajout d'un fichier à la liste des 
             # fichiers en cours de traitement
-            self.add_sse_message('add', fichier)
+            self.add_sse_message('add', kwargs['fichier'])
             # mem_scroll initialisé : cookie qui stocke la position de 
             # l'ascenseur dans la liste des dossiers
             cherrypy.session['mem_scroll'] = '0'
@@ -253,7 +255,8 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         # Mise à jour des attributs du client : l'attribut fichier du client va 
         # recevoir une instance d'un objet Fichier, construit à partir du nom de 
         # fichier.
-        client.set_fichier(Fichier(kwargs["fichier"]))
+        file_name = division_to_xml('admin', kwargs['fichier'])
+        client.set_fichier(Fichier(file_name))
         ## Initialisation des paramètres
         # mem_scroll : cookie qui stocke la position de l'ascenseur dans la 
         # liste des dossiers
@@ -332,5 +335,6 @@ class Serveur(): # Objet lancé par cherrypy dans le __main__
         client = self.get_client_cour() # récupère le client (c'est un admin !)
         # Mise à jour des attributs du client
         # son fichier courant devient celui qu'il vient de choisir
-        client.set_fichier(Fichier(kwargs["fichier"]))
+        file_name = division_to_xml('classement_final', kwargs['fichier'])
+        client.set_fichier(Fichier(file_name))
         return self.html_compose.page_impression(client)
