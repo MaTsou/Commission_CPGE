@@ -74,7 +74,7 @@ class Composeur(object):
         elif (index % 2 == 0):
             barre += f'<div class="tick">{valeur:+3.1f}</div>'
     barre += "</div>"
-    barre += '<span class = "impr">{} : {}</span>' # champs remplis
+    barre += '<span class = "impr">{} : {:+1.2f}</span>' # champs remplis
     # dans la fonction 'genere_action'
 
     # Liste des motivations
@@ -88,7 +88,7 @@ class Composeur(object):
             key = f"mot_{str(index)}"
             motifs += f'<input type="button" name="{key}"'
             motifs += f' id="{key}" onclick="javascript:maj_motif(this.id)"'
-            motifs += f' class = "motif" value ="{motif}"/>'
+            motifs += f' class = "motif no_impr" value ="{motif}"/>'
     ### Fin déclaration attributs de classe
 
     def __init__(self, titre):
@@ -241,7 +241,8 @@ class Composeur(object):
             if comm_en_cours: # phase 2
                 title = 'Commission en cours...'
                 txt = ''
-                txt = self.buttons_wrapper('', fichiers_utilises.values())
+                list_fich = [fich for fich in fichiers_utilises.values() ] 
+                txt = self.buttons_wrapper('', list_fich)
                 data['liste_jurys'] = txt
                 sous_menus += self.make_sous_menu('comm', title, data)
 
@@ -253,7 +254,8 @@ class Composeur(object):
                 commission..."""
                 # Etape 4 bouton
                 data['bout_etap4'] = """<input type = "button" 
-                class ="petit bouton taille1 fichier" value = "Récolter les fichiers" 
+                class ="petit bouton taille1 fichier" 
+                value = "Récolter les fichiers" 
                 onclick = "recolt_wait();"/>"""
                 sous_menus += self.make_sous_menu('4', title, data)
 
@@ -547,7 +549,7 @@ class Composeur(object):
             correc = cor
         # Construction de la barre de correction qu'on alimente avec les infos 
         # courantes..
-        barre = Composeur.barre.format(correc, cand.get('Jury'), str(cor))
+        barre = Composeur.barre.format(correc, cand.get('Jury'), cor)
         ### Partie motivations :
         motifs = Composeur.motifs.format(cand.get('Motifs'))
         # On met tout ça dans un dico data pour passage en argument à 
@@ -655,8 +657,8 @@ class Composeur(object):
                 # seulement les classés dont le rang est inférieur à la limite 
                 # fixée
                 txt += entete
-                txt += f"<div class='row bordered justCentre'>Candidat classé : \
-                {cand.get('Rang final')}</div>"
+                txt += f"<div class='row bordered justAround taille1 bold'>\
+                        Candidat classé : {cand.get('Rang final')}</div>"
                 txt += Composeur.html['contenu_dossier']\
                         .format(**self.genere_dossier(qui, cand))
                 txt += Composeur.html['contenu_action']\

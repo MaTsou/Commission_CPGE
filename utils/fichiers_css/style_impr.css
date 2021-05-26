@@ -1,3 +1,6 @@
+/* Code css relatif au media "print" : on gère ici ce qui est affiché sur les 
+ * fiches bilan de la commission
+ */
 /***********************************
 	 ÉLÉMENTS GÉNÉRAUX
 ************************************/
@@ -14,31 +17,14 @@
 	car la taille de police est proportionnelle cette largeur. */
 }
 
+@page { size: A4; }
 body {
-	page : size = A4;
 	width : 85%;
 	padding-top : 0cm;
 	margin-left: auto;
 	margin-right: auto;
 	position : static;
 	font-size : 1.15vw 
-}
-
-.header {
-	position : fixed;
-	z-index : 1;
-	top : 0px;
-	width :100%;
-	height : var(--header-height);
-	background-color : LightGrey;
-}
-
-.main_container {
-	position : relative;
-	z-index : 0; /* inférieur à z-index du header : passe dessous ! */
-	overflow-y : hidden;
-	top : var(--header-height); /* juste sous le header */
-	width : 100%;
 }
 
 /***********************************
@@ -79,33 +65,6 @@ body {
 .extraTopMarg1 { margin-top: 1ex; }
 .extraRightMarg { margin-right: 2ex; }
 .noMargin { margin: 0; }
-
-/***********************************
-	LOADING ... please wait
-************************************/
-
-#patience {
-	position: fixed;
-	visibility: hidden;
-	z-index:    1000;
-	text-align : center;
-    top:        0;
-    left:       0;
-    height:     100%;
-    width:      100%;
-    padding-top: 15%;
-    background: rgba( 255, 255, 255, .9 );
-}
-
-.loader {
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 
 /***********************************
 	BOUTONS
@@ -156,28 +115,6 @@ body {
 /**********************************
 	MENUS (général, admin, comm)
 ************************************/
-/*  Sous-menu (dans le cas admin, contient les étapes) */
-.sous_menu {
-	border:1px solid black;
-	padding-top: .5vw;
-	padding-bottom: .5vw;
-	padding-left: 1em;
-	padding-right: 1em;
-	margin-left : 5%;
-	margin-right : 5%;
-}
-
-.wrapper {
-	display: flex;
-	flex-flow: row wrap;
-	justify-content: space-evenly;
-}
-
-/* sous menu jurys */
-.liste_jury {
-	margin-left:20%;
-	margin-right:20%;
-}
 
 /***********************************
 			IMPRESSION
@@ -203,12 +140,6 @@ div.breakafter
 	align-items: flex-end;
 	min-width:8em;
 	margin-bottom:10px;
-}
-
-#liste {
-	/* sert pour que l'évènement onscroll soit généré... */
-	overflow-y : scroll; 
-	height : 32vw;/*67vh;/* sinon pas de scroll ! */
 }
 
 .notes {/* champ de saisie pour l'admin */
@@ -240,80 +171,3 @@ div.breakafter
 	background-color : white;
 }
 
-/********** 4/ L'objet range de sélection de la correction *********/
-.tick { /* les valeurs des graduations */
-	width: 2em;
-}
-/* Compatibilité avec tous les navigateurs ?? */
-
-input[type=range] {
-    /*removes default webkit styles*/
-    -webkit-appearance: none;
-    
-    /*fix for FF unable to apply focus style bug */
-    border: 1px solid white;
-    
-    /*required for proper track sizing in FF*/
-    width: 99%;
-}
-
-/*------------------*/
-/* chrome et safari */
-/*------------------*/
-
-/* la piste */
-input[type=range]::-webkit-slider-runnable-track {
-    width: 99%;
-    height: 5px;
-    background-color: LightGrey;
-		background-image:
-			linear-gradient(90deg, black 4px, transparent 2px),
-			linear-gradient(90deg, black 2px, transparent 2px);
-		background-size: 7.07% 7.07%, 7.07% 7.07%;
-		background-origin : 0 0, 0 0;
-		background-position: 2px 8px, 50% 50%;
-    border: none;
-    border-radius: 3px;
-}
-
-/* le curseur */
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    border: none;
-    height: 16px;
-    width: 8px;
-    border-radius: 30%;
-    background: Black;
-    margin-top: -4px;
-}
-input[type=range]:focus {
-    outline: none;
-}
-
-/*---------*/
-/* firefox */
-/*---------*/
-
-/* la piste */
-input[type=range]::-moz-range-track {
-    width: 99%;
-    height: 8px;
-    background-color: LightGrey;
-		background-image:
-			linear-gradient(90deg, black 4px, transparent 2px),
-			linear-gradient(90deg, black 2px, transparent 2px);
-		background-size: 7.10% 7.10%, 7.10% 7.10%;
-		background-origin : 0 0, 0 0;
-		background-position: 0px 2px, 50% 50%;
-    border: none;
-    border-radius: 2px;
-}
-
-/* le curseur */
-input[type=range]::-moz-range-thumb {
-    border: none;
-    height: 16px;
-    width: 8px;
-    border-radius: 30%;
-    background: Black;
-}

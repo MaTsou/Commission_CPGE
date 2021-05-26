@@ -1,3 +1,14 @@
+/*
+ * La philosophie suivie est celle de OOCSS (Object Oriented CSS) : elle 
+ * consiste à ne pas définir les propriétés par éléments html, mais à créer des 
+ * classes de propriétés qui puisse s'appliquer à plusieurs éléments. Par 
+ * exemple les classes d'alignement du texte dans une <div>... L'autre 
+ * caractéristique de OOCSS est de séparer les propriétés liées au 
+ * positionnement des propriétés liées à l'aspect du contenu.
+ *
+ * Concernant la gestion de la mise en page (layout), c'est 'flexbox' qui a été 
+ * retenu.
+ */
 /***********************************
 	 ÉLÉMENTS GÉNÉRAUX
 ************************************/
@@ -42,19 +53,20 @@
 /***********************************
 	classes génériques
 ************************************/
-.row {
+.row { /* les éléments sont positionnés en ligne */
 	display: flex;
 	justify-content: space-between;
 	align-content: center;
 	padding: 4px;
 }
 
-.col {
+.col { /* les éléments sont positionnés en colonne */
 	display: flex;
 	flex-direction: column;
 	justify-content: start;
 }
 
+/* Alignement des éléments entre eux et dans le contenant */
 .wrap { flex-wrap: wrap; }
 .justAround { justify-content: space-around; }
 .justCenter { justify-content: center; }
@@ -62,18 +74,21 @@
 .aligCenter { align-content: center; }
 .aligBaseline { align-self: baseline; }
 
+/* Répartition de l'espace disponible entre les différents contenus */
 .flex1 { flex: 1; }
 .flex2 { flex: 2; }
 .flex3 { flex: 3; }
 .flex4 { flex: 4; }
 .flex5 { flex: 5; }
 
+/* Aspect */
 .bordered {
 	border: 1px solid black; 
 	margin-top: 4px;
 	margin-left: 4px;
 }
 
+/* Ajustement du rendu */
 .extraTopMarg { margin-top: 2ex; }
 .extraTopMarg1 { margin-top: 1ex; }
 .extraRightMarg { margin-right: 2ex; }
@@ -82,7 +97,7 @@
 /***********************************
 	LOADING ... please wait
 ************************************/
-
+/* Une exception à la philosophie OOCSS : l'écran qui demande de patienter */
 #patience {
 	position: fixed;
 	visibility: hidden;
@@ -165,13 +180,14 @@
 	margin-right : 5%;
 }
 
+/* Pour la disposition des boutons choix de fichier */
 .wrapper {
 	display: flex;
 	flex-flow: row wrap;
 	justify-content: space-evenly;
 }
 
-/* sous menu jurys */
+/* sous menu jurys : esthétique */
 .liste_jury {
 	margin-left:20%;
 	margin-right:20%;
@@ -180,10 +196,11 @@
 /***********************************
 			IMPRESSION
 ************************************/
-.impr { /* présent uniquement à l'impression */
+.impr { /* élément présent uniquement à l'impression */
 	display: none;
 }
 
+/* un saut de page */
 div.breakafter { 
 	page-break-after: always; 
 }
@@ -234,17 +251,11 @@ div.breakafter {
 			PAGE DOSSIERS
 ************************************/
 
-.doss_trim {
+.doss_trim { /* la liste des trimestres dans le tableau de notes */
 	justify-content: flex-end;
 	align-items: flex-end;
 	min-width:8em;
 	margin-bottom:10px;
-}
-
-#liste {
-	/* sert pour que l'évènement onscroll soit généré... */
-	overflow-y : scroll; 
-	height : 32vw;/*67vh;/* sinon pas de scroll ! */
 }
 
 .notes {/* champ de saisie pour l'admin */
@@ -254,10 +265,15 @@ div.breakafter {
 	font-size: 100%;
 	background-color : LightGrey;
 }
+
+#liste { /* sert pour que l'évènement onscroll soit généré... */
+	overflow-y : scroll; 
+	height : 32vw;/*67vh;/* sinon pas de scroll ! */
+}
 	
 /********** 4/ Action de la commission : correction + motivation *********/
 
-/* Bouton "motifs" commission */
+/* Boutons "motifs" commission */
 .motif {
 	height : 2em;
 	margin-top: 4px;
@@ -267,7 +283,7 @@ div.breakafter {
 	flex: 1;
 }
 
-/* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
+/* Texte bilan des motifs */
 .txt_motifs {
 	width : 100%;
 	height : 2em;
@@ -277,7 +293,7 @@ div.breakafter {
 }
 
 /********** 4/ L'objet range de sélection de la correction *********/
-.tick { /* les valeurs des graduations */
+.tick { /* les largeurs des graduations */
 	width: 2em;
 }
 /* Compatibilité avec tous les navigateurs ?? */
