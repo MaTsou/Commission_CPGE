@@ -44,23 +44,40 @@
 ************************************/
 .row {
 	display: flex;
-	justify-content: space-around;
+	justify-content: space-between;
+	align-content: center;
 	padding: 4px;
 }
 
 .col {
 	display: flex;
 	flex-direction: column;
+	justify-content: start;
 }
+
+.wrap { flex-wrap: wrap; }
+.justAround { justify-content: space-around; }
+.justCenter { justify-content: center; }
+.aligAround { align-content: space-around; }
+.aligCenter { align-content: center; }
+.aligBaseline { align-self: baseline; }
+
+.flex1 { flex: 1; }
+.flex2 { flex: 2; }
+.flex3 { flex: 3; }
+.flex4 { flex: 4; }
+.flex5 { flex: 5; }
 
 .bordered {
 	border: 1px solid black; 
 	margin-top: 4px;
+	margin-left: 4px;
 }
 
-.bold { font-weight: bold; }
-
-.gapleft { margin-left: 4px; }
+.extraTopMarg { margin-top: 2ex; }
+.extraTopMarg1 { margin-top: 1ex; }
+.extraRightMarg { margin-right: 2ex; }
+.noMargin { margin: 0; }
 
 /***********************************
 	LOADING ... please wait
@@ -114,33 +131,31 @@
 /***********************************
 	TEXTE
 ************************************/
-.taille1 {
+.taille-1 { font-size : 80%; }
 
-	font-size : 130%;
+.taille0 { font-size : 100%; }
 
-}
+.taille1 { font-size : 130%; }
 
-.taille2 {
-	font-size: 300%;
-}
+.taille2 { font-size: 300%; }
 
-.centre { text-align: center; }
+.textCentre { text-align: center; }
 
+.textAgauche { text-align: left; }
 
-.bleu {
-	color : Blue;
-}
+.textAdroite { text-align: right; }
 
-.vert {
-	color : LimeGreen;
-}
+.bold { font-weight: bold; }
+
+.bleu { color : Blue; }
+
+.vert { color : LimeGreen; }
 
 /**********************************
 	MENUS (général, admin, comm)
 ************************************/
 /*  Sous-menu (dans le cas admin, contient les étapes) */
 .sous_menu {
-
 	border:1px solid black;
 	padding-top: .5vw;
 	padding-bottom: .5vw;
@@ -148,47 +163,6 @@
 	padding-right: 1em;
 	margin-left : 5%;
 	margin-right : 5%;
-	margin-bottom : 2ex;
-}
-
-.flex-row-layout {
-	display: flex;
-	flex-direction: row;
-	justify-content: space-evenly;
-	align-items: baseline;
-}
-
-.etape {
-	text-align : left;
-	font-size : 1.5vw;
-	font-weight: bold;
-	margin-bottom : 1ex;
-}
-
-/* Premier sous menu admin */
-.liste_csv {
-	flex:2;
-	text-align : left;
-	font-size : 1.4vw;
-}
-
-.liste_pdf	{
-	flex:2;
-	text-align : right;
-	font-size : 1.4vw;
-}
-
-/* Le bouton Vérifier / Traiter */
-.bout_csv_div {
-	flex:1;
-	justify-content: center;
-	align-self: center;
-}
-
-/* 2e sous menu admin */
-.liste_admin {
-
-	width : 45%;
 }
 
 .wrapper {
@@ -197,16 +171,8 @@
 	justify-content: space-evenly;
 }
 
-/* div : statistiques */
-.stat {
-	text-align : left;
-	width : 40%;
-	font-size: 1.2em;
-}
-
 /* sous menu jurys */
 .liste_jury {
-
 	margin-left:20%;
 	margin-right:20%;
 }
@@ -214,28 +180,13 @@
 /***********************************
 			IMPRESSION
 ************************************/
+.impr { /* présent uniquement à l'impression */
+	display: none;
+}
 
-/* Rajoute des espaces dans l'impression ...*/
-.espace_impr 
-	{
-		display: none;
-	}
-
-/* La correction : on imprime mais n'affiche pas*/
-.correc_impr 
-	{
-		display : none;
-	}
-
-.impr_seul
-	{
-		display: none;
-	}
-
-div.breakafter
-	{ 
-  		page-break-after: always; 
-	}
+div.breakafter { 
+	page-break-after: always; 
+}
 
 /***********************************
 		LISTE DES DOSSIERS
@@ -283,43 +234,6 @@ div.breakafter
 			PAGE DOSSIERS
 ************************************/
 
-.doss_container {
-	display: flex;
-	justify-content: space-evenly;
-	align-items: flex-start;
-}
-
-.doss_column {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-left:1ex;
-	margin-right:1ex;
-}
-
-.pedigre {
-	flex-wrap: wrap;
-	justify-content: space-between;
-	min-height:8ex;
-	align-content:space-evenly;
-}
-
-.doss_score {
-	display:flex;
-	border:1px solid black;
-	margin-top:2ex;
-	margin-bottom:2ex;
-	padding-top:5px;
-	padding-bottom:5px;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.score_col {
-	padding-left:5px;
-	padding-right:5px;
-}
-
 .doss_trim {
 	justify-content: flex-end;
 	align-items: flex-end;
@@ -327,24 +241,10 @@ div.breakafter
 	margin-bottom:10px;
 }
 
-/************ 1/ Les div ***********/
-
-/* Style de la colonne Liste des dossiers */
 #liste {
 	/* sert pour que l'évènement onscroll soit généré... */
 	overflow-y : scroll; 
-	height : 33vw;/*67vh;/* sinon pas de scroll ! */
-}
-
-#form_liste {
-	display: flex;
-	flex-flow: column wrap;
-}
-
-/********** 3/ Mise en forme du texte *********/
-
-.note {
-	font-size: 140%;
+	height : 32vw;/*67vh;/* sinon pas de scroll ! */
 }
 
 .notes {/* champ de saisie pour l'admin */
@@ -357,21 +257,7 @@ div.breakafter
 	
 /********** 4/ Action de la commission : correction + motivation *********/
 
-/* Cellule titre = Motivations(s) de la commission */
-.motiv {
-	text-align : left;
-	padding-left: 5px;
-	padding-bottom: 3px;
-	font-size : larger;
-	font-weight: bold;
-}
-
 /* Bouton "motifs" commission */
-.motifs {
-	display: flex;
-	flex-flow: row wrap;
-}
-
 .motif {
 	height : 2em;
 	margin-top: 4px;

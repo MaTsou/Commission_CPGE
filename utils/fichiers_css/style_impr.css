@@ -42,148 +42,161 @@ body {
 }
 
 /***********************************
-classes génériques
- ************************************/
+	classes génériques
+************************************/
 .row {
 	display: flex;
-	justify-content: space-around;
+	justify-content: space-between;
+	align-content: center;
 	padding: 4px;
 }
 
 .col {
 	display: flex;
 	flex-direction: column;
+	justify-content: start;
 }
+
+.wrap { flex-wrap: wrap; }
+.justAround { justify-content: space-around; }
+.justCenter { justify-content: center; }
+.aligCenter { align-self: center; }
+.aligBaseline { align-self: baseline; }
+
+.flex1 { flex: 1; }
+.flex2 { flex: 2; }
+.flex3 { flex: 3; }
+.flex4 { flex: 4; }
+.flex5 { flex: 5; }
 
 .bordered {
 	border: 1px solid black; 
 	margin-top: 4px;
+	margin-left: 4px;
 }
+
+.extraTopMarg { margin-top: 2ex; }
+.extraTopMarg1 { margin-top: 1ex; }
+.extraRightMarg { margin-right: 2ex; }
+.noMargin { margin: 0; }
+
+/***********************************
+	LOADING ... please wait
+************************************/
+
+#patience {
+	position: fixed;
+	visibility: hidden;
+	z-index:    1000;
+	text-align : center;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    padding-top: 15%;
+    background: rgba( 255, 255, 255, .9 );
+}
+
+.loader {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/***********************************
+	BOUTONS
+************************************/
+.bouton {
+	padding-top : .7ex;
+	padding-bottom: .7ex;
+	padding-left : 1em;
+	padding-right: 1em;
+	margin-bottom : .5ex;
+	border-radius: .3em .3em .3em .3em ;
+	background-color: #cccccc;
+	cursor: pointer;
+	display: none;
+}
+
+.petit {
+	margin-left: .5em;
+	margin-right: .5em;
+}
+
+.grand {
+}
+
+/***********************************
+	TEXTE
+************************************/
+.taille-1 { font-size : 80%; }
+
+.taille0 { font-size : 100%; }
+
+.taille1 { font-size : 130%; }
+
+.taille2 { font-size: 300%; }
+
+.textCentre { text-align: center; }
+
+.textAgauche { text-align: left; }
+
+.textAdroite { text-align: right; }
 
 .bold { font-weight: bold; }
 
-.gapleft { margin-left: 4px; }
+.bleu { color : Blue; }
 
-.no_imp {
-	display: none;
-}
-/***********************************
-BOUTONS
- ************************************/
-.bouton {
-	display: none;
-}
-
-/***********************************
-TEXTE
- ************************************/
-.taille1 {
-
-	font-size : 130%;
-
-}
-
-.taille2 {
-	font-size: 300%;
-}
-
-.centre { text-align: center; }
-
-
-.bleu {
-	color : Blue;
-}
-
-.vert {
-	color : LimeGreen;
-}
+.vert { color : LimeGreen; }
 
 /**********************************
-MENUS (général, admin, comm)
- ************************************/
+	MENUS (général, admin, comm)
+************************************/
+/*  Sous-menu (dans le cas admin, contient les étapes) */
+.sous_menu {
+	border:1px solid black;
+	padding-top: .5vw;
+	padding-bottom: .5vw;
+	padding-left: 1em;
+	padding-right: 1em;
+	margin-left : 5%;
+	margin-right : 5%;
+}
+
+.wrapper {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-evenly;
+}
+
+/* sous menu jurys */
+.liste_jury {
+	margin-left:20%;
+	margin-right:20%;
+}
+
 /***********************************
-IMPRESSION
- ************************************/
-
-.espace_impr /* Rajoute des espaces dans l'impression ...*/
-{
-	margin-top :2ex;
-}
-
-.correc_notimpr /* La liste des corrections : on affiche mais n'imprime pas*/
-{
-	display : none;
-}
-
-.correc_impr
-{
-	font-size : 1.5em;
-}
-
-.impr_seul
-{
-	font-size : 1.3em;
-	margin-top: 2ex;
-	text-align: center;
-}
+			IMPRESSION
+************************************/
+.impr { visibility: visible; }
+.no_impr { display: none; }
 
 div.breakafter
-{ 
-	page-break-after: always; 
-}
+	{ 
+  		page-break-after: always; 
+	}
 
 /***********************************
-LISTE DES DOSSIERS
- ************************************/
-
-/* format type d'un bouton de cette liste */
-.doss 
-{
-	display: none;
-}
+		LISTE DES DOSSIERS
+************************************/
 
 /***********************************
-PAGE DOSSIERS
- ************************************/
-
-.doss_container {
-	display: flex;
-	justify-content: space-evenly;
-	align-items: flex-start;
-	margin-top: 2ex;
-}
-
-.doss_column {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-left:1ex;
-	margin-right:1ex;
-}
-
-.pedigre {
-	flex-wrap: wrap;
-	justify-content: space-between;
-	min-height:8ex;
-	align-content:space-evenly;
-}
-
-.doss_score {
-	display:flex;
-	border:1px solid black;
-	margin-top:2ex;
-	margin-bottom:2ex;
-	padding-top:5px;
-	padding-bottom:5px;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.score_col {
-	padding-left:5px;
-	padding-right:5px;
-	text-align: center;
-}
+			PAGE DOSSIERS
+************************************/
 
 .doss_trim {
 	justify-content: flex-end;
@@ -192,10 +205,10 @@ PAGE DOSSIERS
 	margin-bottom:10px;
 }
 
-/********** 3/ Mise en forme du texte *********/
-
-.note {
-	font-size: 140%;
+#liste {
+	/* sert pour que l'évènement onscroll soit généré... */
+	overflow-y : scroll; 
+	height : 32vw;/*67vh;/* sinon pas de scroll ! */
 }
 
 .notes {/* champ de saisie pour l'admin */
@@ -205,26 +218,17 @@ PAGE DOSSIERS
 	font-size: 100%;
 	background-color : LightGrey;
 }
-
+	
 /********** 4/ Action de la commission : correction + motivation *********/
 
-/* Cellule titre = Motivations(s) de la commission */
-.motiv {
-	text-align :left;
-	padding-left: 5px;
-	padding-bottom: 3px;
-	font-size : larger;
-	font-weight: bold;
-}
-
 /* Bouton "motifs" commission */
-.motifs {
-	display: flex;
-	flex-flow: row wrap;
-}
-
 .motif {
-	display: none;
+	height : 2em;
+	margin-top: 4px;
+	margin-right: 4px;
+	font-size : 100%;
+	background-color : LightGrey;
+	flex: 1;
 }
 
 /* Texte bilan des motifs : je recopie sinon ça déconne à l'impression */
@@ -238,23 +242,78 @@ PAGE DOSSIERS
 
 /********** 4/ L'objet range de sélection de la correction *********/
 .tick { /* les valeurs des graduations */
-	display: none;
+	width: 2em;
 }
 /* Compatibilité avec tous les navigateurs ?? */
 
 input[type=range] {
-	display: none;
+    /*removes default webkit styles*/
+    -webkit-appearance: none;
+    
+    /*fix for FF unable to apply focus style bug */
+    border: 1px solid white;
+    
+    /*required for proper track sizing in FF*/
+    width: 99%;
 }
 
-.encadre /* Pour le texte candidat classé ... ou candidat non classé*/
-{
-	font-size : 1.5em;
-	border : 1px solid black;
-	padding-top : .5em;
-	padding-bottom: .5em;
-	padding-left: 1em;
-	padding-right 1em;
-	text-align : center;
-	margin-bottom: 1em;
+/*------------------*/
+/* chrome et safari */
+/*------------------*/
+
+/* la piste */
+input[type=range]::-webkit-slider-runnable-track {
+    width: 99%;
+    height: 5px;
+    background-color: LightGrey;
+		background-image:
+			linear-gradient(90deg, black 4px, transparent 2px),
+			linear-gradient(90deg, black 2px, transparent 2px);
+		background-size: 7.07% 7.07%, 7.07% 7.07%;
+		background-origin : 0 0, 0 0;
+		background-position: 2px 8px, 50% 50%;
+    border: none;
+    border-radius: 3px;
 }
 
+/* le curseur */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 16px;
+    width: 8px;
+    border-radius: 30%;
+    background: Black;
+    margin-top: -4px;
+}
+input[type=range]:focus {
+    outline: none;
+}
+
+/*---------*/
+/* firefox */
+/*---------*/
+
+/* la piste */
+input[type=range]::-moz-range-track {
+    width: 99%;
+    height: 8px;
+    background-color: LightGrey;
+		background-image:
+			linear-gradient(90deg, black 4px, transparent 2px),
+			linear-gradient(90deg, black 2px, transparent 2px);
+		background-size: 7.10% 7.10%, 7.10% 7.10%;
+		background-origin : 0 0, 0 0;
+		background-position: 0px 2px, 50% 50%;
+    border: none;
+    border-radius: 2px;
+}
+
+/* le curseur */
+input[type=range]::-moz-range-thumb {
+    border: none;
+    height: 16px;
+    width: 8px;
+    border-radius: 30%;
+    background: Black;
+}

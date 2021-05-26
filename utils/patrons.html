@@ -20,8 +20,8 @@
 </html>
 ##########
 [*sous_menu*]
-<div class = "sous_menu">
-	<div class = "etape"> {title} </div>
+<div class = "sous_menu extraTopMarg">
+	<div class = "textAgauche bold taille1"> {title} </div>
 	{sous_menu_content}
 	<div id ="patience">
 		<p><h1>Traitement en cours...</h1></p>
@@ -33,37 +33,37 @@
 </div>
 ##########
 [*sous_menu_content_1*]
-<form id="traiter" class="flex-row-layout" 
-				   action = "/traiter_parcourssup" method = POST>
-	<div class = "liste_csv">
+<form id="traiter" class="row taille1 extraTopMarg1" 
+	action = "/traiter_parcourssup" method = POST>
+	<div class = "textAgauche">
 		Fichiers csv présents : <br>{liste_csv}
-	</div><!-- -->
-	<div class = "bout_csv_div">
-		<input type = "button" class = "petit bouton taille1" 
-			   value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
-	</div><!-- -->
-	<div class = "liste_pdf">Fichiers pdf présents : <br>{liste_pdf}</div>
+	</div>
+	<div class="col justCenter">
+	<input type = "button" class = "petit bouton taille0" 
+		   value = "VÉRIFIER / TRAITER" onclick = "verif_wait();">
+	</div>
+	<div class = "textAdroite">Fichiers pdf présents : <br>{liste_pdf}</div>
 </form>	
 ##########
 [*sous_menu_content_2*]
-<form class="flex-row-layout" action = "/choix_admin" method = POST>
-	<div class = "liste_admin"> {liste_admin} </div>
-	<div class = "stat">{liste_stat}</div>
+<form class="row" action = "/choix_admin" method = POST>
+	<div class = "aligBaseline flex1"> {liste_admin} </div>
+	<div class = "textAgauche taille1 aligBaseline flex1">{liste_stat}</div>
 </form>	
 ##########
 [*sous_menu_content_3*]
-<form id="genere" class="flex-row-layout" 
+<form id="genere" class="row justCenter" 
 	action = '/genere_fichiers_comm' method = POST>
 	{bout_etap3}
 </form>	
 ##########
 [*sous_menu_content_comm*]
-<div class = "liste_admin">
+<div class = "row justAround">
 	<h2>{decompt}</h2>
+	<div class = "textAgauche taille1 aligBaseline">{liste_stat}</div>
 </div>
-<div class = "stat">{liste_stat}</div>
 <div id = "imprim" class = "sous_menu">
-	<div class = "etape">
+	<div class = "textAgauche bold taille1">
 		&nbsp;Jurys connectés : (cliquez pour libérer le fichier)
 	</div>
 	<form id = "impress" action = "/libere_fichier" method = "POST">
@@ -72,13 +72,13 @@
 </div>
 ##########
 [*sous_menu_content_4*]
-<form id = "recolte" class="flex-row-layout" 
+<form id = "recolte" class="row justAround" 
 	action = '/clore_commission' method = POST>
-	<div class = "liste_admin">
+	<div>
 		<h2>{decompt}</h2>
 		{bout_etap4} 
 	</div>
-	<div class = "stat" >{liste_stat}</div>
+	<div class = "textAgauche taille1 aligBaseline" >{liste_stat}</div>
 </form>
 ##########
 [*sous_menu_content_5*]
@@ -94,35 +94,34 @@
 	</form>
 ########## 
 [*MEP_DOSSIER*] 
-<div class="doss_container">
-	<div class="doss_column" style="flex: 4;"> 
+<div class="row">
+	<div class="col flex4 extraRightMarg"> 
 		<form id = "formulaire" action = "/traiter" method = POST 
 			  onsubmit="return test_valid();">
 			{dossier}
 			{action_client}
 		</form>
 	</div>
-	<div class="doss_column" style="flex: 1;">
+	<div class="col flex1">
 		<form action="/affiche_menu" method = POST>
 			<input type = "submit" class ="grand bouton taille2 bleu" 
 				   value = "Retour" style = "visibility:{visibilite}">
 		</form>
-		<div id = "liste" class="" 
-			onscroll="javascript:get_scroll();">{liste}</div>
+		<div id = "liste" onscroll="javascript:get_scroll();">{liste}</div>
 	</div>
 </div>
 ##########
 [*contenu_dossier*]
-<div class="row pedigre taille1">
+<div class="row wrap taille1">
 	<div>{Nom}, {Prénom}</div>
 	<div> né(e) le {Date de naissance}</div>
 	<div>[Id]-INE : [{Num ParcoursSup}]-{INE}</div>
 	<div>Actuellement en {Classe actuelle}, {Établissement} 
 		({Département}, {Pays})</div>
 </div>
-<div class = "impr_seul">Candidatures : {cand}</div>
+<div class = "extraTopMarg textCentre impr">Candidatures : {cand}</div>
 
-<div class="taille1 centre no_imp">
+<div class="extraTopMarg taille1 textCentre no_impr">
 	<a href="{ref_fich}">Fiche de candidature + Bulletins scolaires</a>
 </div>
 
@@ -132,71 +131,71 @@
 			<div>2e trimestre</div>
 			<div>3e trimestre</div>
 	</div>
-	<div class="col gapleft " style="flex: 2;">
-		<div class="centre taille1">Classe de Première</div>
+	<div class="col  flex2">
+		<div class="textCentre taille1">Classe de Première</div>
 		<div class="row bordered ">
 			<div class="col">
-				<div class="note bold">Math</div>
-				<div class="note">
+				<div class="taille1 bold">Math</div>
+				<div class="taille1">
 					{Mathématiques Spécialité Première trimestre 1} </div>
-				<div class="note">
+				<div class="taille1">
 					{Mathématiques Spécialité Première trimestre 2} </div>
-				<div class="note">
+				<div class="taille1">
 					{Mathématiques Spécialité Première trimestre 3} </div>
 			</div>
 			<div class="col">
-				<div class="note bold">Phys</div>
-				<div class="note">
+				<div class="taille1 bold">Phys</div>
+				<div class="taille1">
 					{Physique-Chimie Spécialité Première trimestre 1} </div>
-				<div class="note">
+				<div class="taille1">
 					{Physique-Chimie Spécialité Première trimestre 2} </div>
-				<div class="note">
+				<div class="taille1">
 					{Physique-Chimie Spécialité Première trimestre 3} </div>
 			</div>
 		</div>
 	</div>
-	<div class="col gapleft" style="flex: 3;">
-		<div class="centre taille1">Classe de Terminale</div>
+	<div class="col  flex3">
+		<div class="textCentre taille1">Classe de Terminale</div>
 		<div class="row bordered">
 			<div class="col">
-				<div class="note bold">Math</div>
-				<div class="note">
+				<div class="taille1 bold">Math</div>
+				<div class="taille1">
 					{Mathématiques Spécialité Terminale trimestre 1} </div>
-				<div class="note">
+				<div class="taille1">
 					{Mathématiques Spécialité Terminale trimestre 2} </div>
-				<div class="note">
+				<div class="taille1">
 					{Mathématiques Spécialité Terminale trimestre 3} </div>
 			</div>
 			<div class="col">
-				<div class="note bold">M.Exp</div>
-				<div class="note">
+				<div class="taille1 bold">M.Exp</div>
+				<div class="taille1">
 					{Mathématiques Expertes Terminale trimestre 1} </div>
-				<div class="note">
+				<div class="taille1">
 					{Mathématiques Expertes Terminale trimestre 2} </div>
-				<div class="note">
+				<div class="taille1">
 					{Mathématiques Expertes Terminale trimestre 3} </div>
 			</div>
 			<div class="col">
-				<div class="note bold">Phys</div>
-				<div class="note">
+				<div class="taille1 bold">Phys</div>
+				<div class="taille1">
 					{Physique-Chimie Spécialité Terminale trimestre 1} </div>
-				<div class="note">
+				<div class="taille1">
 					{Physique-Chimie Spécialité Terminale trimestre 2} </div>
-				<div class="note">
+				<div class="taille1">
 					{Physique-Chimie Spécialité Terminale trimestre 3} </div>
 			</div>
 		</div>
 	</div>
-	<div class="col gapleft" style="align-content: flex-start; flex:2;">
-		<div class="centre taille1">EAF</div>
+	<div class="col flex2 aligStart">
+		<div class="textCentre taille1">EAF</div>
 		<div class="row bordered">
 			<div class="col">
-				<div class="note bold">Écrit</div>
-				<div class="note"> {Écrit EAF} </div>
+				<div class="taille1 bold">Écrit</div>
+				<div class="taille1"> {Écrit EAF} </div>
 			</div>
 			<div class="col">
-				<div class="note bold">Oral</div>
-				<div class="note"> {Oral EAF} </div>
+				<div class="taille1 bold">Oral</div>
+				<div class="taille1"> {Oral EAF} </div>
 			</div>
 		</div>
 	</div>
@@ -204,26 +203,26 @@
 
 ########## 
 [*contenu_action*]
-<div class="doss_score">
-	<div class="score_col">
+<div class="row bordered extraTopMarg">
+	<div class="col flex1">
 		<div>SCORE BRUT</div>
 		<div class="taille2">{scoreb}</div>
 	</div>
-	<div class="score_col" style="flex: 5;">
-		<div>CORRECTION DE LA COMMISSION</div>
-		<div class="">{barre}</div>
+	<div class="col aligAround justAround flex5">
+		<div class="textCentre">CORRECTION DE LA COMMISSION</div>
+		<div class="textCentre">{barre}</div>
 	</div>
-	<div class="score_col">
+	<div class="col flex1">
 		<div>SCORE FINAL</div>
 		<div class="taille2">{scoref}</div>
 	</div>
 </div>
-<div class="doss_score">
-	<div class="score_col" style="width:70%;">
-		<div class="motiv" >Motivation(s) de la commission</div> 
-		<div class="motifs">{motifs}</div>
+<div class="row bordered extraTopMarg">
+	<div class="col extraRightMarg flex5">
+		<div class="textAgauche taille1 bold">Motivation(s) de la commission</div> 
+		<div class="row wrap">{motifs}</div>
 	</div>
-	<div class="score_col" style="width:30%;">
+	<div class="col justCenter extraRightMarg flex2">
 		<input type = "submit" id = "valid" class = "grand bouton taille2 vert" 
 		value = "Valider">
 		<div>{rg_fin}</div>

@@ -14,8 +14,11 @@
 	car la taille de police est proportionnelle cette largeur. */
 }
 
-body
-{
+/* On cache tout sauf le bouton retour... */
+*{ visibility: hidden; }
+
+body {
+	visibility: visible;
 	page : size = A4;
 	width : 85%;
 	padding-top : 1cm;
@@ -24,47 +27,11 @@ body
 	position : static;
 }
 
-.no_imp { /* supprime l'affichage de l'objet */
-	display: none;
-}
-
-.main_container {
-	display: block;
-	position : relative;
-	z-index : 0; /* inférieur à z-index du header : passe dessous ! */
-	overflow-y : hidden;
-	top : var(--header-height); /* juste sous le header */
-	width : 100%;
-}
-
-/***********************************
-	classes génériques
-************************************/
-.row {
-	display: none;
-	justify-content: space-around;
-	padding: 4px;
-}
-
-.col {
-	display: none;
-	flex-direction: column;
-}
-
-.bordered {
-	border: 1px solid black; 
-	margin-top: 4px;
-}
-
-.bold { font-weight: bold; }
-
-.gapleft { margin-left: 4px; }
-
 /***********************************
 	BOUTONS
 ************************************/
 .bouton {
-	display: block;
+	visibility: visible;
 	padding-top : .7ex;
 	padding-bottom: .7ex;
 	padding-left : 1em;
@@ -86,71 +53,22 @@ body
 /***********************************
 	TEXTE
 ************************************/
-.taille1 {
+.taille-1 { font-size : 80%; }
 
-	font-size : 130%;
+.taille0 { font-size : 100%; }
 
-}
+.taille1 { font-size : 130%; }
 
-.taille2 {
-	font-size: 300%;
-}
+.taille2 { font-size: 300%; }
 
-.centre { text-align: center; }
+.textCentre { text-align: center; }
 
+.textAgauche { text-align: left; }
 
-.bleu {
-	color : Blue;
-}
+.textAdroite { text-align: right; }
 
-.vert {
-	color : LimeGreen;
-}
+.bold { font-weight: bold; }
 
-/***********************************
-			IMPRESSION
-************************************/
+.bleu { color : Blue; }
 
-/* Rajoute des espaces dans l'impression ...*/
-.espace_impr 
-	{
-		display: none;
-	}
-
-/* La correction : on imprime mais n'affiche pas*/
-.correc_impr 
-	{
-		display : none;
-	}
-
-.impr_seul
-	{
-		display: none;
-	}
-
-div.breakafter
-	{ 
-  		page-break-after: always; 
-	}
-
-/***********************************
-			PAGE DOSSIERS
-************************************/
-
-.doss_container {
-	display: none;
-}
-
-.doss_column {
-	display: none;
-}
-
-.doss_score {
-	display: none;
-}
-
-.encadre /* Pour le texte candidat classé ... ou candidat non classé*/
-	{
-		display: none;
-	}
-
+.vert { visibility: hidden; }

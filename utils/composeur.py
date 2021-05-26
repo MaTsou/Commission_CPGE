@@ -60,22 +60,21 @@ class Composeur(object):
     # Barre de correction :
     # Elle s'inscrit dans une 'table' html à 3 colonnes
     # (score brut | barre | score final)
-    barre = f"""<input type = "range" class = "range" min="{min_correc}"
+    barre = f"""<input type = "range" class = "range no_impr" min="{min_correc}"
             max = "{max_correc}" step = "{1/float(nb_correc)}" 
             name = "correc" id = "correc" onchange="javascript:maj_note();"
             onmousemove="javascript:maj_note();" onclick="click_range();"
             """
     barre += ' value = "{}"/>' # champ rempli dans la fonction 'genere_action'
     # on construit maintenant la liste des valeurs...
-    barre += '<div class="row" style="justify-content: space-between;\
-            margin-left:-8px;">'
+    barre += '<div class="row no_impr">'
     for index, valeur in enumerate(corrections):
         if index == 0: # on remplace la valeur min par NC.
             barre += '<div class="tick">NC</div>'
         elif (index % 2 == 0):
             barre += f'<div class="tick">{valeur:+3.1f}</div>'
     barre += "</div>"
-    barre += '<span class = "correc_impr">{} : {}</span>' # champs remplis
+    barre += '<span class = "impr">{} : {}</span>' # champs remplis
     # dans la fonction 'genere_action'
 
     # Liste des motivations
@@ -152,7 +151,7 @@ class Composeur(object):
         # Bouton retour au menu
         bouton = """<div style="align:center;">\
                 <form action="/affiche_menu" method = POST>
-                <input type = "submit" class ="gros_bout"\
+                <input type = "submit" class ="grand bouton taille2"\
                 value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
         yield f'{meta}{bouton}'
 
@@ -358,17 +357,17 @@ class Composeur(object):
             with open(os.path.join(os.curdir, "data", "stat"), 'br') as fich:
                 stat = pickle.load(fich)
             # Création de la liste à afficher
-            liste_stat = f"<h5>Statistiques (dossiers recevables) : \
-                    {stat['nb_cand']} candidats.</h5>"
+            liste_stat = f"<div class='taille-1 bold'>Statistiques \
+                    (dossiers recevables) : {stat['nb_cand']} candidats.</div>"
             # Pour commencer les sommes par filières
-            liste_stat += '<ul style = "margin-top:-5%">'
+            liste_stat += '<ul class="noMargin">'
             deja_fait = [0] # sert au test ci-dessous si on n'a pas math.log2()
             for i in range(len(filieres)):
                 liste_stat += f'<li>{stat[2**i]} dossiers \
                         {filieres[i].upper()}</li>'
                 deja_fait.append(2**i)
             # Ensuite les requêtes croisées
-            liste_stat += 'dont :<ul style="font-size: 80%;">'
+            liste_stat += 'dont :<ul class="taille-1">'
             for i in range(2**len(filieres)):
                 if not(i in deja_fait):
                     # avec la fonction math.log2 ce test serait facile !!!
@@ -564,7 +563,7 @@ class Composeur(object):
     def genere_liste(self, client, mem_scroll):
         """ Génère la partie liste de la page HTML"""
         # Construction de la chaine lis : code html de la liste des dossiers.
-        lis = '<form id = "form_liste" action = "click_list" method=POST>'
+        lis = '<form class = "col wrap" action = "click_list" method=POST>'
         lis += f'<input type="hidden" name = "scroll_mem" \
                 value = "{mem_scroll}"/>'
         ## Gestion des ex-aequo (score final seulement). On va construire une 
@@ -634,7 +633,7 @@ class Composeur(object):
         """ Fabrication de la page 'impression des fiches bilan' """
         cand = qui.get_cand()
         fich = qui.fichier
-        entete = f'<h1 align="center" class="titre no_imp">{self.titre} - \
+        entete = f'<h1 align="center" class="titre">{self.titre} - \
             {fich.filiere().upper()}.</h1>'
         txt = ''
         # on saute une page entre chaque candidat :
@@ -656,7 +655,7 @@ class Composeur(object):
                 # seulement les classés dont le rang est inférieur à la limite 
                 # fixée
                 txt += entete
-                txt += f"<div class = encadre>Candidat classé : \
+                txt += f"<div class='row bordered justCentre'>Candidat classé : \
                 {cand.get('Rang final')}</div>"
                 txt += Composeur.html['contenu_dossier']\
                         .format(**self.genere_dossier(qui, cand))
