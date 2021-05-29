@@ -84,6 +84,8 @@
 /* Aspect */
 .bordered {
 	border: 1px solid black; 
+	box-shadow: .10ex .10ex .12ex .12ex #040404,
+				inset .2ex .2ex .2ex #ffffff;
 	margin-top: 4px;
 	margin-left: 4px;
 }
@@ -131,7 +133,9 @@
 	padding-right: 1em;
 	margin-bottom : .5ex;
 	border-radius: .3em .3em .3em .3em ;
-	background-color: #cccccc;
+	background: linear-gradient(135deg,#dddddd,#cccccc);
+	box-shadow: .08ex .08ex .10ex .10ex #040404,
+				inset .1ex .1ex .1ex #ffffff;
 	cursor: pointer;
 }
 
@@ -171,7 +175,6 @@
 ************************************/
 /*  Sous-menu (dans le cas admin, contient les étapes) */
 .sous_menu {
-	border:1px solid black;
 	padding-top: .5vw;
 	padding-bottom: .5vw;
 	padding-left: 1em;
