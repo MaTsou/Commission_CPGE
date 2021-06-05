@@ -74,9 +74,10 @@ ou en ligne de commande 'python commission.py'. Il est alors possible de
 préciser certaines options :
   -jury : lance le programme en forçant un client type jury sur la machine 
   serveur
-  -ip x.x.x.x : lance le serveur sur une ip non locale (sert au moment de la 
-  commission,
-    tout le reste se fait en local) """
+  -clean-logs : efface les fichiers log
+  -log XXX : précise le niveau souhaité dans les messages log. (par défaut INFO, 
+  pourrait être DEBUG...)
+"""
 
 ##### Début du code :
 ### Configuration d'un logger (gestionnaire d'un fichier log)
