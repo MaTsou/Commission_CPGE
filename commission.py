@@ -57,6 +57,7 @@
 # est suffisamment simple).
 
 import os, sys, cherrypy, logging, socket
+from tkinter import *
 from utils.toolbox import restaure_virginite
 from utils.serveur import Serveur
 
@@ -111,28 +112,17 @@ def configure_loggers(log_path):
     journaux.append(nett_log)
     return journaux
 
-# Obtenir l'adresse ip sur le réseau local
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # doesn't even have to be reachable
-        s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
-
-# Récupération des options de lancement ('-jury' pour une version jury, '-comm 
-# pour servir sur le réseau local)
+# Récupération et gestions des options de lancement :
+# '-jury' pour une version jury,
+# '-clean-logs' pour nettoyer les fichiers log 
+# '-log xxxx' pour spécifier le niveau des messages log
 jury = '-jury' in sys.argv
-
-ip = get_ip()
 
 log_path = os.path.join("utils", "logs")
 if '-clean-logs' in sys.argv:
     restaure_virginite(log_path)
+
+# configuration des loggers
 journaux = configure_loggers(log_path)
 
 default_log_level = 'INFO'
@@ -143,6 +133,50 @@ for journal in journaux:
         journal.setLevel(getattr(logging, log_level.upper()))
     except:
         journal.setLevel(getattr(logging, default_log_level))
+
+### Gestion de l'ip sur laquelle sera servie l'application
+def get_ip():
+    # Obtenir l'adresse ip sur le réseau local
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    IP = ['127.0.0.1']
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP_ext = s.getsockname()[0]
+    except Exception:
+        IP_ext = none
+    finally:
+        IP.append(IP_ext)
+        s.close()
+    return IP
+
+# On récupère la liste des ip disponibles
+ip_list = get_ip()
+# Si cette liste contient plus d'un élément,
+# un menu est proposé pour choisir l'ip 
+def submit():
+    ws.destroy()
+
+if len(ip_list) > 1:
+    ws = Tk()
+    ws.title("Choix de l'ip")
+    ws.geometry('200x200')
+    frame = LabelFrame(ws, \
+            text="Choisissez l'ip sur laquelle servir l'application :")
+    frame.pack(pady=15)
+    var = IntVar()
+    for index, ip in enumerate(ip_list):
+        if index:
+            txt = "indispensable pour la commission"
+        else:
+            txt = "recommandé pour l'administration"
+        Radiobutton(frame, text=f"{ip} ({txt})", variable=var, value=index,)\
+                .grid(row=index, column=1)
+    Button(ws, text="Valider", command=submit, padx=15, pady=5).pack(pady=10)
+    ws.mainloop()
+    ip = ip_list[var.get()]
+else:
+    ip = ip_list[0]
 
 # Reconfiguration et démarrage du serveur web :
 cherrypy.config.update({"tools.staticdir.root":os.getcwd()})
