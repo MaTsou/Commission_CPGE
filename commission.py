@@ -161,7 +161,7 @@ def submit():
 if len(ip_list) > 1:
     ws = Tk()
     ws.title("Choix de l'ip")
-    ws.geometry('200x200')
+    ws.geometry('400x150')
     frame = LabelFrame(ws, \
             text="Choisissez l'ip sur laquelle servir l'application :")
     frame.pack(pady=15)
