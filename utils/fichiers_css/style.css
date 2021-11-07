@@ -90,6 +90,14 @@
 	margin-left: 4px;
 }
 
+.bordered-a {
+	border: 1px solid black; 
+	box-shadow: .05ex .05ex .06ex .06ex #ffffff,
+				inset .05ex .05ex .05ex #040404;
+	margin-top: 4px;
+	margin-left: 4px;
+}
+
 /* Ajustement du rendu */
 .extraTopMarg { margin-top: 2ex; }
 .extraTopMarg1 { margin-top: 1ex; }
