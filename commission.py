@@ -145,7 +145,7 @@ def get_ip():
         s.connect(('10.255.255.255', 1))
         IP_ext = s.getsockname()[0]
     except Exception:
-        IP_ext = none
+        IP_ext = None
     finally:
         IP.append(IP_ext)
         s.close()
