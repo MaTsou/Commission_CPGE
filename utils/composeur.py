@@ -126,13 +126,18 @@ class Composeur(object):
         page_content['main_content'] = ''
         page_content['script'] = ''
         page = Composeur.html['Page'].format(**page_content)
-        # Peut-être pas très propre mais ça fonctionne...
         # On récupère la balise <meta> car elle doit être envoyée avec chaque
         # yield sinon on n'a pas le fonctionnement en 'temps réel'
-        meta_content = parse('{}<meta{}>{}',page)[1]
+        meta_content = parse('{}<meta{}>{}', page)[1]
         meta = f'<meta{meta_content}>'
+        # On récupère ce qui précède {main_content} et ce qui le suit
+        init_page = parse('{}"main_container">{}', page)[0]
+        init_page += '"main_container">'
+        close_page = parse('{}<script{}', page)[1]
+        close_page = '<script' + close_page
+        # Peut-être pas très propre mais ça fonctionne...
         # Ici, on envoie le titre et ouvre une <div> qui contiendra la suite
-        yield f'{page}<div style="padding-left:12%;">'
+        yield f'{init_page}<div>'
         # Début du traitement du contenu du dico
         for gen, title in action:
             yield f"{meta}<h2>{title}</h2>" # On envoie le sous-titre
@@ -140,7 +145,7 @@ class Composeur(object):
                     # yield citée ci-dessus..
             for txt in gen(): # sollicitation du générateur jusqu'à épuisement
                 if flag: # 1e partie de la ligne : "<p>Fichier blabla ..."
-                    txt = f'<p style="padding-left:3em;">{txt}'
+                    txt = f'<p>{txt}'
                 else: # 2e partie de la ligne : on affiche "traité</p>"
                     txt = f'{txt}</p>'
                 yield f'{meta}{txt}'
@@ -151,7 +156,7 @@ class Composeur(object):
                 <form action="/affiche_menu" method = POST>
                 <input type = "submit" class ="grand bouton taille2"\
                 value = "CLIQUER POUR RETOURNER AU MENU"></form></div></div>"""
-        yield f'{meta}{bouton}'
+        yield f'{meta}{bouton}{close_page}'
 
 
 ########################################################
