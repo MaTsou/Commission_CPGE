@@ -552,7 +552,7 @@ class Composeur(object):
             correc = cor
         # Construction de la barre de correction qu'on alimente avec les infos 
         # courantes..
-        barre = Composeur.barre.format(correc, cand.get('Jury'), cor)
+        barre = Composeur.barre.format(correc, cand.get('Jury'), correc)
         ### Partie motivations :
         motifs = Composeur.motifs.format(cand.get('Motifs'))
         # On met tout ça dans un dico data pour passage en argument à 

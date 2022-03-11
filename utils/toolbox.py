@@ -76,6 +76,8 @@ def format_candidatures(candidatures):
 
 def format_candidatures_impr(candidatures):
     """ Formate le contenu du noeud 'candidatures multiples' en vue de l'impression """
+    if len(candidatures) != len(filieres):
+        return ''
     return '-'.join(fil.upper() for fil in filieres if candidatures[filieres.index(fil)]!='-')
 
 def format_jury(jury):
