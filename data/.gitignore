@@ -1,0 +1,4 @@
+# keep this file. It is needed to have git managing this folder while not 
+# managing its content.
+*
+!.gitignore
