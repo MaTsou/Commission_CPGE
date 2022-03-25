@@ -281,8 +281,8 @@ class Candidat:
                     self._coefs[key] = 0
 
         #####################################
-        # Reports spécial-confinement FIXME
-        self.coef_confinement()
+        # Reports spécial-confinement FIXME : à supprimer complètement à terme
+        # self.coef_confinement()
         #####################################
 
     def coef_confinement(self):

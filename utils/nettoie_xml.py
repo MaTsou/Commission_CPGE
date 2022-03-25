@@ -116,9 +116,8 @@ def filtre(node):
     #
     # On va tester également les enseignements de spécialité. Il faut veiller à 
     # ce que l'éventuel rejet d'un dossier ne soit pas dû à un problème 
-    # d'identification. Seuls les dossiers de candidats dans une série reconnue, 
-    # et étant en terminale (FIXME cpes aussi à partir de 2022) peuvent être 
-    # rejetés pour cette raison.
+    # d'identification. Seuls les dossiers de candidats dans une série reconnue
+    # peuvent être rejetés pour cette raison.
     prefixe = '- Alerte :' # indicateur d'une alerte (important...)
     commentaire = [] # reçoit les différents commentaires
 
@@ -142,9 +141,10 @@ def filtre(node):
 
     # Traitement
     # on exclut si mauvais enseignements de spé
-    if wrong_eds and not candidat.is_cpes(): # FIXME test cpes only en 2021
+    if wrong_eds:
         exclure_candidature(candidat, wrong_eds)
     else:
+        # dossier recevable
         # Insertion de l'éventuelle alerte dans le dossier candidat
         if len(commentaire):
             commentaires = ' | '.join(commentaire)
@@ -190,6 +190,6 @@ def nettoie(xml_nodes):
     """Cette fonction appelle successivement toutes les fonctions de
     nettoyage"""
     _ = [elague_bulletins_triviaux(node) for node in xml_nodes]
-    _ = [repeche(node) for node in xml_nodes]
+    #_ = [repeche(node) for node in xml_nodes] FIXME à supprimer complètement à terme
     _ = [filtre(node) for node in xml_nodes]
     return xml_nodes
